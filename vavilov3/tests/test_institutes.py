@@ -97,3 +97,16 @@ class InstituteViewTest(BaseTest):
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), api_data)
+
+    def test_filter(self):
+        list_url = reverse('institute-list')
+        response = self.client.get(list_url, data={'code': 'eSP004'})
+        self.assertFalse(response.json())
+
+        response = self.client.get(list_url, data={'code': 'ESP004'})
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(list_url, data={'code__iexact': 'esp004'})
+        self.assertEqual(len(response.json()), 1)
+        response = self.client.get(list_url, data={'code__icontain': 'esp'})
+        self.assertEqual(len(response.json()), 4)
