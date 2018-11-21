@@ -7,8 +7,8 @@ from rest_framework.test import APIClient as Client
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from vavilov3.models import Group
-from vavilov3.conf.settings import ADMIN_GROUP
+from vavilov3_accession.models import Group
+from vavilov3_accession.conf.settings import ADMIN_GROUP
 
 
 class BaseTest(TestCase):

@@ -1,7 +1,7 @@
 from django.db.models import Q
 
 from django_filters import rest_framework as filters
-from vavilov3.models import Institute
+from vavilov3_accession.models import Institute
 
 
 class TermFilterMixin():

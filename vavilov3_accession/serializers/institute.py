@@ -4,14 +4,14 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 from rest_framework.exceptions import ValidationError
 
-from vavilov3.models import Institute, Group
-from vavilov3.serializers.metadata import MetadataSerializer
-from vavilov3.serializers.shared import DynamicFieldsSerializer
-from vavilov3.entities.institute import (InstituteStruct,
-                                         InstituteValidationError,
-                                         validate_institute_data)
-from vavilov3.entities.metadata import (validate_metadata_data,
-                                        MetadataValidationError)
+from vavilov3_accession.models import Institute, Group
+from vavilov3_accession.serializers.metadata import MetadataSerializer
+from vavilov3_accession.serializers.shared import DynamicFieldsSerializer
+from vavilov3_accession.entities.institute import (InstituteStruct,
+                                                   InstituteValidationError,
+                                                   validate_institute_data)
+from vavilov3_accession.entities.metadata import (validate_metadata_data,
+                                                  MetadataValidationError)
 
 
 class InstituteSerializer(DynamicFieldsSerializer):

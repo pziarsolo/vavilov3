@@ -1,9 +1,9 @@
 from rest_framework import viewsets
-from vavilov3.models import Institute
-from vavilov3.views.shared import (DynamicFieldsViewMixin,
-                                   StandardResultsSetPagination)
-from vavilov3.serializers.institute import InstituteSerializer
-from vavilov3.filters.institute import InstituteFilter
+from vavilov3_accession.models import Institute
+from vavilov3_accession.views.shared import (DynamicFieldsViewMixin,
+                                             StandardResultsSetPagination)
+from vavilov3_accession.serializers.institute import InstituteSerializer
+from vavilov3_accession.filters.institute import InstituteFilter
 
 
 class InstituteViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):

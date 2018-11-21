@@ -5,8 +5,9 @@ from django.db import transaction
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from vavilov3.tests.io import load_institutes_from_file
-from vavilov3.tests import BaseTest
+from vavilov3_accession.tests import BaseTest
+from vavilov3_accession.tests.io import load_institutes_from_file
+
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
 

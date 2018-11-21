@@ -1,5 +1,5 @@
-from vavilov3.entities.metadata import Metadata
-from vavilov3.entities.tags import INSTITUTE_CODE, INSTITUTE_NAME
+from vavilov3_accession.entities.metadata import Metadata
+from vavilov3_accession.entities.tags import INSTITUTE_CODE, INSTITUTE_NAME
 
 
 class InstituteValidationError(Exception):

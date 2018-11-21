@@ -1,4 +1,4 @@
-from vavilov3.entities.tags import GROUP, IS_PUBLIC
+from vavilov3_accession.entities.tags import GROUP, IS_PUBLIC
 
 
 class MetadataValidationError(Exception):

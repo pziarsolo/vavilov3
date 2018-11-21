@@ -1,5 +1,5 @@
 import json
-from vavilov3.serializers.institute import create_institute_in_db
+from vavilov3_accession.serializers.institute import create_institute_in_db
 
 
 def load_institutes_from_file(fpath):
