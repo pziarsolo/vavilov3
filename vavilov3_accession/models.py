@@ -57,14 +57,26 @@ class Accession(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     is_public = models.BooleanField()
     institute = models.ForeignKey(Institute, on_delete=models.CASCADE)
-    number = models.CharField(max_length=100, db_index=True)
+    germplasm_number = models.CharField(max_length=100, db_index=True)
     is_available = models.NullBooleanField()
     conservation_status = models.CharField(max_length=50, null=True)
     is_save_duplicate = models.NullBooleanField()
     data = JSONField()
 
     class Meta:
-        unique_together = ('institute', 'number')
+        unique_together = ('institute', 'germplasm_number')
+        db_table = 'vavilov_accession'
+
+    @property
+    def genera(self):
+        genera = Taxon.objects.filter(passport__accession=self,
+                                      rank__name='genus').distinct()
+        return genera.values_list('name', flat=True)
+
+    @property
+    def countries(self):
+        queryset = Country.objects.filter(passport__accession=self).distinct()
+        return queryset.values_list('code', flat=True)
 
 
 class AccessionSet(models.Model):
@@ -75,6 +87,9 @@ class AccessionSet(models.Model):
     accessionset_number = models.CharField(max_length=100, db_index=True,
                                            null=True, unique=True)
     accessions = models.ManyToManyField(Accession)
+
+    class Meta:
+        db_table = 'vavilov_accessionset'
 
 
 class Rank(models.Model):
@@ -104,25 +119,33 @@ class Passport(models.Model):
     institute = models.ForeignKey(Institute, db_index=True,
                                   related_name='passport_institute',
                                   on_delete=models.CASCADE)
-    number = models.CharField(max_length=100, db_index=True)
-    accession = models.ForeignKey(Accession, on_delete=models.CASCADE)
+    germplasm_number = models.CharField(max_length=100, db_index=True)
+    accession = models.ForeignKey(Accession, on_delete=models.CASCADE,
+                                  related_name='passports')
     taxa = models.ManyToManyField(Taxon)
 
-#     collection_number = models.CharField(max_length=255, db_index=True, null=True)
-#     collecting_institute = models.ForeignKey(Institute, db_index=True, null=True,
-#                                              related_name='passport_collecting_institute',
-#                                              on_delete=models.SET_NULL)
-#     # local name
-#     accession_name = models.CharField(max_length=255, db_index=True, null=True)
-#     crop_name = models.CharField(max_length=255, db_index=True, null=True)
-#     country = models.ForeignKey(Country, null=True, db_index=True,
-#                                 on_delete=models.SET_NULL)
-#     state = models.CharField(max_length=255, db_index=True, null=True)
-#     province = models.CharField(max_length=255, db_index=True, null=True)
-#     municipality = models.CharField(max_length=255, db_index=True, null=True)
-#     location_site = models.TextField(db_index=True, null=True)
-#     biological_status = models.CharField(max_length=3, db_index=True, null=True)
-#     collection_source = models.CharField(max_length=3, db_index=True, null=True)
-#     latitude = models.DecimalField(max_digits=9, decimal_places=4, null=True)
-#     longitude = models.DecimalField(max_digits=9, decimal_places=4, null=True)
-#     pdci = models.DecimalField(max_digits=4, decimal_places=2, null=True)
+    collection_number = models.CharField(max_length=255, db_index=True,
+                                         null=True)
+    collecting_institute = models.ForeignKey(
+        Institute, db_index=True, null=True, on_delete=models.SET_NULL,
+        related_name='passport_collecting_institute')
+    # local name
+    accession_name = models.CharField(max_length=255, db_index=True, null=True)
+    crop_name = models.CharField(max_length=255, db_index=True, null=True)
+    country = models.ForeignKey(Country, null=True, db_index=True,
+                                on_delete=models.SET_NULL)
+    state = models.CharField(max_length=255, db_index=True, null=True)
+    province = models.CharField(max_length=255, db_index=True, null=True)
+    municipality = models.CharField(max_length=255, db_index=True, null=True)
+    location_site = models.TextField(db_index=True, null=True)
+    biological_status = models.CharField(max_length=3, db_index=True,
+                                         null=True)
+    collection_source = models.CharField(max_length=3, db_index=True,
+                                         null=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=4, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=4, null=True)
+    pdci = models.DecimalField(max_digits=4, decimal_places=2, null=True)
+
+    class Meta:
+        db_table = 'vavilov_passport'
+        unique_together = ('institute', 'germplasm_number', 'data_source')

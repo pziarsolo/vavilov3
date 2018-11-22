@@ -19,13 +19,9 @@ class InstituteSerializer(DynamicFieldsSerializer):
     code = serializers.CharField()
     name = serializers.CharField()
 
-    class Meta:
-        model = Institute
-        fields = ('data', 'metadata')
-
     def to_representation(self, instance):
         institute_struct = InstituteStruct(instance=instance,
-                                           fields=self.fields)
+                                           fields=self.selected_fields)
         return institute_struct.get_api_document()
 
     def run_validation(self, data=empty):
@@ -74,6 +70,10 @@ def update_institute_in_db(api_data, instance):
         institute_struct = InstituteStruct(api_data)
     except InstituteValidationError as error:
         raise ValidationError(error)
+
+    if institute_struct.institute_code != instance.code:
+        raise ValidationError('Can not change id in an update operation')
+
     try:
         group = Group.objects.get(name=institute_struct.metadata.group)
     except Group.DoesNotExist:

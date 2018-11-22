@@ -15,7 +15,7 @@ class InstituteStruct():
 
     def __init__(self, api_data=None, instance=None, fields=None):
         if api_data and instance:
-            raise ValueError()
+            raise ValueError('Can not initialize with data and instance')
 
         if api_data is None and instance is None:
             self._data = {}
@@ -65,8 +65,8 @@ class InstituteStruct():
     def _populate_with_instance(self, instance, fields):
         self.metadata.group = instance.group.name
         self.metadata.is_public = instance.is_public
-        for field in fields:
-            if field == 'code':
-                self.institute_code = instance.code
-            elif field == 'name':
-                self.institute_name = instance.name
+
+        if fields is None or 'code' in fields:
+            self.institute_code = instance.code
+        if fields is None or 'name' in fields:
+            self.institute_name = instance.name

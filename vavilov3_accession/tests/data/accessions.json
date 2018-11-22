@@ -1,0 +1,180 @@
+[
+    {
+        "data": {
+            "instituteCode": "ESP004",
+            "germplasmNumber": "BGE0001",
+            "conservation_status": "is_active",
+            "is_available": true,
+            "passports": [
+                {
+                "taxonomy": {
+                    "genus": {
+                        "name": "Solanum"
+                    },
+                    "variety": {
+                        "name": "cerasiforme"
+                    },
+                    "species": {
+                        "name": "lycopersicum"
+                    }
+                },
+                "version": "1.0",
+                "dataSource": {
+                    "code": "CRF",
+                    "kind": "project"
+                },
+                "collectionSite": {
+                    "province": "HUAMANGA",
+                    "countryOfOriginCode": "PER",
+                    "state": "AYACUCHO",
+                    "site": "Santa Rosa de Cochabamba",
+                    "latitude": -13.165082,
+                    "longitude": -74.295827,
+                    "municipality": "Socos"
+                },
+                "germplasmNumber": {
+                    "germplasmNumber": "BGE0001",
+                    "instituteCode": "ESP004"
+                }
+            }]
+        },
+        "metadata": {
+            "group": "admin",
+            "is_public": true
+        }
+    },
+    {
+        "data": {
+            "instituteCode": "ESP026",
+            "germplasmNumber": "BGE0002",
+            "conservation_status": "is_active",
+            "is_available": true,
+            "passports": [
+                {
+                "taxonomy": {
+                    "genus": {
+                        "name": "Solanum"
+                    },
+                    "variety": {
+                        "name": "cerasiforme"
+                    },
+                    "species": {
+                        "name": "lycopersicum"
+                    }
+                },
+                "version": "1.0",
+                "dataSource": {
+                    "code": "CRF",
+                    "kind": "project"
+                },
+                "collectionSite": {
+                    "province": "HUAMANGA",
+                    "countryOfOriginCode": "PER",
+                    "state": "AYACUCHO",
+                    "site": "Santa Rosa de Cochabamba",
+                    "latitude": -13.165082,
+                    "longitude": -74.295827,
+                    "municipality": "Socos"
+                },
+                "germplasmNumber": {
+                    "germplasmNumber": "BGE0002",
+                    "instituteCode": "ESP004"
+                }
+            }]
+        },
+        "metadata": {
+            "group": "admin",
+            "is_public": true
+        }
+    },
+    {
+        "data": {
+            "instituteCode": "ESP058",
+            "germplasmNumber": "BGE0003",
+            "conservation_status": "is_active",
+            "is_available": true,
+            "passports": [
+                {
+                "taxonomy": {
+                    "genus": {
+                        "name": "Solanum"
+                    },
+                    "variety": {
+                        "name": "cerasiforme"
+                    },
+                    "species": {
+                        "name": "lycopersicum"
+                    }
+                },
+                "version": "1.0",
+                "dataSource": {
+                    "code": "CRF",
+                    "kind": "project"
+                },
+                "collectionSite": {
+                    "province": "HUAMANGA",
+                    "countryOfOriginCode": "PER",
+                    "state": "AYACUCHO",
+                    "site": "Santa Rosa de Cochabamba",
+                    "latitude": -13.165082,
+                    "longitude": -74.295827,
+                    "municipality": "Socos"
+                },
+                "germplasmNumber": {
+                    "germplasmNumber": "BGE0003",
+                    "instituteCode": "ESP004"
+                }
+            }]
+        },
+        "metadata": {
+            "group": "admin",
+            "is_public": false
+        }
+    },
+    {
+        "data": {
+            "instituteCode": "ESP004",
+            "germplasmNumber": "BGE0004",
+            "conservation_status": "is_active",
+            "is_available": true,
+            "passports": [
+                {
+                "taxonomy": {
+                    "genus": {
+                        "name": "Solanum"
+                    },
+                    "variety": {
+                        "name": "cerasiforme"
+                    },
+                    "species": {
+                        "name": "lycopersicum"
+                    }
+                },
+                "germplasmName": "tomate rojo",
+                "version": "1.0",
+                "dataSource": {
+                    "code": "CRF",
+                    "kind": "project"
+                },
+                "collectionSite": {
+                    "province": "HUAMANGA",
+                    "countryOfOriginCode": "ESP",
+                    "state": "AYACUCHO",
+                    "site": "Santa Rosa de Cochabamba",
+                    "latitude": -13.165082,
+                    "longitude": -74.295827,
+                    "municipality": "Socos"
+                },
+                "germplasmNumber": {
+                    "germplasmNumber": "BGE0004",
+                    "instituteCode": "ESP004"
+                },
+                "biologicalStatusOfAccessionCode": "100"
+            }]
+        },
+        "metadata": {
+            "group": "admin",
+            "is_public": true
+        }
+    }
+]
