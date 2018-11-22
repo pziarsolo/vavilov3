@@ -70,3 +70,12 @@ class InstituteStruct():
             self.institute_code = instance.code
         if fields is None or 'name' in fields:
             self.institute_name = instance.name
+        if fields is None or 'num_accessions' in fields:
+            self._data['num_accessions'] = instance.num_accessions
+        if fields is None or 'num_accessionsets' in fields:
+            self._data['num_accessionsets'] = instance.num_accessionsets
+        if fields is None or 'stats_by_county' in fields:
+            self._data['stats_by_country'] = instance.stats_by_country
+        if fields is None or 'stats_by_taxa' in fields:
+            self._data['stats_by_taxa'] = instance.stats_by_taxa
+

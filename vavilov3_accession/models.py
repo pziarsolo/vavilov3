@@ -27,6 +27,22 @@ class Institute(models.Model):
     def __str__(self):
         return '{}({})'.format(self.name, self.code)
 
+    @property
+    def num_accessions(self):
+        return Accession.objects.filter(institute=self).count()
+
+    @property
+    def num_accessionsets(self):
+        return AccessionSet.objects.filter(institute=self).count()
+
+    @property
+    def stats_by_country(self):
+        pass
+
+    @property
+    def stats_by_taxa(self):
+        pass
+
 
 class Country(models.Model):
     country_id = models.AutoField(primary_key=True, editable=False)
@@ -38,6 +54,11 @@ class Country(models.Model):
 
     def __str__(self):
         return '{}({})'.format(self.name, self.code)
+
+    @property
+    def num_accessions(self):
+        queryset = Accession.objects.filter(passports__country=self).distinct()
+        return queryset.count()
 
 
 class DataSource(models.Model):

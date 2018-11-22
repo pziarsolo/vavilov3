@@ -7,6 +7,7 @@ from rest_framework import status
 
 from vavilov3_accession.tests import BaseTest
 from vavilov3_accession.tests.io import load_institutes_from_file
+from copy import deepcopy
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -46,6 +47,15 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         self.assertEqual(result.json()['data']['instituteCode'], 'ESP004')
 
+    def docs_are_equal(self, response_json, input_doc):
+
+        doc = deepcopy(response_json)
+        doc['data'].pop('num_accessions', None)
+        doc['data'].pop('num_accessionsets', None)
+        doc['data'].pop('stats_by_taxa', None)
+        doc['data'].pop('stats_by_country', None)
+        self.assertEqual(doc, input_doc)
+
     def test_create_delete(self):
 
         list_url = reverse('institute-list')
@@ -55,7 +65,8 @@ class InstituteViewTest(BaseTest):
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json(), api_data)
+
+        self.docs_are_equal(response.json(), api_data)
 
         # Sending corrupt data should fail and return proper error
         api_data = {'data': {'name': 'test genebank'},
@@ -97,7 +108,7 @@ class InstituteViewTest(BaseTest):
                     'metadata': {'group': 'admin', 'is_public': False}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), api_data)
+        self.docs_are_equal(response.json(), api_data)
 
     def test_filter(self):
         list_url = reverse('institute-list')
@@ -111,3 +122,9 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(len(response.json()), 1)
         response = self.client.get(list_url, data={'code__icontain': 'esp'})
         self.assertEqual(len(response.json()), 4)
+
+    def tests_stats(self):
+        detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
+        self.client.get(detail_url)
+        # print(response.json())
+        print('No institute stat tests')
