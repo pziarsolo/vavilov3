@@ -72,6 +72,10 @@ class DataSource(models.Model):
     class Meta:
         db_table = 'vavilov_data_source'
 
+    @property
+    def num_passports(self):
+        return Passport.objects.filter(data_source=self).count()
+
 
 class Accession(models.Model):
     accession_id = models.AutoField(primary_key=True, editable=False)

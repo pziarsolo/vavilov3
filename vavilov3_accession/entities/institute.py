@@ -78,4 +78,3 @@ class InstituteStruct():
             self._data['stats_by_country'] = instance.stats_by_country
         if fields is None or 'stats_by_taxa' in fields:
             self._data['stats_by_taxa'] = instance.stats_by_taxa
-
