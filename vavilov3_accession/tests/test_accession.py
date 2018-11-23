@@ -308,3 +308,29 @@ class AccessionPermissionsViewTest(BaseTest):
 
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_anonymous_user(self):
+        # not public
+        detail_url = reverse('accession-detail',
+                             kwargs={'institute_code': 'ESP004',
+                                     'germplasm_number': 'BGE0004'})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # public
+        detail_url = reverse('accession-detail',
+                             kwargs={'institute_code': 'ESP058',
+                                     'germplasm_number': 'BGE0003'})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.put(detail_url, data={})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        list_url = reverse('accession-list')
+        response = self.client.get(list_url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 2)
