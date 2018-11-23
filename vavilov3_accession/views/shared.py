@@ -1,6 +1,16 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
+from vavilov3_accession.permissions import (
+    filter_queryset_by_user_group_permissions)
+
+
+class GroupObjectPermMixin(object):
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        return filter_queryset_by_user_group_permissions(queryset,
+                                                         self.request.user)
 
 
 class DynamicFieldsViewMixin(object):
@@ -65,4 +75,7 @@ class MultipleFieldLookupMixin(object):
                     filter_field = field
 
                 filter_[filter_field] = self.kwargs[field]
-        return get_object_or_404(queryset, **filter_)  # Lookup the object
+        obj = get_object_or_404(queryset, **filter_)  # Lookup the object
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+        return obj

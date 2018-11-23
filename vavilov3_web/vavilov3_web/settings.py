@@ -82,20 +82,12 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
-
+VALIDATION_MODULE = 'django.contrib.auth.password_validation'
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': VALIDATION_MODULE + '.UserAttributeSimilarityValidator'},
+    {'NAME': VALIDATION_MODULE + '.MinimumLengthValidator'},
+    {'NAME': VALIDATION_MODULE + '.CommonPasswordValidator'},
+    {'NAME': VALIDATION_MODULE + '.NumericPasswordValidator'}
 ]
 
 # Internationalization
@@ -116,6 +108,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+AUTH_USER_MODEL = 'vavilov3_accession.User'
+
+REST_AUTHENTICATION_CLASSES = [
+    'rest_framework_simplejwt.authentication.JWTAuthentication']
+
+if True:  # DEVELOPMENT_MACHINE:
+    REST_AUTHENTICATION_CLASSES.append(
+        'rest_framework.authentication.SessionAuthentication')
+
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS':
+        ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_AUTHENTICATION_CLASSES': REST_AUTHENTICATION_CLASSES
 }

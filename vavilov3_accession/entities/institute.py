@@ -1,4 +1,3 @@
-from vavilov3_accession.entities.metadata import Metadata
 from vavilov3_accession.entities.tags import INSTITUTE_CODE, INSTITUTE_NAME
 
 
@@ -19,15 +18,11 @@ class InstituteStruct():
 
         if api_data is None and instance is None:
             self._data = {}
-            self._metadata = Metadata()
         elif api_data:
-            payload = api_data['data']
-            self._metadata = Metadata(api_data['metadata'])
-            validate_institute_data(payload)
-            self._data = payload
+            validate_institute_data(api_data)
+            self._data = api_data
         elif instance:
             self._data = {}
-            self._metadata = Metadata()
             self._populate_with_instance(instance, fields)
 
     @property
@@ -35,16 +30,7 @@ class InstituteStruct():
         return self._data
 
     def get_api_document(self):
-        return {'data': self.data,
-                'metadata': self.metadata.data}
-
-    @property
-    def metadata(self):
-        return self._metadata
-
-    @metadata.setter
-    def metadata(self, metadata):
-        self._metadata = metadata
+        return self.data
 
     @property
     def institute_code(self):
@@ -63,9 +49,6 @@ class InstituteStruct():
         self._data[INSTITUTE_NAME] = name
 
     def _populate_with_instance(self, instance, fields):
-        self.metadata.group = instance.group.name
-        self.metadata.is_public = instance.is_public
-
         if fields is None or 'code' in fields:
             self.institute_code = instance.code
         if fields is None or 'name' in fields:

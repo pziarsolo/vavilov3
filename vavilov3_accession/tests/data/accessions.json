@@ -84,7 +84,7 @@
         },
         "metadata": {
             "group": "admin",
-            "is_public": true
+            "is_public": false
         }
     },
     {
@@ -127,8 +127,8 @@
             }]
         },
         "metadata": {
-            "group": "admin",
-            "is_public": false
+            "group": "userGroup",
+            "is_public": true
         }
     },
     {
@@ -173,8 +173,8 @@
             }]
         },
         "metadata": {
-            "group": "admin",
-            "is_public": true
+            "group": "userGroup",
+            "is_public": false
         }
     }
 ]

@@ -2,6 +2,12 @@ from django.db import models
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.postgres.fields.jsonb import JSONField
 
+from django.contrib.auth.models import AbstractUser
+
+
+class User(AbstractUser):
+    pass
+
 
 class Group(DjangoGroup):
 
@@ -17,8 +23,6 @@ class Institute(models.Model):
     institute_id = models.AutoField(primary_key=True, editable=False)
     code = models.CharField(max_length=20, db_index=True, unique=True)
     name = models.CharField(max_length=255, db_index=True)
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
-    is_public = models.BooleanField()
     data = JSONField()
 
     class Meta:

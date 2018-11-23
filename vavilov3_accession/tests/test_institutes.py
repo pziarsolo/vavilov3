@@ -24,14 +24,14 @@ class InstituteViewTest(BaseTest):
         response = self.client.get(list_url)
         result = response.json()
         self.assertEqual(len(result), 4)
-        self.assertEqual(result[0]['data']['instituteCode'], 'ESP004')
-        self.assertEqual(result[0]['data']['name'], 'CRF genebank')
+        self.assertEqual(result[0]['instituteCode'], 'ESP004')
+        self.assertEqual(result[0]['name'], 'CRF genebank')
 
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
         result = self.client.get(detail_url)
         self.assertEqual(result.status_code, status.HTTP_200_OK)
-        self.assertEqual(result.json()['data']['instituteCode'], 'ESP004')
-        self.assertEqual(result.json()['data']['name'], 'CRF genebank')
+        self.assertEqual(result.json()['instituteCode'], 'ESP004')
+        self.assertEqual(result.json()['name'], 'CRF genebank')
 
     def test_view_readonly_filter_fields(self):
         list_url = reverse('institute-list')
@@ -39,29 +39,35 @@ class InstituteViewTest(BaseTest):
         response = self.client.get(list_url)
         result = response.json()
         self.assertEqual(len(result), 4)
-        self.assertEqual(result[0]['data']['instituteCode'], 'ESP004')
-        self.assertTrue('name' not in result[0]['data'])
+        self.assertEqual(result[0]['instituteCode'], 'ESP004')
+        self.assertTrue('name' not in result[0])
 
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
         result = self.client.get(detail_url)
         self.assertEqual(result.status_code, status.HTTP_200_OK)
-        self.assertEqual(result.json()['data']['instituteCode'], 'ESP004')
+        self.assertEqual(result.json()['instituteCode'], 'ESP004')
 
     def docs_are_equal(self, response_json, input_doc):
 
         doc = deepcopy(response_json)
-        doc['data'].pop('num_accessions', None)
-        doc['data'].pop('num_accessionsets', None)
-        doc['data'].pop('stats_by_taxa', None)
-        doc['data'].pop('stats_by_country', None)
+        doc.pop('num_accessions', None)
+        doc.pop('num_accessionsets', None)
+        doc.pop('stats_by_taxa', None)
+        doc.pop('stats_by_country', None)
         self.assertEqual(doc, input_doc)
 
     def test_create_delete(self):
 
         list_url = reverse('institute-list')
-        api_data = {'data': {'instituteCode': 'ESP005',
-                             'name': 'test genebank'},
-                    'metadata': {'group': 'admin', 'is_public': True}}
+        api_data = {'instituteCode': 'ESP005',
+                    'name': 'test genebank'}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.add_admin_credentials()
+        api_data = {'instituteCode': 'ESP005',
+                    'name': 'test genebank'}
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -69,28 +75,17 @@ class InstituteViewTest(BaseTest):
         self.docs_are_equal(response.json(), api_data)
 
         # Sending corrupt data should fail and return proper error
-        api_data = {'data': {'name': 'test genebank'},
-                    'metadata': {'group': 'admin', 'is_public': True}}
+        api_data = {'name': 'test genebank'}
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(),
                          {'detail': 'instituteCode mandatory'})
 
-        api_data = {'data': {'instituteCode': 'ESP005',
-                             'name': 'test genebank'},
-                    'metadata': {'group': 'admin'}}
-
-        response = self.client.post(list_url, data=api_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(),
-                         {'detail': 'is_public is mandatory in metadata'})
-
         # create existing institute sholud fail and return proper error
         with transaction.atomic():
-            api_data = {'data': {'instituteCode': 'ESP005',
-                                 'name': 'test genebank'},
-                        'metadata': {'group': 'admin', 'is_public': True}}
+            api_data = {'instituteCode': 'ESP005',
+                        'name': 'test genebank'}
             response = self.client.post(list_url, data=api_data, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(response.json(),
@@ -103,9 +98,14 @@ class InstituteViewTest(BaseTest):
 
     def test_update(self):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
-        api_data = {'data': {'instituteCode': 'ESP004',
-                             'name': 'test genebank'},
-                    'metadata': {'group': 'admin', 'is_public': False}}
+        api_data = {'instituteCode': 'ESP004',
+                    'name': 'test genebank'}
+        response = self.client.put(detail_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.add_admin_credentials()
+        api_data = {'instituteCode': 'ESP004',
+                    'name': 'test genebank22'}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.docs_are_equal(response.json(), api_data)

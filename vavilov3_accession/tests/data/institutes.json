@@ -1,42 +1,22 @@
-[
-    {"data": {
+[   
+    {
         "instituteCode": "ESP004",
         "name": "CRF genebank",
         "type": "Governmental"
-        },
-     "metadata": {
-        "group": "admin",
-        "is_public": true
-        }
     },
-    {"data": {
+    {
         "instituteCode": "ESP026",
         "name": "Comav Genebank",
         "type": "Governmental"
-        },
-     "metadata": {
-        "group": "admin",
-        "is_public": true
-        }
     },
-    {"data": {
+    {
         "instituteCode": "ESP058",
         "name": "La mayora Genebank",
         "type": "Governmental"
-        },
-     "metadata": {
-        "group": "admin",
-        "is_public": true
-        }
     },
-    {"data": {
+    {
         "instituteCode": "PeruExpedition",
         "name": "Expedicion a peru",
         "type": "Project"
-        },
-     "metadata": {
-        "group": "admin",
-        "is_public": true
-        }
     }
 ]

@@ -13,6 +13,8 @@ from vavilov3_accession.serializers.shared import DynamicFieldsSerializer
 from vavilov3_accession.entities.metadata import (validate_metadata_data,
                                                   MetadataValidationError)
 from vavilov3_accession.entities.passport import PassportValidationError
+from django.utils.datastructures import MultiValueDictKeyError
+from vavilov3_accession.permissions import _user_is_admin
 
 
 class AccessionSerializer(DynamicFieldsSerializer):
@@ -27,38 +29,58 @@ class AccessionSerializer(DynamicFieldsSerializer):
             validate_accession_data(data['data'])
         except AccessionValidationError as error:
             raise ValidationError({'detail': error})
-        try:
-            validate_metadata_data(data['metadata'])
-        except MetadataValidationError as error:
-            raise ValidationError({'detail': error})
+        except MultiValueDictKeyError as error:
+            if 'data' in str(error):
+                raise ValidationError({'detail': 'data key not present'})
+            raise ValidationError({'detail': str(error)})
+
+        # only validate data updatint, not creating
+        if (self.context['request'].method != 'POST'):
+            try:
+                validate_metadata_data(data['metadata'])
+            except MetadataValidationError as error:
+                raise ValidationError({'detail': error})
 
         return data
 
     def create(self, validated_data):
-        return create_accession_in_db(validated_data)
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user.groups.first()
+        return create_accession_in_db(validated_data, user)
 
     def update(self, instance, validated_data):
-        return update_accession_in_db(validated_data, instance)
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+        return update_accession_in_db(validated_data, instance, user)
 
 
-def create_accession_in_db(api_data):
+def create_accession_in_db(api_data, group, is_public=None):
+    # when we are creating
     try:
         accession_struct = AccessionStruct(api_data=api_data)
     except (AccessionValidationError, PassportValidationError) as error:
         print(error)
         raise
 
-    try:
-        group = Group.objects.get(name=accession_struct.metadata.group)
-    except Group.DoesNotExist:
-        msg = '{} does not exist in database'
-        raise ValidationError(msg.format(accession_struct.metadata.group))
+    if (accession_struct.metadata.group or accession_struct.metadata.is_public):
+        msg = 'can not set group or is public while creating the accession'
+        raise ValidationError(msg)
 
     try:
         institute = Institute.objects.get(code=accession_struct.institute_code)
     except Institute.DoesNotExist:
         msg = '{} does not exist in database'
         raise ValidationError(msg.format(accession_struct.institute_code))
+
+    # in the doc we must enter whole document
+    if is_public is None:
+        is_public = False
+    accession_struct.metadata.is_public = is_public
+    accession_struct.metadata.group = group.name
 
     with transaction.atomic():
         try:
@@ -67,9 +89,9 @@ def create_accession_in_db(api_data):
                 germplasm_number=accession_struct.germplasm_number,
                 conservation_status=accession_struct.conservation_status,
                 is_available=accession_struct.is_available,
-                group=group, is_public=accession_struct.metadata.is_public,
-                data=accession_struct.data
-                )
+                group=group,
+                is_public=is_public,
+                data=accession_struct.data)
         except IntegrityError:
             msg = 'This accession already exists in db: {} {}'
             raise ValidationError(
@@ -154,11 +176,17 @@ def add_passport_taxas(passport, taxonomy):
         taxon.passport_set.add(passport)
 
 
-def update_accession_in_db(validated_data, instance):
+def update_accession_in_db(validated_data, instance, user):
     accession_struct = AccessionStruct(api_data=validated_data)
     if (accession_struct.institute_code != instance.institute.code or
             accession_struct.germplasm_number != instance.germplasm_number):
         raise ValidationError('Can not change id in an update operation')
+
+    group_belong_to_user = bool(user.groups.filter(name=accession_struct.metadata.group).count())
+
+    if not group_belong_to_user and not _user_is_admin(user):
+        msg = 'Can not change ownership if group does not belong to you : {}'
+        raise ValidationError(msg.format(accession_struct.metadata.group))
 
     try:
         group = Group.objects.get(name=accession_struct.metadata.group)

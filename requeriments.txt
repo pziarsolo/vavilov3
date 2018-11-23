@@ -3,4 +3,5 @@ djangorestframework
 django-filter
 psycopg2
 iso3166
+djangorestframework_simplejwt
 django-crispy-forms

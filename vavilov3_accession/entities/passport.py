@@ -1,5 +1,5 @@
 from passports.passport import Passport
-from passports.validation import validate_passport_data
+from passports.validation import validate_passport_data as validate_passport
 
 from vavilov3_accession.entities.metadata import Metadata
 
@@ -35,4 +35,4 @@ class PassportStruct(Passport):
 #         if fields is None or 'germplasmNumber' in fields:
 #             self.germplasm_number = instance.number
 def validate_passport_data(data):
-    validate_passport_data(data)
+    validate_passport(data)

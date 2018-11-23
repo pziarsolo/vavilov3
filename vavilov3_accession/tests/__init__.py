@@ -9,6 +9,9 @@ from rest_framework import status
 
 from vavilov3_accession.models import Group
 from vavilov3_accession.conf.settings import ADMIN_GROUP
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class BaseTest(TestCase):
@@ -20,7 +23,7 @@ class BaseTest(TestCase):
     @staticmethod
     def get_token(username, password):
         client = Client()
-        response = client.post(reverse('vavilov2_auth:token_obtain_pair'),
+        response = client.post(reverse('token_obtain_pair'),
                                {'username': username, 'password': password})
         return response.data['access']
 
