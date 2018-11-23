@@ -29,16 +29,21 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
         field_name='passports__collection_source', lookup_expr='exact',
         distinct=True)
     taxon = filters.CharFilter(
+        label='Passport taxon',
         field_name='passports__taxonpassport__taxon__name',
         lookup_expr='iexact', distinct=True)
     taxon_contains = filters.CharFilter(
+        label='Passport taxon contains',
         field_name='passports__taxonpassport__taxon__name',
         lookup_expr='icontains', distinct=True)
     rank = filters.CharFilter(
+        label='Passport rank',
         field_name='passports__taxonpassport__taxon__rank__name',
         lookup_expr='exact', distinct=True)
 
-    numbers = filters.CharFilter(method='number_filter', distinct=True)
+    numbers = filters.CharFilter(
+        label='Any accession number in entity',
+        method='number_filter', distinct=True)
 
     class Meta:
         model = Accession
