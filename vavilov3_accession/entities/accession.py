@@ -5,11 +5,13 @@ from rest_framework.exceptions import ValidationError
 
 from vavilov3_accession.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
                                               IS_SAVE_DUPLICATE, IS_AVAILABLE,
-                                              CONSTATUS, PASSPORTS,
+                                              CONSTATUS, PASSPORTS, PUID,
                                               VALID_CONSERVATION_STATUSES)
 from vavilov3_accession.entities.metadata import Metadata
 from vavilov3_accession.entities.passport import (PassportStruct,
-                                                  validate_passport_data)
+                                                  validate_passport_data,
+                                                  PASSPORT_CSV_FIELD_CONFS,
+                                                  merge_passports)
 
 
 class AccessionValidationError(Exception):
@@ -81,6 +83,14 @@ class AccessionStruct():
     @passports.setter
     def passports(self, passports):
         self._passports = passports
+
+    @property
+    def puid(self):
+        return self._data.get(PUID, None)
+
+    @puid.setter
+    def puid(self, puid):
+        self._data[PUID] = puid
 
     @property
     def institute_code(self):
@@ -177,29 +187,56 @@ class AccessionStruct():
                 passports.append(passport_struct)
             self.passports = passports
 
-#     def to_list_representation(self, accession_fields, passport_fields):
-#         items = []
-#         for field in accession_fields:
-#             getter = ACCESSION_CSV_FIELD_CONFS.get(field)
-#             items.append(getter(self))
-#
-#         passports = self.passports
-#         if passports:
-#             if len(passports) == 1:
-#                 passport = passports[0]
-#             else:
-#                 passport = merge_passports(passports)
-#             passport_items = passport.to_list_representation(passport_fields)
-#         else:
-#             passport_items = [''] * len(passport_fields)
-#         items.extend(passport_items)
-#         return items
+    def to_list_representation(self, fields):
+        items = []
+        for field in fields[:5]:
+            getter = ACCESSION_CSV_FIELD_CONFS.get(field)['getter']
+            items.append(getter(self))
+
+        passports = self.passports
+        if passports:
+            if len(passports) == 1:
+                passport = passports[0]
+            else:
+                passport = merge_passports(passports)
+            passport_items = passport.to_list_representation(fields[5:])
+        else:
+            passport_items = [''] * len(fields[5:])
+        items.extend(passport_items)
+        return items
+
+    def populate_from_csvrow(self, row):
+        _passport = PassportStruct()
+
+        for field, value in row.items():
+            if not value:
+                continue
+            field_conf = ACCESSION_CSV_FIELD_CONFS.get(field)
+            if not field_conf:
+                continue
+
+            setter = field_conf['setter']
+            setter(self, value)
+
+            passport_field_conf = PASSPORT_CSV_FIELD_CONFS.get(field)
+            if not passport_field_conf:
+                continue
+
+            setter = passport_field_conf['setter']
+            setter(_passport, value)
+        self.passports = [_passport]
 
 
-ACCESSION_CSV_FIELD_CONFS = OrderedDict([
-    ('INSTCODE', lambda x: x.institute_code),
-    ('ACCENUMB', lambda x: x.germplasm_number),
-    # ('IS_SAVE_DUPLICATE', lambda x: x.is_save_duplicate),
-    ('CONSTATUS', lambda x: x.conservation_status),
-    ('IS_AVAILABLE', lambda x: x.is_available)
-])
+_ACCESSION_CSV_FIELD_CONFS = [
+    {'csv_field_name': 'PUID', 'getter': lambda x: x.puid,
+     'setter': lambda obj, val: setattr(obj, 'puid', val)},
+    {'csv_field_name': 'INSTCODE', 'getter': lambda x: x.institute_code,
+     'setter': lambda obj, val: setattr(obj, 'institute_code', val)},
+    {'csv_field_name': 'ACCENUMB', 'getter': lambda x: x.germplasm_number,
+     'setter': lambda obj, val: setattr(obj, 'germplasm_number', val)},
+    {'csv_field_name': 'CONSTATUS', 'getter': lambda x: x.conservation_status,
+     'setter': lambda obj, val: setattr(obj, 'conservation_status', val)},
+    {'csv_field_name': 'IS_AVAILABLE', 'getter': lambda x: x.is_available,
+     'setter': lambda obj, val: setattr(obj, 'is_available', val)},
+]
+ACCESSION_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _ACCESSION_CSV_FIELD_CONFS])

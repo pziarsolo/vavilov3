@@ -2,7 +2,7 @@ DATA_SOURCE = 'dataSource'
 INSTITUTE_CODE = 'instituteCode'
 IS_PUBLIC = 'is_public'
 GROUP = 'group'
-
+PUID = 'puid'
 INSTITUTE_NAME = 'name'
 INSTITUTE_TYPE = 'type'
 GERMPLASM_NUMBER = 'germplasmNumber'

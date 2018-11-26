@@ -15,9 +15,44 @@ from vavilov3_accession.entities.metadata import (validate_metadata_data,
 from vavilov3_accession.entities.passport import PassportValidationError
 from django.utils.datastructures import MultiValueDictKeyError
 from vavilov3_accession.permissions import _user_is_admin
+from rest_framework import serializers
+import csv
+from _collections import OrderedDict
+
+
+class AccessionListSerializer(serializers.ListSerializer):
+
+    def create(self, validated_data):
+        errors = []
+        instances = []
+        group = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            group = request.user.groups.first()
+
+        with transaction.atomic():
+            for item in validated_data:
+                try:
+                    instances.append(create_accession_in_db(item, group))
+                except ValidationError as error:
+                    errors.append(error)
+
+            if errors:
+                raise ValidationError({'detail': errors})
+            else:
+                return instances
+
+    def update(self, instance, validated_data):
+        instances = []
+        for instance, payload in zip(instance, validated_data):
+            instances.append(update_accession_in_db(payload, instance))
+        return instances
 
 
 class AccessionSerializer(DynamicFieldsSerializer):
+
+    class Meta:
+        list_serializer_class = AccessionListSerializer
 
     def to_representation(self, instance):
         accession_struct = AccessionStruct(instance=instance,
@@ -204,3 +239,15 @@ def update_accession_in_db(validated_data, instance, user):
 
     instance.save()
     return instance
+
+
+def serialize_accessions_from_csv(fhand):
+    reader = csv.DictReader(fhand, delimiter=',')
+    fields = reader.fieldnames
+    data = []
+    for row in reader:
+        row = OrderedDict(((field, row[field]) for field in fields))
+        accession_struct = AccessionStruct()
+        accession_struct.populate_from_csvrow(row)
+        data.append(accession_struct.get_api_document())
+    return data
