@@ -418,12 +418,12 @@ class AccessionPermissionsViewTest(BaseTest):
                     {'data': {'instituteCode': 'ESP004',
                               'germplasmNumber': 'BGE0007'},
                      'metadata': {}}]
-
+        self.assertEqual(len(self.client.get(list_url).json()), 3)
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
         self.assertEqual(len(response.json()), 2)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
+        self.assertEqual(len(self.client.get(list_url).json()), 5)
 
         # Should fail, can not add again same item
         api_data = [{'data': {'instituteCode': 'ESP004',
@@ -438,7 +438,7 @@ class AccessionPermissionsViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(len(response.json()['detail']), 2)
 
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
+        self.assertEqual(len(self.client.get(list_url).json()), 5)
 
 
 class AccessionCsvTests(BaseTest):
