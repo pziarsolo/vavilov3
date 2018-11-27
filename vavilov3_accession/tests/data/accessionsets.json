@@ -1,0 +1,40 @@
+[
+    {
+        "data": {
+            "instituteCode": "ESP004",
+            "accessionsetNumber": "NC001",
+            "accessions": [
+                {
+                    "germplasmNumber": "BGE0001",
+                    "instituteCode": "ESP004"
+                },
+                {
+                    "germplasmNumber": "BGE0002",
+                    "instituteCode": "ESP026"
+                }]
+        },
+        "metadata": {
+            "group": "admin",
+            "is_public": true
+        }
+    },
+    {
+        "data": {
+            "instituteCode": "ESP004",
+            "accessionsetNumber": "NC002", 
+            "accessions": [
+                {
+                    "germplasmNumber": "BGE0003",
+                    "instituteCode": "ESP058"
+                },
+                {
+                    "germplasmNumber": "BGE0004",
+                    "instituteCode": "ESP004"
+                }]
+        },
+        "metadata": {
+            "group": "admin",
+            "is_public": false
+        }
+    }
+]

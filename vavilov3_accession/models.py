@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.postgres.fields.jsonb import JSONField
 
 from django.contrib.auth.models import AbstractUser
+from django.db.models.aggregates import Count
 
 
 class User(AbstractUser):
@@ -41,7 +42,39 @@ class Institute(models.Model):
 
     @property
     def stats_by_country(self):
-        pass
+        return
+        stats = {}
+        accession_query = Country.objects.filter(
+            passport__accession__institute=self)
+        accession_stats = accession_query.annotate(
+            _num_accessions=Count('passport__country'))
+        for country in accession_stats:
+            if country._num_accessions:
+                stats[country.code] = {
+                    'code': country.code, 'name': country.name,
+                    'num_accessions': country._num_accessions,
+                    'num_accessionsets': 0}
+
+        accessionset_query = Country.objects.filter(
+            passport__accession__accessionset__institute=self).distinct('passport__accession__accessionset')
+
+        accessionset_stats = accessionset_query.annotate(
+            _num_accessionsets=Count('passport__country'))
+
+        for country in accessionset_stats:
+            if country._num_accessionsets:
+
+                if country.code in stats:
+                    stats[country.code]['num_accessionsets'] = country._num_accessionsets
+                else:
+                    stats[country.code] = {
+                        'code': country.code, 'name': country.name,
+                        'num_accessions': 0,
+                        'num_accessionsets': country._num_accessionsets}
+
+                print(country._num_accessionsets)
+
+        return stats.values()
 
     @property
     def stats_by_taxa(self):
@@ -110,15 +143,27 @@ class Accession(models.Model):
 
 class AccessionSet(models.Model):
     accessionset_id = models.AutoField(primary_key=True, editable=False)
-    owner = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     is_public = models.BooleanField()
     institute = models.ForeignKey(Institute, on_delete=models.CASCADE)
     accessionset_number = models.CharField(max_length=100, db_index=True,
                                            null=True, unique=True)
     accessions = models.ManyToManyField(Accession)
+    data = JSONField()
 
     class Meta:
         db_table = 'vavilov_accessionset'
+
+    @property
+    def genera(self):
+        genera = Taxon.objects.filter(passport__accession__accessionset=self,
+                                      rank__name='genus').distinct()
+        return genera.values_list('name', flat=True)
+
+    @property
+    def countries(self):
+        queryset = Country.objects.filter(passport__accession__accessionset=self).distinct()
+        return queryset.values_list('code', flat=True)
 
 
 class Rank(models.Model):

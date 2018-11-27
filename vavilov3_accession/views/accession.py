@@ -5,6 +5,7 @@ from rest_framework_csv import renderers
 from rest_framework.settings import api_settings
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from vavilov3_accession.models import Accession
 from vavilov3_accession.views.shared import (DynamicFieldsViewMixin,
@@ -17,7 +18,6 @@ from vavilov3_accession.filters.accession import AccessionFilter
 from vavilov3_accession.permissions import UserGroupObjectPermission
 from vavilov3_accession.entities.accession import AccessionStruct
 from vavilov3_accession.conf.settings import ACCESSION_CSV_FIELDS
-from rest_framework.exceptions import ValidationError
 
 
 class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
@@ -40,8 +40,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
     filter_class = AccessionFilter
     permission_classes = (UserGroupObjectPermission,)
     pagination_class = StandardResultsSetPagination
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
-    renderer_classes += [PaginatedAccessionCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionCSVRenderer]
 
     @action(methods=['post', 'put', 'patch'], detail=False)
     def bulk(self, request, *args, **kwargs):

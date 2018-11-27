@@ -48,11 +48,12 @@ class UserGroupObjectPermission(permissions.BasePermission):
         if (view.action in ('create', 'bulk')):
             if isinstance(request.user, AnonymousUser):
                 return False
+
             elif (not USERS_CAN_CREATE_ACCESSIONSETS and
                   view.basename == 'accessionset' and
-                  not request.user.is_staff):
+                  not _user_is_admin(request.user)):
                 return False
-        elif view.action == 'partial_update' and not request.user.is_staff:
+        elif view.action == 'partial_update' and not _user_is_admin(request.user):
             return False
         return True
 

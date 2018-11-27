@@ -1,21 +1,19 @@
-from copy import deepcopy
-
 from os.path import join, abspath, dirname
 
-from django.db import transaction
-
+from vavilov3_accession.tests import BaseTest
+from vavilov3_accession.io import initialize_db
+from vavilov3_accession.tests.io import load_institutes_from_file, \
+    load_accessions_from_file, load_accessionsets_from_file
 from rest_framework.reverse import reverse
 from rest_framework import status
-
-from vavilov3_accession.tests import BaseTest
-from vavilov3_accession.tests.io import (load_accessions_from_file,
-                                         load_institutes_from_file)
-from vavilov3_accession.io import initialize_db
+from django.db import transaction
+from vavilov3_accession.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER, \
+    ACCESSIONS
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
 
-class AccessionViewTest(BaseTest):
+class AccessionSetViewTest(BaseTest):
 
     def setUp(self):
         self.initialize()
@@ -24,28 +22,30 @@ class AccessionViewTest(BaseTest):
         load_institutes_from_file(institutes_fpath)
         accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
         load_accessions_from_file(accessions_fpath)
+        accessionsets_fpath = join(TEST_DATA_DIR, 'accessionsets.json')
+        load_accessionsets_from_file(accessionsets_fpath)
 
     def test_view_readonly(self):
         self.add_admin_credentials()
-        detail_url = reverse('accession-detail',
+        detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0001'})
+                                     'accessionset_number': 'NC001'})
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['data']['instituteCode'], 'ESP004')
-        self.assertTrue(response.json()['data']['passports'])
+        self.assertTrue(response.json()['data']['accessions'])
         self.assertTrue(response.json()['metadata'])
 
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(response.json()), 2)
 
     def test_view_readonly_with_fields(self):
         self.add_admin_credentials()
-        detail_url = reverse('accession-detail',
+        detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0001'})
+                                     'accessionset_number': 'NC001'})
         response = self.client.get(detail_url, data={'fields': 'institute'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), ['Passed fields are not allowed'])
@@ -58,24 +58,26 @@ class AccessionViewTest(BaseTest):
 
         response = self.client.get(
             detail_url,
-            data={'fields': 'instituteCode,passports,genera'})
+            data={'fields': 'instituteCode,accessions,genera'})
         self.assertEqual(response.json()['data']['instituteCode'], 'ESP004')
-        self.assertEqual(len(response.json()['data']['passports']), 1)
+        self.assertEqual(len(response.json()['data']['accessions']), 2)
         self.assertEqual(len(response.json()['data'].keys()), 3)
         self.assertEqual(response.json()['data']['genera'], ['Solanum'])
 
     def test_create_delete(self):
         self.add_admin_credentials()
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0005'},
+                             'accessionsetNumber': 'NC003'},
                     'metadata': {'group': 'admin', 'is_public': True}}
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0005'},
+                             'accessionsetNumber': 'NC003',
+                             ACCESSIONS: [{INSTITUTE_CODE: 'ESP004',
+                                           GERMPLASM_NUMBER: 'BGE0004'}]},
                     'metadata': {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -85,72 +87,58 @@ class AccessionViewTest(BaseTest):
 
         # bad payload data
         api_data = {'data': {'instituteCode': 'ESP004'},
-                    'metadata': {'group': 'admin', 'is_public': True}}
+                    'metadata': {}}
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        # already en db
         with transaction.atomic():
             api_data = {'data': {'instituteCode': 'ESP004',
-                                 'germplasmNumber': 'BGE0005'},
-                        'metadata': {'group': 'admin', 'is_public': True}}
+                                 'accessionsetNumber': 'NC003'},
+                        'metadata': {}}
 
             response = self.client.post(list_url, data=api_data, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        detail_url = reverse('accession-detail',
+        detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0005'})
+                                     'accessionset_number': 'NC003'})
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_update(self):
-        self.add_admin_credentials()
-        detail_url = reverse('accession-detail',
-                             kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0001'})
+        # cano not add accessionset if accessions not in db
         api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0001'},
-                    'metadata': {'group': 'admin', 'is_public': False}}
-        response = self.client.put(detail_url, data=api_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), api_data)
+                             'accessionsetNumber': 'NC004',
+                             ACCESSIONS: [{INSTITUTE_CODE: 'ESP004',
+                                           GERMPLASM_NUMBER: 'fake'}]},
+                    'metadata': {}}
 
-        # admin can change group
-        api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0001'},
-                    'metadata': {'group': 'userGroup', 'is_public': True}}
-        response = self.client.put(detail_url, data=api_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), api_data)
-
-        # Fail changing group if not exists
-        api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0001'},
-                    'metadata': {'group': 'rGroup', 'is_public': True}}
-        response = self.client.put(detail_url, data=api_data, format='json')
+        response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(),
+                         ['NC004: accession not found ESP004:fake'])
 
     def test_filter(self):
         self.add_admin_credentials()
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
 
         response = self.client.get(list_url,
-                                   data={'germplasm_number': 'BGE0004'})
+                                   data={'accessionset_number': 'NC001'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
 
         response = self.client.get(list_url,
                                    data={'is_public': False})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), 1)
 
         response = self.client.get(list_url,
                                    data={'is_public': True})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), 1)
 
         response = self.client.get(list_url,
-                                   data={'germplasm_number__icontains': '04'})
+                                   data={'accessionset_number__icontains': '01'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
 
@@ -177,7 +165,12 @@ class AccessionViewTest(BaseTest):
         response = self.client.get(list_url,
                                    data={'institute_code_icontains': 'ESP'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(response.json()), 2)
+
+        response = self.client.get(list_url,
+                                   data={'country': 'PER'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 2)
 
         response = self.client.get(list_url,
                                    data={'country': 'ESP'})
@@ -189,19 +182,14 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
 
-        response = self.client.get(list_url,
-                                   data={'numbers': "toma"})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 1)
-
     def test_bulk_create(self):
         self.add_admin_credentials()
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
+                              'accessionsetNumber': 'BGE0006'},
                      'metadata': {'group': 'userGroup', 'is_public': True}},
                     {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
+                              'accessionsetNumber': 'BGE0007'},
                      'metadata': {'group': 'userGroup', 'is_public': True}},
                     ]
         response = self.client.post(list_url + 'bulk/', data=api_data,
@@ -210,24 +198,24 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # correct data
         api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
+                              'accessionsetNumber': 'BGE0006'},
                      'metadata': {}},
                     {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
+                              'accessionsetNumber': 'BGE0007'},
                      'metadata': {}}]
 
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
         self.assertEqual(len(response.json()), 2)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
+        self.assertEqual(len(self.client.get(list_url).json()), 4)
 
         # Should fail, can not add again same item
         api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
+                              'accessionsetNumber': 'BGE0006'},
                      'metadata': {}},
                     {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
+                              'accessionsetNumber': 'BGE0007'},
                      'metadata': {}}]
 
         response = self.client.post(list_url + 'bulk/', data=api_data,
@@ -235,29 +223,29 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(len(response.json()['detail']), 2)
 
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
+        self.assertEqual(len(self.client.get(list_url).json()), 4)
 
     def test_bulk_create_csv(self):
         self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'accessions.csv')
-        list_url = reverse('accession-list')
+        fpath = join(TEST_DATA_DIR, 'accessionsets.csv')
+        list_url = reverse('accessionset-list')
         content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
+        self.assertEqual(len(self.client.get(list_url).json()), 2)
         response = self.client.post(list_url + 'bulk/',
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 10)
+        self.assertEqual(len(self.client.get(list_url).json()), 4)
 
         # adding again fails with error
         response = self.client.post(list_url + 'bulk/',
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 6)
+        self.assertEqual(len(response.json()['detail']), 2)
 
 
-class AccessionPermissionsViewTest(BaseTest):
+class AccessionSetPermissionViewTest(BaseTest):
 
     def setUp(self):
         self.initialize()
@@ -266,20 +254,22 @@ class AccessionPermissionsViewTest(BaseTest):
         load_institutes_from_file(institutes_fpath)
         accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
         load_accessions_from_file(accessions_fpath)
+        accessionsets_fpath = join(TEST_DATA_DIR, 'accessionsets.json')
+        load_accessionsets_from_file(accessionsets_fpath)
 
     def test_user_permission(self):
         # list public and mine
         self.add_user_credentials()
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 3)
+        self.assertEqual(len(response.json()), 1)
 
     def test_not_mine_but_public(self):
         self.add_user_credentials()
-        detail_url = reverse('accession-detail',
+        detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0001'})
+                                     'accessionset_number': 'NC001'})
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -291,91 +281,41 @@ class AccessionPermissionsViewTest(BaseTest):
 
     def test_not_mine_and_not_public(self):
         self.add_user_credentials()
-        detail_url = reverse('accession-detail',
-                             kwargs={'institute_code': 'ESP026',
-                                     'germplasm_number': 'BGE0002'})
-        response = self.client.get(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-        response = self.client.delete(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-        response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_mine_and_public(self):
-        self.add_user_credentials()
-        detail_url = reverse('accession-detail',
-                             kwargs={'institute_code': 'ESP058',
-                                     'germplasm_number': 'BGE0003'})
-        response = self.client.get(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        response = self.client.delete(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_mine_and_not_public(self):
-        self.add_user_credentials()
-        detail_url = reverse('accession-detail',
+        detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0004'})
+                                     'accessionset_number': 'NC002'})
         response = self.client.get(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.delete(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.client.put(detail_url, data={})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create(self):
+        # users can not create accessionset
         self.add_user_credentials()
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0005'},
-                    'metadata': {'group': 'admin', 'is_public': True}}
-
-        response = self.client.post(list_url, data=api_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0005'},
+                             'accessionsetNumber': 'BGE0005'},
                     'metadata': {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json()['metadata'],
-                         {'group': 'userGroup', 'is_public': False})
-
-    def test_user_can_not_change_group(self):
-        self.add_user_credentials()
-        detail_url = reverse('accession-detail',
-                             kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0004'})
-        response = self.client.get(detail_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        api_data = deepcopy(response.json())
-        api_data['metadata']['group'] = 'admin'
-
-        response = self.client.put(detail_url, data=api_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_anonymous_user(self):
         # not public
-        detail_url = reverse('accession-detail',
+        detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
-                                     'germplasm_number': 'BGE0004'})
+                                     'accessionset_number': 'NC002'})
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         # public
-        detail_url = reverse('accession-detail',
-                             kwargs={'institute_code': 'ESP058',
-                                     'germplasm_number': 'BGE0003'})
+        detail_url = reverse('accessionset-detail',
+                             kwargs={'institute_code': 'ESP004',
+                                     'accessionset_number': 'NC001'})
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -385,56 +325,13 @@ class AccessionPermissionsViewTest(BaseTest):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         response = self.client.get(list_url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 2)
-
-    def test_bulk_create(self):
-        self.add_user_credentials()
-        list_url = reverse('accession-list')
-        api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # correct data
-        api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
-                     'metadata': {}},
-                    {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
-                     'metadata': {}}]
-        self.assertEqual(len(self.client.get(list_url).json()), 3)
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
-
-        # Should fail, can not add again same item
-        api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
-                     'metadata': {}},
-                    {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
-                     'metadata': {}}]
-
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 2)
-
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
+        self.assertEqual(len(response.json()), 1)
 
 
-class AccessionCsvTests(BaseTest):
+class AccessionsetCsvTests(BaseTest):
 
     def setUp(self):
         self.initialize()
@@ -443,15 +340,16 @@ class AccessionCsvTests(BaseTest):
         load_institutes_from_file(institutes_fpath)
         accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
         load_accessions_from_file(accessions_fpath)
+        accessionsets_fpath = join(TEST_DATA_DIR, 'accessionsets.json')
+        load_accessionsets_from_file(accessionsets_fpath)
 
     def test_csv(self):
-        list_url = reverse('accession-list')
+        list_url = reverse('accessionset-list')
         response = self.client.get(list_url, data={'format': 'csv'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = response.content
-        a = b'PUID,INSTCODE,ACCENUMB,CONSTATUS,IS_AVAILABLE,COLLNUMB'
-        b = b'ESP004,BGE0001,is_active,True,,,Solanum,lycopersicum,,var. cera'
-        c = b'YACUCHO;province:HUAMANGA;municipality:Socos;site:Santa Rosa '
+        a = b'INSTCODE,ACCESETNUMB,ACCESSIONS\r\n'
+        b = b'ESP004,NC001,ESP004:BGE0001;ESP026:BGE0002\r\n'
 
-        for piece in (a, b, c):
+        for piece in (a, b):
             self.assertIn(piece, content)

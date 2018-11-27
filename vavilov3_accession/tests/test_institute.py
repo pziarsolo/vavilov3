@@ -6,8 +6,9 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 
 from vavilov3_accession.tests import BaseTest
-from vavilov3_accession.tests.io import load_institutes_from_file, \
-    load_accessions_from_file
+from vavilov3_accession.tests.io import (load_institutes_from_file,
+                                         load_accessions_from_file,
+                                         load_accessionsets_from_file)
 from copy import deepcopy
 from vavilov3_accession.io import initialize_db
 
@@ -135,8 +136,12 @@ class InstituteStatsTest(BaseTest):
         load_institutes_from_file(institutes_fpath)
         accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
         load_accessions_from_file(accessions_fpath)
+        accessionsets_fpath = join(TEST_DATA_DIR, 'accessionsets.json')
+        load_accessionsets_from_file(accessionsets_fpath)
 
     def tests_stats(self):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
-        response = self.client.get(detail_url)
-        print(response.json())
+        _ = self.client.get(detail_url)
+        print('No tests for institute stats')
+#         import pprint
+#         pprint.pprint(response.json())
