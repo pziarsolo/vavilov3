@@ -214,6 +214,7 @@ class AccessionSetViewTest(BaseTest):
             ['can not set group or is public while creating the accession',
              'can not set group or is public while creating the accession'])
         # correct data
+        self.assertEqual(len(self.client.get(list_url).json()), 2)
         api_data = [{'data': {'instituteCode': 'ESP004',
                               'accessionsetNumber': 'BGE0006'},
                      'metadata': {}},
@@ -260,6 +261,7 @@ class AccessionSetViewTest(BaseTest):
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        print(response.json())
         self.assertEqual(len(response.json()[DETAIL]), 2)
 
 

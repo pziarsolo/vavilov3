@@ -13,6 +13,7 @@ from vavilov3_accession.tests.data_io import (load_institutes_from_file,
                                               assert_error_is_equal)
 
 from vavilov3_accession.data_io import initialize_db
+from vavilov3_accession.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -148,12 +149,20 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(len(self.client.get(list_url).json()), 7)
 
         # adding again fails with error
-#         with transaction.atomic():
-#             response = self.client.post(bulk_url,
-#                                         data={'csv': open(fpath)},
-#                                         format=content_type)
-#             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#             self.assertEqual(len(response.json()[DETAIL]), 3)
+        response = self.client.post(bulk_url,
+                                    data={'csv': open(fpath)},
+                                    format=content_type)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(len(response.json()[DETAIL]), 3)
+
+        # adding again fails with error
+        fpath = join(TEST_DATA_DIR, 'institutes_with_one_repeated.csv')
+        response = self.client.post(bulk_url,
+                                    data={'csv': open(fpath)},
+                                    format=content_type)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(len(response.json()[DETAIL]), 1)
+        self.assertEqual(len(self.client.get(list_url).json()), 7)
 
 
 class InstituteStatsTest(BaseTest):
