@@ -8,10 +8,10 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 
 from vavilov3_accession.tests import BaseTest
-from vavilov3_accession.tests.io import (load_accessions_from_file,
-                                         load_institutes_from_file,
-                                         assert_error_is_equal)
-from vavilov3_accession.io import initialize_db
+from vavilov3_accession.tests.data_io import (load_accessions_from_file,
+                                              load_institutes_from_file,
+                                              assert_error_is_equal)
+from vavilov3_accession.data_io import initialize_db
 from vavilov3_accession.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))

@@ -2,12 +2,7 @@ from django.db import models
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.postgres.fields.jsonb import JSONField
 
-from django.contrib.auth.models import AbstractUser
 from django.db.models.aggregates import Count
-
-
-class User(AbstractUser):
-    pass
 
 
 class Group(DjangoGroup):

@@ -111,7 +111,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-AUTH_USER_MODEL = 'vavilov3_accession.User'
+# AUTH_USER_MODEL = 'vavilov3_accession.User'
 
 REST_AUTHENTICATION_CLASSES = [
     'rest_framework_simplejwt.authentication.JWTAuthentication']
