@@ -1,7 +1,7 @@
 import argparse
 
 from django.core.management.base import BaseCommand
-from vavilov3_accession.io import initialize_db
+from vavilov3_accession.data_io import initialize_db
 
 
 class Command(BaseCommand):
