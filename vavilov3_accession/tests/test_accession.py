@@ -13,6 +13,9 @@ from vavilov3_accession.tests.data_io import (load_accessions_from_file,
                                               assert_error_is_equal)
 from vavilov3_accession.data_io import initialize_db
 from vavilov3_accession.views import DETAIL
+from vavilov3_accession.entities.accession import AccessionStruct
+from collections import OrderedDict
+from vavilov3_accession.entities.tags import DATA_SOURCE
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -36,6 +39,8 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['data']['instituteCode'], 'ESP004')
         self.assertTrue(response.json()['data']['passports'])
+        self.assertEqual(response.json()['data']['passports'][0][DATA_SOURCE],
+                         {'code': 'CRF', 'kind': 'project'})
         self.assertTrue(response.json()['metadata'])
 
         list_url = reverse('accession-list')
@@ -259,14 +264,55 @@ class AccessionViewTest(BaseTest):
         content_type = 'multipart'
         self.assertEqual(len(self.client.get(list_url).json()), 4)
         response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
+                                    data={'csv': open(fpath),
+                                          'data_source_code': 'CRF',
+                                          'data_source_kind': 'project'},
                                     format=content_type)
+        data_source = response.json()[0]['data']['passports'][0][DATA_SOURCE]
+        self.assertEqual(data_source['code'], 'CRF')
+        self.assertEqual(data_source['kind'], 'project')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
         self.assertEqual(len(self.client.get(list_url).json()), 10)
 
+        detail_url = reverse('accession-detail',
+                             kwargs={'institute_code': 'ESP004',
+                                     'germplasm_number': 'BGE005836'})
+        response = self.client.get(detail_url)
+        accession = AccessionStruct(response.json())
+        del accession.passports[0].data['dataSource']['retrievalDate']
+        passport = {'version': '1.0',
+                    'taxonomy': {'genus': {'name': 'Zea'},
+                                 'species': {'name': 'mays', 'author': 'L.'},
+                                 'subspecies': {'name': 'mays'}},
+                    'otherNumbers': [{'instituteCode': 'ESP058',
+                                      'germplasmNumber': 'CIAM81001'}],
+                    'germplasmName': 'Millo do pais',
+                    'collectionDate': '19811031',
+                    'collectionSite': OrderedDict([('countryOfOriginCode', 'ESP'),
+                                                   ('state', 'Galicia'),
+                                                   ('province', 'La Coruña'),
+                                                   ('municipality', 'Fisterra'),
+                                                   ('site', 'Duio,San Martiño'),
+                                                   ('latitude', 42925.0),
+                                                   ('longitude', -9275.0),
+                                                   ('altitude', 101),
+                                                   ('coordUncertainty', '1840')]),
+                    'commonCropName': 'Maiz',
+                    'germplasmNumber': {'instituteCode': 'ESP004',
+                                        'germplasmNumber': 'BGE005836'},
+                    'collectionNumber': {'instituteCode': 'ESP058',
+                                         'fieldCollectionNumber': '81001'},
+                    'collectionSource': '20',
+                    'dataSource': {'code': 'CRF', 'kind': 'project'},
+                    'biologicalStatusOfAccessionCode': '300'}
+
+        self.assertEqual(accession.passports[0].data, passport)
         # adding again fails with error
         response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
+                                    data={'csv': open(fpath),
+                                          'data_source_code': 'CRF',
+                                          'data_source_kind': 'passport_collector'},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(len(response.json()[DETAIL]), 6)

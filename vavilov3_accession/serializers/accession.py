@@ -1,5 +1,5 @@
 import csv
-
+from datetime import datetime
 from collections import OrderedDict
 
 from django.db import transaction
@@ -164,15 +164,19 @@ def _create_passport_in_db(passport_struct, accession):
     data_source = passport_struct.data_source
     data_source_kind = passport_struct.data_source_kind
     if data_source is not None:
-        data_source = DataSource.objects.get_or_create(
-            code=data_source, kind=data_source_kind)[0]
+        try:
+            data_source = DataSource.objects.get_or_create(
+                code=data_source, kind=data_source_kind)[0]
+        except IntegrityError:
+            msg = '{} already in database, it must be defined with a different'
+            msg += 'kind'
+            raise ValidationError(msg.format(data_source))
     country = passport_struct.location.country
     if country:
         try:
             country = Country.objects.get(code=country)
         except(BaseException, Country.DoesNotExist):
-            print(country)
-            raise
+            raise ValidationError('{} country not in db')
 
     biological_status = passport_struct.bio_status
     collection_source = passport_struct.collection_source
@@ -265,7 +269,7 @@ def update_accession_in_db(validated_data, instance, user):
     return instance
 
 
-def serialize_accessions_from_csv(fhand):
+def serialize_accessions_from_csv(fhand, data_source_code, data_source_kind):
     reader = csv.DictReader(fhand, delimiter=',')
     fields = reader.fieldnames
     data = []
@@ -273,5 +277,8 @@ def serialize_accessions_from_csv(fhand):
         row = OrderedDict(((field, row[field]) for field in fields))
         accession_struct = AccessionStruct()
         accession_struct.populate_from_csvrow(row)
+        accession_struct.passports[0].data_source = data_source_code
+        accession_struct.passports[0].data_source_kind = data_source_kind
+        accession_struct.passports[0].retrieval_date = datetime.now().strftime('%Y-%m-%d')
         data.append(accession_struct.get_api_document())
     return data

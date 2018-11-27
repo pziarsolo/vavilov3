@@ -245,7 +245,7 @@ class AccessionSetViewTest(BaseTest):
 
     def test_bulk_create_csv(self):
         self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'accessionsets.csv')
+        fpath = join(TEST_DATA_DIR, 'accessionsets_extra.csv')
         list_url = reverse('accessionset-list')
         bulk_url = reverse('accessionset-bulk')
         content_type = 'multipart'
@@ -261,7 +261,6 @@ class AccessionSetViewTest(BaseTest):
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        print(response.json())
         self.assertEqual(len(response.json()[DETAIL]), 2)
 
 

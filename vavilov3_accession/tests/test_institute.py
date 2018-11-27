@@ -129,7 +129,7 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(len(response.json()), 4)
 
     def test_bulk_create(self):
-        fpath = join(TEST_DATA_DIR, 'institutes.csv')
+        fpath = join(TEST_DATA_DIR, 'institutes_extra.csv')
         bulk_url = reverse('institute-bulk')
         list_url = reverse('institute-list')
         content_type = 'multipart'
@@ -156,7 +156,7 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(len(response.json()[DETAIL]), 3)
 
         # adding again fails with error
-        fpath = join(TEST_DATA_DIR, 'institutes_with_one_repeated.csv')
+        fpath = join(TEST_DATA_DIR, 'institutes_extra_with_one_repeated.csv')
         response = self.client.post(bulk_url,
                                     data={'csv': open(fpath)},
                                     format=content_type)

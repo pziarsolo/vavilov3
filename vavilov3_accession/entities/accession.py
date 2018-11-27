@@ -214,18 +214,16 @@ class AccessionStruct():
             if not value:
                 continue
             field_conf = ACCESSION_CSV_FIELD_CONFS.get(field)
-            if not field_conf:
-                continue
-
-            setter = field_conf['setter']
-            setter(self, value)
-
             passport_field_conf = PASSPORT_CSV_FIELD_CONFS.get(field)
-            if not passport_field_conf:
+            if not field_conf and not passport_field_conf:
                 continue
 
-            setter = passport_field_conf['setter']
-            setter(_passport, value)
+            if field_conf:
+                setter = field_conf['setter']
+                setter(self, value)
+            if passport_field_conf:
+                passport_setter = passport_field_conf['setter']
+                passport_setter(_passport, value)
         self.passports = [_passport]
 
 

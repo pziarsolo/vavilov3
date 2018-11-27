@@ -50,10 +50,14 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
             try:
                 fhand = TextIOWrapper(request.FILES['csv'].file,
                                       encoding='utf-8')
+                data_source_code = request.data['data_source_code']
+                data_source_kind = request.data['data_source_kind']
             except KeyError:
-                raise ValidationError('could not found csv file')
+                msg = 'could not found csv file or data_store info'
+                raise ValidationError(msg)
 
-            data = serialize_accessions_from_csv(fhand)
+            data = serialize_accessions_from_csv(fhand, data_source_code,
+                                                 data_source_kind)
         else:
             data = request.data
 
