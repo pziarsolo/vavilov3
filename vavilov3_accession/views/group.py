@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from vavilov3_accession.models import Group
 from vavilov3_accession.serializers.auth import GroupSerializer
+from vavilov3_accession.views.shared import StandardResultsSetPagination
 
 User = get_user_model()
 
@@ -17,6 +18,7 @@ class GroupViewSet(ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = (IsAdminUser,)
+    pagination_class = StandardResultsSetPagination
 
     @action(methods=['post'], detail=True)
     def add_user(self, request, name=None):

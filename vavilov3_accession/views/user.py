@@ -10,6 +10,7 @@ from vavilov3_accession.serializers.auth import (UserSerializer,
 
 from vavilov3_accession.models import Group
 from vavilov3_accession.permissions import UserPermission
+from vavilov3_accession.views.shared import StandardResultsSetPagination
 
 User = get_user_model()
 
@@ -19,6 +20,7 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (UserPermission,)
+    pagination_class = StandardResultsSetPagination
 
     @action(methods=['post'], detail=True)
     def set_password(self, request, username=None):
