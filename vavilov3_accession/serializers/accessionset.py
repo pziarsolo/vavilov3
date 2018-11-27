@@ -18,6 +18,7 @@ from vavilov3_accession.entities.accessionset import (
     AccessionSetStruct, AccessionSetValidationError,
     validate_accessionset_data)
 from vavilov3_accession.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
+from vavilov3_accession.views import format_error_message
 
 
 class AccessionSetListSerializer(serializers.ListSerializer):
@@ -34,11 +35,11 @@ class AccessionSetListSerializer(serializers.ListSerializer):
             for item in validated_data:
                 try:
                     instances.append(create_accessionset_in_db(item, group))
-                except ValidationError as error:
+                except ValueError as error:
                     errors.append(error)
 
             if errors:
-                raise ValidationError({'detail': errors})
+                raise ValidationError(format_error_message(errors))
             else:
                 return instances
 
@@ -63,18 +64,19 @@ class AccessionSetSerializer(DynamicFieldsSerializer):
         try:
             validate_accessionset_data(data['data'])
         except AccessionSetValidationError as error:
-            raise ValidationError({'detail': error})
+            raise ValidationError(format_error_message(error))
         except MultiValueDictKeyError as error:
             if 'data' in str(error):
-                raise ValidationError({'detail': 'data key not present'})
-            raise ValidationError({'detail': str(error)})
+                msg = format_error_message('data key not present')
+                raise ValidationError(msg)
+            raise ValidationError(format_error_message(error))
 
         # only validate data updatint, not creating
         if (self.context['request'].method != 'POST'):
             try:
                 validate_metadata_data(data['metadata'])
             except MetadataValidationError as error:
-                raise ValidationError({'detail': error})
+                raise ValidationError(format_error_message(error))
 
         return data
 
@@ -83,7 +85,10 @@ class AccessionSetSerializer(DynamicFieldsSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user.groups.first()
-        return create_accessionset_in_db(validated_data, user)
+        try:
+            return create_accessionset_in_db(validated_data, user)
+        except ValueError as error:
+            raise ValidationError(format_error_message(error))
 
 #     def update(self, instance, validated_data):
 #         user = None
@@ -103,13 +108,13 @@ def create_accessionset_in_db(api_data, group, is_public=None):
 
     if (accessionset_struct.metadata.group or accessionset_struct.metadata.is_public):
         msg = 'can not set group or is public while creating the accession'
-        raise ValidationError(msg)
+        raise ValueError(msg)
 
     try:
         institute = Institute.objects.get(code=accessionset_struct.institute_code)
     except Institute.DoesNotExist:
         msg = '{} does not exist in database'
-        raise ValidationError(msg.format(accessionset_struct.institute_code))
+        raise ValueError(msg.format(accessionset_struct.institute_code))
 
     # in the doc we must enter whole document
     if is_public is None:
@@ -127,7 +132,7 @@ def create_accessionset_in_db(api_data, group, is_public=None):
                 data=accessionset_struct.data)
         except IntegrityError:
             msg = 'This accessionset already exists in db: {} {}'
-            raise ValidationError(
+            raise ValueError(
                 msg.format(institute.code,
                            accessionset_struct.accessionset_number))
         for accession in accessionset_struct.accessions:
@@ -140,7 +145,7 @@ def create_accessionset_in_db(api_data, group, is_public=None):
                 msg = msg.format(accessionset_struct.accessionset_number,
                                  accession[INSTITUTE_CODE],
                                  accession[GERMPLASM_NUMBER])
-                raise ValidationError(msg)
+                raise ValueError(msg)
             if accession_instance:
                 accessionset.accessions.add(accession_instance)
 

@@ -9,11 +9,51 @@ from vavilov3_accession.entities.institute import (InstituteStruct,
                                                    InstituteValidationError,
                                                    validate_institute_data)
 from vavilov3_accession.models import Institute
+from vavilov3_accession.views import format_error_message
+from django.db import transaction
+import csv
+from _collections import OrderedDict
+
+
+class InstituteListSerializer(serializers.ListSerializer):
+
+    def create(self, validated_data):
+        errors = []
+        instances = []
+
+        with transaction.atomic():
+            for item in validated_data:
+                try:
+                    instances.append(create_institute_in_db(item))
+                except ValueError as error:
+                    errors.append(error)
+
+            if errors:
+                raise ValidationError(format_error_message(errors))
+            else:
+                return instances
+
+    def update(self, instance, validated_data):
+        instances = []
+        errors = []
+        with transaction.atomic():
+            for instance, payload in zip(instance, validated_data):
+                try:
+                    instances.append(update_institute_in_db(payload, instance))
+                except ValueError as error:
+                    errors.append(error)
+            if errors:
+                raise ValidationError(format_error_message(errors))
+            else:
+                return instances
 
 
 class InstituteSerializer(DynamicFieldsSerializer):
     code = serializers.CharField()
     name = serializers.CharField()
+
+    class Meta:
+        list_serializer_class = InstituteListSerializer
 
     def to_representation(self, instance):
         institute_struct = InstituteStruct(instance=instance,
@@ -24,14 +64,20 @@ class InstituteSerializer(DynamicFieldsSerializer):
         try:
             validate_institute_data(data)
         except InstituteValidationError as error:
-            raise ValidationError({'detail': error})
+            raise ValidationError(format_error_message(error))
         return data
 
     def create(self, validated_data):
-        return create_institute_in_db(validated_data)
+        try:
+            return create_institute_in_db(validated_data)
+        except ValueError as error:
+            raise ValidationError(format_error_message(error))
 
     def update(self, instance, validated_data):
-        return update_institute_in_db(validated_data, instance)
+        try:
+            return update_institute_in_db(validated_data, instance)
+        except ValueError as error:
+            raise ValidationError(format_error_message(error))
 
 
 def create_institute_in_db(api_data):
@@ -49,7 +95,7 @@ def create_institute_in_db(api_data):
     except IntegrityError:
         msg = '{} already exist in db'
         msg = msg .format(institute_struct.institute_code)
-        raise ValidationError({'detail': msg})
+        raise ValueError(msg)
     return institute
 
 
@@ -57,13 +103,25 @@ def update_institute_in_db(api_data, instance):
     try:
         institute_struct = InstituteStruct(api_data)
     except InstituteValidationError as error:
-        raise ValidationError(error)
+        raise ValueError(error)
 
     if institute_struct.institute_code != instance.code:
-        raise ValidationError('Can not change id in an update operation')
+        raise ValueError('Can not change id in an update operation')
 
     instance.name = institute_struct.institute_name
     instance.data = institute_struct.data
     instance.save()
 
     return instance
+
+
+def serialize_institute_from_csv(fhand):
+    reader = csv.DictReader(fhand, delimiter=',')
+    fields = reader.fieldnames
+    data = []
+    for row in reader:
+        row = OrderedDict(((field, row[field]) for field in fields))
+        institute_struct = InstituteStruct()
+        institute_struct.populate_from_csvrow(row)
+        data.append(institute_struct.get_api_document())
+    return data

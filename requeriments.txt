@@ -6,3 +6,4 @@ iso3166
 djangorestframework_simplejwt
 djangorestframework-csv
 django-crispy-forms
+drf-yasg

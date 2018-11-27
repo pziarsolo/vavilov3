@@ -1,4 +1,5 @@
 from vavilov3_accession.entities.tags import INSTITUTE_CODE, INSTITUTE_NAME
+from collections import OrderedDict
 
 
 class InstituteValidationError(Exception):
@@ -61,3 +62,27 @@ class InstituteStruct():
             self._data['stats_by_country'] = instance.stats_by_country
         if fields is None or 'stats_by_taxa' in fields:
             self._data['stats_by_taxa'] = instance.stats_by_taxa
+
+    def populate_from_csvrow(self, row):
+        for field, value in row.items():
+            if not value:
+                continue
+            field_conf = INSTITUTE_CSV_FIELD_CONFS.get(field)
+            if not field_conf:
+                continue
+
+            setter = field_conf['setter']
+            setter(self, value)
+
+
+_INSTITUTE_CSV_FIELD_CONFS = [
+    {'csv_field_name': 'INSTCODE', 'getter': lambda x: x.institute_code,
+     'setter': lambda obj, val: setattr(obj, 'institute_code', val)},
+    {'csv_field_name': 'FULL_NAME', 'getter': lambda x: x.institute_name,
+     'setter': lambda obj, val: setattr(obj, 'institute_name', val)},
+    {'csv_field_name': 'TYPE', 'getter': lambda x: x.institute_type,
+     'setter': lambda obj, val: setattr(obj, 'institute_type', val)},
+
+]
+INSTITUTE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f)
+                                         for f in _INSTITUTE_CSV_FIELD_CONFS])

@@ -1,14 +1,20 @@
 from os.path import join, abspath, dirname
 
-from vavilov3_accession.tests import BaseTest
-from vavilov3_accession.io import initialize_db
-from vavilov3_accession.tests.io import load_institutes_from_file, \
-    load_accessions_from_file, load_accessionsets_from_file
+from django.db import transaction
+
 from rest_framework.reverse import reverse
 from rest_framework import status
-from django.db import transaction
-from vavilov3_accession.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER, \
-    ACCESSIONS
+
+from vavilov3_accession.tests import BaseTest
+from vavilov3_accession.io import initialize_db
+from vavilov3_accession.tests.io import (load_institutes_from_file,
+                                         load_accessions_from_file,
+                                         load_accessionsets_from_file,
+                                         assert_error_is_equal)
+
+from vavilov3_accession.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
+                                              ACCESSIONS)
+from vavilov3_accession.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -48,7 +54,8 @@ class AccessionSetViewTest(BaseTest):
                                      'accessionset_number': 'NC001'})
         response = self.client.get(detail_url, data={'fields': 'institute'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), ['Passed fields are not allowed'])
+        assert_error_is_equal(response.json(),
+                              ['Passed fields are not allowed'])
 
         response = self.client.get(detail_url,
                                    data={'fields': 'instituteCode'})
@@ -73,7 +80,9 @@ class AccessionSetViewTest(BaseTest):
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
+        assert_error_is_equal(
+            response.json(),
+            ['can not set group or is public while creating the accession'])
         api_data = {'data': {'instituteCode': 'ESP004',
                              'accessionsetNumber': 'NC003',
                              ACCESSIONS: [{INSTITUTE_CODE: 'ESP004',
@@ -90,6 +99,7 @@ class AccessionSetViewTest(BaseTest):
                     'metadata': {}}
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(), ['accessionsetNumber mandatory'])
 
         # already en db
         with transaction.atomic():
@@ -99,6 +109,9 @@ class AccessionSetViewTest(BaseTest):
 
             response = self.client.post(list_url, data=api_data, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            assert_error_is_equal(
+                response.json(),
+                ['This accessionset already exists in db: ESP004 NC003'])
 
         detail_url = reverse('accessionset-detail',
                              kwargs={'institute_code': 'ESP004',
@@ -115,8 +128,8 @@ class AccessionSetViewTest(BaseTest):
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(),
-                         ['NC004: accession not found ESP004:fake'])
+        assert_error_is_equal(response.json(),
+                              ['NC004: accession not found ESP004:fake'])
 
     def test_filter(self):
         self.add_admin_credentials()
@@ -196,6 +209,10 @@ class AccessionSetViewTest(BaseTest):
                                     format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(
+            response.json(),
+            ['can not set group or is public while creating the accession',
+             'can not set group or is public while creating the accession'])
         # correct data
         api_data = [{'data': {'instituteCode': 'ESP004',
                               'accessionsetNumber': 'BGE0006'},
@@ -221,7 +238,7 @@ class AccessionSetViewTest(BaseTest):
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 2)
+        self.assertEqual(len(response.json()[DETAIL]), 2)
 
         self.assertEqual(len(self.client.get(list_url).json()), 4)
 
@@ -229,20 +246,21 @@ class AccessionSetViewTest(BaseTest):
         self.add_admin_credentials()
         fpath = join(TEST_DATA_DIR, 'accessionsets.csv')
         list_url = reverse('accessionset-list')
+        bulk_url = reverse('accessionset-bulk')
         content_type = 'multipart'
         self.assertEqual(len(self.client.get(list_url).json()), 2)
-        response = self.client.post(list_url + 'bulk/',
+        response = self.client.post(bulk_url,
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(len(self.client.get(list_url).json()), 4)
 
         # adding again fails with error
-        response = self.client.post(list_url + 'bulk/',
+        response = self.client.post(bulk_url,
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 2)
+        self.assertEqual(len(response.json()[DETAIL]), 2)
 
 
 class AccessionSetPermissionViewTest(BaseTest):
@@ -277,7 +295,8 @@ class AccessionSetPermissionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code,
+                         status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_not_mine_and_not_public(self):
         self.add_user_credentials()
@@ -291,7 +310,8 @@ class AccessionSetPermissionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code,
+                         status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_create(self):
         # users can not create accessionset
@@ -320,7 +340,8 @@ class AccessionSetPermissionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code,
+                         status.HTTP_405_METHOD_NOT_ALLOWED)
 
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

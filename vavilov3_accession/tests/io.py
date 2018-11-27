@@ -4,6 +4,7 @@ from vavilov3_accession.serializers.institute import create_institute_in_db
 from vavilov3_accession.serializers.accession import create_accession_in_db
 from vavilov3_accession.models import Group
 from vavilov3_accession.serializers.accessionset import create_accessionset_in_db
+from vavilov3_accession.views import DETAIL
 
 
 def _load_items_from_file(fpath, kind):
@@ -39,3 +40,7 @@ def load_accessionsets_from_file(fpath):
         del item['metadata']['group']
         is_public = item['metadata'].pop('is_public')
         create_accessionset_in_db(item, group, is_public)
+
+
+def assert_error_is_equal(error, error_message):
+    assert error[DETAIL] == error_message

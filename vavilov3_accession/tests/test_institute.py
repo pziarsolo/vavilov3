@@ -8,9 +8,11 @@ from rest_framework import status
 from vavilov3_accession.tests import BaseTest
 from vavilov3_accession.tests.io import (load_institutes_from_file,
                                          load_accessions_from_file,
-                                         load_accessionsets_from_file)
+                                         load_accessionsets_from_file,
+                                         assert_error_is_equal)
 from copy import deepcopy
 from vavilov3_accession.io import initialize_db
+from vavilov3_accession.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -82,8 +84,7 @@ class InstituteViewTest(BaseTest):
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(),
-                         {'detail': 'instituteCode mandatory'})
+        assert_error_is_equal(response.json(), ['instituteCode mandatory'])
 
         # create existing institute sholud fail and return proper error
         with transaction.atomic():
@@ -91,8 +92,8 @@ class InstituteViewTest(BaseTest):
                         'name': 'test genebank'}
             response = self.client.post(list_url, data=api_data, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(response.json(),
-                             {'detail': 'ESP005 already exist in db'})
+            assert_error_is_equal(response.json(),
+                                  ['ESP005 already exist in db'])
 
         # test delete
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP005'})
@@ -125,6 +126,34 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(len(response.json()), 1)
         response = self.client.get(list_url, data={'code__icontain': 'esp'})
         self.assertEqual(len(response.json()), 4)
+
+    def test_bulk_create(self):
+        fpath = join(TEST_DATA_DIR, 'institutes.csv')
+        bulk_url = reverse('institute-bulk')
+        list_url = reverse('institute-list')
+        content_type = 'multipart'
+        self.assertEqual(len(self.client.get(list_url).json()), 4)
+
+        response = self.client.post(bulk_url,
+                                    data={'csv': open(fpath)},
+                                    format=content_type)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(len(self.client.get(list_url).json()), 4)
+
+        self.add_admin_credentials()
+        response = self.client.post(bulk_url,
+                                    data={'csv': open(fpath)},
+                                    format=content_type)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(self.client.get(list_url).json()), 7)
+
+        # adding again fails with error
+        with transaction.atomic():
+            response = self.client.post(bulk_url,
+                                        data={'csv': open(fpath)},
+                                        format=content_type)
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(len(response.json()[DETAIL]), 3)
 
 
 class InstituteStatsTest(BaseTest):

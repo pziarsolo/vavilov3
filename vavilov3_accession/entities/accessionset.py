@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from vavilov3_accession.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
                                               ACCESSIONS, ACCESSIONSET_NUMBER)
 from vavilov3_accession.entities.metadata import Metadata
+from vavilov3_accession.views import format_error_message
 
 
 class AccessionSetValidationError(Exception):
@@ -117,7 +118,8 @@ class AccessionSetStruct():
                            'genera', 'countries']
         if (fields is not None and
                 len(set(fields).intersection(accepted_fields)) == 0):
-            raise ValidationError('Passed fields are not allowed')
+            msg = format_error_message('Passed fields are not allowed')
+            raise ValidationError(msg)
 
         if fields is None or INSTITUTE_CODE in fields:
             self.institute_code = instance.institute.code

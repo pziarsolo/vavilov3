@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'vavilov3_accession']
+    'vavilov3_accession',
+    'drf_yasg']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -9,8 +9,10 @@ from rest_framework import status
 
 from vavilov3_accession.tests import BaseTest
 from vavilov3_accession.tests.io import (load_accessions_from_file,
-                                         load_institutes_from_file)
+                                         load_institutes_from_file,
+                                         assert_error_is_equal)
 from vavilov3_accession.io import initialize_db
+from vavilov3_accession.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -48,7 +50,8 @@ class AccessionViewTest(BaseTest):
                                      'germplasm_number': 'BGE0001'})
         response = self.client.get(detail_url, data={'fields': 'institute'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), ['Passed fields are not allowed'])
+        assert_error_is_equal(response.json(),
+                              ['Passed fields are not allowed'])
 
         response = self.client.get(detail_url,
                                    data={'fields': 'instituteCode'})
@@ -73,7 +76,9 @@ class AccessionViewTest(BaseTest):
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
+        assert_error_is_equal(
+            response.json(),
+            ['can not set group or is public while creating the accession'])
         api_data = {'data': {'instituteCode': 'ESP004',
                              'germplasmNumber': 'BGE0005'},
                     'metadata': {}}
@@ -88,6 +93,7 @@ class AccessionViewTest(BaseTest):
                     'metadata': {'group': 'admin', 'is_public': True}}
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(), ['germplasmNumber mandatory'])
 
         with transaction.atomic():
             api_data = {'data': {'instituteCode': 'ESP004',
@@ -96,6 +102,9 @@ class AccessionViewTest(BaseTest):
 
             response = self.client.post(list_url, data=api_data, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            assert_error_is_equal(
+                response.json(),
+                ['can not set group or is public while creating the accession'])
 
         detail_url = reverse('accession-detail',
                              kwargs={'institute_code': 'ESP004',
@@ -129,6 +138,8 @@ class AccessionViewTest(BaseTest):
                     'metadata': {'group': 'rGroup', 'is_public': True}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(),
+                              ['Provided group does not exist in db: rGroup'])
 
     def test_filter(self):
         self.add_admin_credentials()
@@ -208,6 +219,10 @@ class AccessionViewTest(BaseTest):
                                     format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(
+            response.json(),
+            ['can not set group or is public while creating the accession',
+             'can not set group or is public while creating the accession'])
         # correct data
         api_data = [{'data': {'instituteCode': 'ESP004',
                               'germplasmNumber': 'BGE0006'},
@@ -233,7 +248,7 @@ class AccessionViewTest(BaseTest):
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 2)
+        self.assertEqual(len(response.json()[DETAIL]), 2)
 
         self.assertEqual(len(self.client.get(list_url).json()), 6)
 
@@ -254,7 +269,7 @@ class AccessionViewTest(BaseTest):
                                     data={'csv': open(fpath)},
                                     format=content_type)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 6)
+        self.assertEqual(len(response.json()[DETAIL]), 6)
 
 
 class AccessionPermissionsViewTest(BaseTest):
@@ -327,7 +342,7 @@ class AccessionPermissionsViewTest(BaseTest):
 
         response = self.client.put(detail_url, data={})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
+        assert_error_is_equal(response.json(), ['Data key not present'])
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -341,6 +356,9 @@ class AccessionPermissionsViewTest(BaseTest):
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        assert_error_is_equal(
+            response.json(),
+            ['can not set group or is public while creating the accession'])
         api_data = {'data': {'instituteCode': 'ESP004',
                              'germplasmNumber': 'BGE0005'},
                     'metadata': {}}
@@ -363,6 +381,10 @@ class AccessionPermissionsViewTest(BaseTest):
 
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        assert_error_is_equal(
+            response.json(),
+            ['Can not change ownership if group does not belong to you : admin'])
 
     def test_anonymous_user(self):
         # not public
@@ -429,7 +451,7 @@ class AccessionPermissionsViewTest(BaseTest):
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()['detail']), 2)
+        self.assertEqual(len(response.json()[DETAIL]), 2)
 
         self.assertEqual(len(self.client.get(list_url).json()), 5)
 

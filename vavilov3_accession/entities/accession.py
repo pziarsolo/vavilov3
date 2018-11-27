@@ -12,6 +12,7 @@ from vavilov3_accession.entities.passport import (PassportStruct,
                                                   validate_passport_data,
                                                   PASSPORT_CSV_FIELD_CONFS,
                                                   merge_passports)
+from vavilov3_accession.views import format_error_message
 
 
 class AccessionValidationError(Exception):
@@ -160,7 +161,8 @@ class AccessionStruct():
                            CONSTATUS, PASSPORTS, 'genera', 'countries']
         if (fields is not None and
                 len(set(fields).intersection(accepted_fields)) == 0):
-            raise ValidationError('Passed fields are not allowed')
+            msg = format_error_message('Passed fields are not allowed')
+            raise ValidationError(msg)
 
         if fields is None or INSTITUTE_CODE in fields:
             self.institute_code = instance.institute.code

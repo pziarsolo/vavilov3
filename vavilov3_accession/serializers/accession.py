@@ -1,8 +1,14 @@
+import csv
+
+from collections import OrderedDict
+
 from django.db import transaction
 from django.db.utils import IntegrityError
+from django.utils.datastructures import MultiValueDictKeyError
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import empty
+from rest_framework import serializers
 
 from vavilov3_accession.models import (Group, Accession, Institute, DataSource,
                                        Country, Passport, Rank, Taxon)
@@ -13,11 +19,8 @@ from vavilov3_accession.serializers.shared import DynamicFieldsSerializer
 from vavilov3_accession.entities.metadata import (validate_metadata_data,
                                                   MetadataValidationError)
 from vavilov3_accession.entities.passport import PassportValidationError
-from django.utils.datastructures import MultiValueDictKeyError
 from vavilov3_accession.permissions import _user_is_admin
-from rest_framework import serializers
-import csv
-from _collections import OrderedDict
+from vavilov3_accession.views import format_error_message
 
 
 class AccessionListSerializer(serializers.ListSerializer):
@@ -34,19 +37,28 @@ class AccessionListSerializer(serializers.ListSerializer):
             for item in validated_data:
                 try:
                     instances.append(create_accession_in_db(item, group))
-                except ValidationError as error:
+                except ValueError as error:
                     errors.append(error)
 
             if errors:
-                raise ValidationError({'detail': errors})
+                raise ValidationError(format_error_message(errors))
             else:
                 return instances
 
     def update(self, instance, validated_data):
         instances = []
-        for instance, payload in zip(instance, validated_data):
-            instances.append(update_accession_in_db(payload, instance))
-        return instances
+        errors = []
+        with transaction.atomic():
+            for instance, payload in zip(instance, validated_data):
+                try:
+                    instances.append(update_accession_in_db(payload, instance))
+                except ValueError as error:
+                    errors.append(error)
+
+            if errors:
+                raise ValidationError(format_error_message(errors))
+            else:
+                return instances
 
 
 class AccessionSerializer(DynamicFieldsSerializer):
@@ -63,18 +75,19 @@ class AccessionSerializer(DynamicFieldsSerializer):
         try:
             validate_accession_data(data['data'])
         except AccessionValidationError as error:
-            raise ValidationError({'detail': error})
+            raise ValidationError(format_error_message(error))
         except MultiValueDictKeyError as error:
             if 'data' in str(error):
-                raise ValidationError({'detail': 'data key not present'})
-            raise ValidationError({'detail': str(error)})
+                msg = format_error_message('Data key not present')
+                raise ValidationError(msg)
+            raise ValidationError(format_error_message(error))
 
         # only validate data updatint, not creating
         if (self.context['request'].method != 'POST'):
             try:
                 validate_metadata_data(data['metadata'])
             except MetadataValidationError as error:
-                raise ValidationError({'detail': error})
+                raise ValidationError(format_error_message(error))
 
         return data
 
@@ -83,7 +96,10 @@ class AccessionSerializer(DynamicFieldsSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user.groups.first()
-        return create_accession_in_db(validated_data, user)
+        try:
+            return create_accession_in_db(validated_data, user)
+        except ValueError as error:
+            raise ValidationError(format_error_message(error))
 
     def update(self, instance, validated_data):
         user = None
@@ -103,13 +119,14 @@ def create_accession_in_db(api_data, group, is_public=None):
 
     if (accession_struct.metadata.group or accession_struct.metadata.is_public):
         msg = 'can not set group or is public while creating the accession'
-        raise ValidationError(msg)
+        raise ValueError(msg)
 
     try:
         institute = Institute.objects.get(code=accession_struct.institute_code)
     except Institute.DoesNotExist:
         msg = '{} does not exist in database'
-        raise ValidationError(msg.format(accession_struct.institute_code))
+        msg = msg.format(accession_struct.institute_code)
+        raise ValueError(msg)
 
     # in the doc we must enter whole document
     if is_public is None:
@@ -129,8 +146,9 @@ def create_accession_in_db(api_data, group, is_public=None):
                 data=accession_struct.data)
         except IntegrityError:
             msg = 'This accession already exists in db: {} {}'
-            raise ValidationError(
-                msg.format(institute.code, accession_struct.germplasm_number))
+            msg = msg.format(institute.code,
+                             accession_struct.germplasm_number)
+            raise ValueError(msg)
 
         for passport_struct in accession_struct.passports:
             _create_passport_in_db(passport_struct, accession)
@@ -171,7 +189,10 @@ def _create_passport_in_db(passport_struct, accession):
             collecting_institute = Institute.objects.get(
                 code=collecting_institute)
         except Institute.DoesNotExist:
-            raise ValueError('{}: {} does not exist in our database'.format())
+            msg = '{}: {} does not exist in our database'.format(
+                passport_struct.germplasm_number,
+                passport_struct.institute_code)
+            raise ValueError(msg)
 
     collection_number = passport_struct.collection.number
     collection_field_number = passport_struct.collection.field_number
@@ -215,19 +236,22 @@ def update_accession_in_db(validated_data, instance, user):
     accession_struct = AccessionStruct(api_data=validated_data)
     if (accession_struct.institute_code != instance.institute.code or
             accession_struct.germplasm_number != instance.germplasm_number):
-        raise ValidationError('Can not change id in an update operation')
+        msg = 'Can not change id in an update operation'
+        raise ValidationError(format_error_message(msg))
 
     group_belong_to_user = bool(user.groups.filter(name=accession_struct.metadata.group).count())
 
     if not group_belong_to_user and not _user_is_admin(user):
         msg = 'Can not change ownership if group does not belong to you : {}'
-        raise ValidationError(msg.format(accession_struct.metadata.group))
+        msg = msg.format(accession_struct.metadata.group)
+        raise ValidationError(format_error_message(msg))
 
     try:
         group = Group.objects.get(name=accession_struct.metadata.group)
     except Group.DoesNotExist:
         msg = 'Provided group does not exist in db: {}'
-        raise ValidationError(msg.format(accession_struct.metadata.group))
+        msg = msg.format(accession_struct.metadata.group)
+        raise ValidationError(format_error_message(msg))
 
     instance.is_available = accession_struct.is_available
     instance.conservation_status = accession_struct.conservation_status
