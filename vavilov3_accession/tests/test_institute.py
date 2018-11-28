@@ -41,7 +41,7 @@ class InstituteViewTest(BaseTest):
 
     def test_view_readonly_filter_fields(self):
         list_url = reverse('institute-list')
-        list_url = '{}?{}={}'.format(list_url, 'fields', 'code')
+        list_url = '{}?{}={}'.format(list_url, 'fields', 'instituteCode')
         response = self.client.get(list_url)
         result = response.json()
         self.assertEqual(len(result), 4)

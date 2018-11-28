@@ -50,7 +50,7 @@ class InstituteStruct():
         self._data[INSTITUTE_NAME] = name
 
     def _populate_with_instance(self, instance, fields):
-        if fields is None or 'code' in fields:
+        if fields is None or 'instituteCode' in fields:
             self.institute_code = instance.code
         if fields is None or 'name' in fields:
             self.institute_name = instance.name

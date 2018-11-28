@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 from corsheaders.defaults import default_headers
+from _datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -132,3 +133,8 @@ REST_FRAMEWORK = {
         ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': REST_AUTHENTICATION_CLASSES
 }
+SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(days=1)
+     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=20)
+}
+
