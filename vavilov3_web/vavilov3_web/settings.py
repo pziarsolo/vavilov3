@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,6 +31,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'corsheaders',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -112,6 +115,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # AUTH_USER_MODEL = 'vavilov3_accession.User'
+CORS_ORIGIN_WHITELIST = ('localhost:4200',)
+CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
+CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
+CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
 
 REST_AUTHENTICATION_CLASSES = [
     'rest_framework_simplejwt.authentication.JWTAuthentication']
