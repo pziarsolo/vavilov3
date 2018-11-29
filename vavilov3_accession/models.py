@@ -179,6 +179,16 @@ class Taxon(models.Model):
         db_table = 'vavilov_taxon'
         unique_together = ('name', 'rank')
 
+    @property
+    def num_accessions(self):
+        query = Accession.objects.filter(passports__taxa=self)
+        return query.distinct().count()
+
+    @property
+    def num_accessionsets(self):
+        query = AccessionSet.objects.filter(accessions__passports__taxa=self)
+        return query.distinct().count()
+
 
 class Passport(models.Model):
     passport_id = models.AutoField(primary_key=True, editable=False)

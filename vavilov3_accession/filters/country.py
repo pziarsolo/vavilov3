@@ -8,8 +8,10 @@ from django.db.models.aggregates import Count
 class CountryFilter(TermFilterMixin, filters.FilterSet):
     code = filters.CharFilter(lookup_expr='iexact')
     name = filters.CharFilter(lookup_expr='icontains')
-    term = filters.CharFilter(method='term_filter')
+    term = filters.CharFilter(method='term_filter',
+                              label='Term')
     only_with_accessions = filters.BooleanFilter(
+        label='only_with_accessions',
         method='only_with_accessions_filter')
 
     class Meta:

@@ -12,6 +12,7 @@ from vavilov3_accession.views.user import UserViewSet
 from vavilov3_accession.views.group import GroupViewSet
 from vavilov3_accession.views.auth import CRFTokenObtainPairView
 from vavilov3_accession.views.accessionset import AccessionSetViewSet
+from vavilov3_accession.views.taxon import TaxonViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -19,6 +20,7 @@ router.register(r'groups', GroupViewSet)
 router.register(r'institutes', InstituteViewSet)
 router.register(r'countries', CountryViewSet)
 router.register(r'data_sources', DataSourceViewSet)
+router.register(r'taxa', TaxonViewSet, base_name='taxon')
 router.register(r'accessions', AccessionViewSet)
 router.register(r'accessionsets', AccessionSetViewSet)
 

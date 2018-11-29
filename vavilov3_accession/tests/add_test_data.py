@@ -21,6 +21,8 @@ def main():
                              headers=headers,
                              files={'csv': open(INSTITUTE_FPATH)})
     print('Institute: ' + str(response.status_code))
+    if response.status_code != 201:
+        print(response.json())
     # install accession
     response = requests.post(SERVER_URL + 'api/accessions/bulk/',
                              headers=headers,
@@ -28,11 +30,15 @@ def main():
                              data={'data_source_code': 'CRF',
                                    'data_source_kind': 'project'})
     print('Accession: ' + str(response.status_code))
+    if response.status_code != 201:
+        print(response.json())
     # install accessionset
     response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
                              headers=headers,
                              files={'csv': open(ACCESSIONSETS_FPATH)})
     print('AccessionSet: ' + str(response.status_code))
+    if response.status_code != 201:
+        print(response.json())
 
 
 if __name__ == '__main__':
