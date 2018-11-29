@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from vavilov3_accession.models import Taxon
-from vavilov3_accession.views.shared import MultipleFieldLookupMixin
+from vavilov3_accession.views.shared import (MultipleFieldLookupMixin,
+                                             StandardResultsSetPagination)
 from vavilov3_accession.serializers.taxon import TaxonSerializer
 from vavilov3_accession.filters.taxon import TaxonFilter
 
@@ -15,6 +16,7 @@ class TaxonViewSet(MultipleFieldLookupMixin, viewsets.ReadOnlyModelViewSet):
     lookup_fields = ('rank', 'name')
     filter_foreignkey_mapping = {'rank': 'rank__name', 'name': 'name'}
     lookup_url_kwarg = 'rank>[^/.]+)/(?P<name'
+    pagination_class = StandardResultsSetPagination
 
     @action(methods=['GET'], detail=False)
     def stats_by_rank(self, request, *args, **kwargs):

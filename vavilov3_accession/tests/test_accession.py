@@ -37,11 +37,15 @@ class AccessionViewTest(BaseTest):
                                      'germplasm_number': 'BGE0001'})
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['data']['instituteCode'], 'ESP004')
-        self.assertTrue(response.json()['data']['passports'])
-        self.assertEqual(response.json()['data']['passports'][0][DATA_SOURCE],
+        result = response.json()
+        self.assertEqual(result['data']['instituteCode'], 'ESP004')
+        self.assertEqual(result['data']['germplasmNumber'], 'BGE0001')
+        self.assertEqual(result['data']['is_available'], True)
+        self.assertEqual(result['data']['conservation_status'], 'is_active')
+        self.assertTrue(result['data']['passports'])
+        self.assertEqual(result['data']['passports'][0][DATA_SOURCE],
                          {'code': 'CRF', 'kind': 'project'})
-        self.assertTrue(response.json()['metadata'])
+        self.assertTrue(result['metadata'])
 
         list_url = reverse('accession-list')
         response = self.client.get(list_url)
@@ -272,8 +276,13 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(data_source['code'], 'CRF')
         self.assertEqual(data_source['kind'], 'project')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         self.assertEqual(len(self.client.get(list_url).json()), 10)
+
+        result = response.json()[0]
+        self.assertEqual(result['data']['instituteCode'], 'ESP004')
+        self.assertEqual(result['data']['germplasmNumber'], 'BGE005836')
+        self.assertEqual(result['data']['is_available'], False)
+        self.assertEqual(result['data']['conservation_status'], 'is_active')
 
         detail_url = reverse('accession-detail',
                              kwargs={'institute_code': 'ESP004',

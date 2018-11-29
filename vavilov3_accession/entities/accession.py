@@ -237,6 +237,6 @@ _ACCESSION_CSV_FIELD_CONFS = [
     {'csv_field_name': 'CONSTATUS', 'getter': lambda x: x.conservation_status,
      'setter': lambda obj, val: setattr(obj, 'conservation_status', val)},
     {'csv_field_name': 'IS_AVAILABLE', 'getter': lambda x: x.is_available,
-     'setter': lambda obj, val: setattr(obj, 'is_available', val)},
+     'setter': lambda obj, val: setattr(obj, 'is_available', True if val == 'True' else False)},
 ]
 ACCESSION_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _ACCESSION_CSV_FIELD_CONFS])

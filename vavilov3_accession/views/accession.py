@@ -16,8 +16,10 @@ from vavilov3_accession.serializers.accession import (
     AccessionSerializer, serialize_accessions_from_csv)
 from vavilov3_accession.filters.accession import AccessionFilter
 from vavilov3_accession.permissions import UserGroupObjectPermission
-from vavilov3_accession.entities.accession import AccessionStruct
+from vavilov3_accession.entities.accession import AccessionStruct, \
+    AccessionValidationError
 from vavilov3_accession.conf.settings import ACCESSION_CSV_FIELDS
+from vavilov3_accession.views import format_error_message
 
 
 class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
@@ -55,9 +57,11 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
             except KeyError:
                 msg = 'could not found csv file or data_store info'
                 raise ValidationError(msg)
-
-            data = serialize_accessions_from_csv(fhand, data_source_code,
-                                                 data_source_kind)
+            try:
+                data = serialize_accessions_from_csv(fhand, data_source_code,
+                                                     data_source_kind)
+            except AccessionValidationError as error:
+                raise ValueError(format_error_message(error))
         else:
             data = request.data
 
