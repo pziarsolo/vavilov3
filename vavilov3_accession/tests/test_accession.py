@@ -214,6 +214,16 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
 
+        response = self.client.get(list_url,
+                                   data={'rank': 'genus', 'taxon': 'Zea'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 0)
+
+        response = self.client.get(list_url,
+                                   data={'rank': 'genus', 'taxon': 'Solanum'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 4)
+
     def test_bulk_create(self):
         self.add_admin_credentials()
         list_url = reverse('accession-list')
@@ -303,8 +313,8 @@ class AccessionViewTest(BaseTest):
                                                    ('province', 'La Coruña'),
                                                    ('municipality', 'Fisterra'),
                                                    ('site', 'Duio,San Martiño'),
-                                                   ('latitude', 42925.0),
-                                                   ('longitude', -9275.0),
+                                                   ('latitude', 42.925),
+                                                   ('longitude', -9.275),
                                                    ('altitude', 101),
                                                    ('coordUncertainty', '1840')]),
                     'commonCropName': 'Maiz',
@@ -315,7 +325,6 @@ class AccessionViewTest(BaseTest):
                     'collectionSource': '20',
                     'dataSource': {'code': 'CRF', 'kind': 'project'},
                     'biologicalStatusOfAccessionCode': '300'}
-
         self.assertEqual(accession.passports[0].data, passport)
         # adding again fails with error
         response = self.client.post(list_url + 'bulk/',

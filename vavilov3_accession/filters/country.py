@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters import rest_framework as filters
 
 from vavilov3_accession.filters.shared import TermFilterMixin
@@ -10,6 +11,8 @@ class CountryFilter(TermFilterMixin, filters.FilterSet):
     name = filters.CharFilter(lookup_expr='icontains')
     term = filters.CharFilter(method='term_filter',
                               label='Term')
+    code_or_name = filters.CharFilter(label='code_or_name',
+                                      method='code_or_name_filter')
     only_with_accessions = filters.BooleanFilter(
         label='only_with_accessions',
         method='only_with_accessions_filter')
@@ -17,6 +20,10 @@ class CountryFilter(TermFilterMixin, filters.FilterSet):
     class Meta:
         model = Country
         fields = ['code', 'name']
+
+    def code_or_name_filter(self, queryset, _, value):
+        return queryset.filter(Q(name__icontains=value) |
+                               Q(code__icontains=value))
 
     def only_with_accessions_filter(self, queryset, _, value):
         queryset = queryset.annotate(
