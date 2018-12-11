@@ -44,6 +44,7 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
     numbers = filters.CharFilter(
         label='Any accession number in entity',
         method='number_filter', distinct=True)
+    site = filters.CharFilter(label='site', method='site_filter')
 
     class Meta:
         model = Accession
@@ -55,3 +56,10 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
             Q(passports__accession_name__icontains=value) |
             Q(passports__collection_number__icontains=value)).distinct()
         return queryset
+
+    def site_filter(self, queryset, _, value):
+        return queryset.filter(
+            Q(passports__state__icontains=value) |
+            Q(passports__province__icontains=value) |
+            Q(passports__municipality__icontains=value) |
+            Q(passports__location_site__icontains=value)).distinct()

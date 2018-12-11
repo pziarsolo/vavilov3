@@ -22,6 +22,7 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
     country = filters.CharFilter(
         field_name='accessions__passports__country__code', lookup_expr='iexact',
         distinct=True)
+    site = filters.CharFilter(label='site', method='site_filter')
     biological_status = filters.CharFilter(
         field_name='accessions__passports__biological_status', lookup_expr='exact',
         distinct=True)
@@ -44,3 +45,11 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
     class Meta:
         model = AccessionSet
         fields = {'accessionset_number': ['icontains']}
+
+    def site_filter(self, queryset, _, value):
+        queryset = queryset.filter(
+            Q(accessions__passports__state__icontains=value) |
+            Q(accessions__passports__province__icontains=value) |
+            Q(accessions__passports__municipality__icontains=value) |
+            Q(accessions__passports__location_site__icontains=value))
+        return queryset.distinct()
