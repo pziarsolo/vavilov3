@@ -41,7 +41,7 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
         field_name='passports__taxa__rank__name',
         lookup_expr='exact', distinct=True)
 
-    numbers = filters.CharFilter(
+    number_contains = filters.CharFilter(
         label='Any accession number in entity',
         method='number_filter', distinct=True)
     site = filters.CharFilter(label='site', method='site_filter')

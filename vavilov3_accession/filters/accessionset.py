@@ -41,6 +41,8 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
         label='Passport rank',
         field_name='accessions__passports__taxonpassport__taxon__rank__name',
         lookup_expr='exact', distinct=True)
+    number_contains = filters.CharFilter(label='Number Contain',
+                                         method='number_contain_filter')
 
     class Meta:
         model = AccessionSet
@@ -52,4 +54,11 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
             Q(accessions__passports__province__icontains=value) |
             Q(accessions__passports__municipality__icontains=value) |
             Q(accessions__passports__location_site__icontains=value))
+        return queryset.distinct()
+
+    def number_contain_filter(self, queryset, _, value):
+        queryset = queryset.filter(
+            Q(accessionset_number__icontains=value) |
+            Q(accessions__germplasm_number__icontains=value) |
+            Q(accessions__passports__collection_number__icontains=value))
         return queryset.distinct()
