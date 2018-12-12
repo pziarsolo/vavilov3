@@ -210,7 +210,7 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(len(response.json()), 1)
 
         response = self.client.get(list_url,
-                                   data={'numbers': "toma"})
+                                   data={'number_contains': "toma"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
 
