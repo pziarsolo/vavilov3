@@ -179,7 +179,26 @@ class InstituteStatsTest(BaseTest):
 
     def tests_stats(self):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
-        _ = self.client.get(detail_url)
-        print('No tests for institute stats')
-#         import pprint
-#         pprint.pprint(response.json())
+        response = self.client.get(detail_url)
+        result = {'instituteCode': 'ESP004',
+                  'name': 'CRF genebank',
+                  'num_accessions': 2,
+                  'num_accessionsets': 2,
+                  'stats_by_country': [{'code': 'PER', 'name': 'Peru',
+                                        'num_accessions': 1,
+                                        'num_accessionsets': 2},
+                                       {'code': 'ESP', 'name': 'Spain',
+                                        'num_accessions': 1,
+                                        'num_accessionsets': 1}],
+                  'stats_by_taxa': {'genus': {'Solanum': {'num_accessions': 2,
+                                                          'num_accessionsets': 2}},
+                                    'species':
+                                        {'Solanum lycopersicum':
+                                            {'num_accessions': 2,
+                                             'num_accessionsets': 2}},
+                                    'variety':
+                                        {'Solanum lycopersicum var. cerasiforme':
+                                            {'num_accessions': 2,
+                                             'num_accessionsets': 2}}}}
+
+        self.assertEqual(response.json(), result)

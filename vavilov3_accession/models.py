@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.postgres.fields.jsonb import JSONField
 
-from django.db.models.aggregates import Count
+from vavilov3_accession.raw_stat_sql_commands import (
+    get_institute_stats_raw_sql, get_country_stats_raw_sql)
+from django.db import connection
 
 
 class Group(DjangoGroup):
@@ -35,45 +37,102 @@ class Institute(models.Model):
     def num_accessionsets(self):
         return AccessionSet.objects.filter(institute=self).count()
 
-    @property
-    def stats_by_country(self):
-        return
+    def stats_by_country(self, user=None):
         stats = {}
-        accession_query = Country.objects.filter(
-            passport__accession__institute=self)
-        accession_stats = accession_query.annotate(
-            _num_accessions=Count('passport__country'))
-        for country in accession_stats:
-            if country._num_accessions:
-                stats[country.code] = {
-                    'code': country.code, 'name': country.name,
-                    'num_accessions': country._num_accessions,
-                    'num_accessionsets': 0}
+        accession_stats = Country.objects.raw(
+            get_institute_stats_raw_sql(institute_id=self.institute_id,
+                                        stats_type='country',
+                                        entity_type='accession',
+                                        user=user))
 
-        accessionset_query = Country.objects.filter(
-            passport__accession__accessionset__institute=self).distinct('passport__accession__accessionset')
+        accessionset_stats = Country.objects.raw(
+            get_institute_stats_raw_sql(institute_id=self.institute_id,
+                                        stats_type='country',
+                                        entity_type='accessionset',
+                                        user=user))
 
-        accessionset_stats = accessionset_query.annotate(
-            _num_accessionsets=Count('passport__country'))
-
-        for country in accessionset_stats:
-            if country._num_accessionsets:
-
-                if country.code in stats:
-                    stats[country.code]['num_accessionsets'] = country._num_accessionsets
-                else:
-                    stats[country.code] = {
-                        'code': country.code, 'name': country.name,
-                        'num_accessions': 0,
-                        'num_accessionsets': country._num_accessionsets}
-
-                print(country._num_accessionsets)
-
+        for row in accession_stats:
+            _integrate_country_stats(stats, row, 'accession')
+        for row in accessionset_stats:
+            _integrate_country_stats(stats, row, 'accessionset')
         return stats.values()
 
-    @property
-    def stats_by_taxa(self):
-        pass
+    def stats_by_taxa(self, user=None):
+        stats = {}
+        accession_stats = Taxon.objects.raw(
+            get_institute_stats_raw_sql(institute_id=self.institute_id,
+                                        stats_type='taxa',
+                                        entity_type='accession',
+                                        user=user))
+        accessionset_stats = Taxon.objects.raw(
+            get_institute_stats_raw_sql(institute_id=self.institute_id,
+                                        stats_type='taxa',
+                                        entity_type='accessionset',
+                                        user=user))
+        for row in accession_stats:
+            _integrate_taxa_stats(stats, row, 'accession')
+        for row in accessionset_stats:
+            _integrate_taxa_stats(stats, row, 'accessionset')
+        return stats
+
+
+def _integrate_country_stats(stats, query_stats, entity_type):
+    counts = query_stats.counts
+    code = query_stats.code
+    name = query_stats.name
+
+    if counts:
+        if code not in stats:
+            stats[code] = {'code': code, 'name': name,
+                           'num_accessions': 0, 'num_accessionsets': 0}
+
+        stats[code]['num_{}s'.format(entity_type)] = counts
+
+
+def _integrate_institute_stats(stats, query_stats, entity_type):
+    try:
+        counts = query_stats.counts
+    except AttributeError:
+        counts = query_stats['counts']
+    try:
+        code = query_stats.code
+    except AttributeError:
+        code = query_stats['code']
+
+    try:
+        name = query_stats.name
+    except AttributeError:
+        name = query_stats['name']
+
+    if counts:
+        if code not in stats:
+            stats[code] = {'code': code, 'name': name,
+                           'num_accessions': 0, 'num_accessionsets': 0}
+
+        stats[code]['num_{}s'.format(entity_type)] = counts
+
+
+def _integrate_taxa_stats(stats, query_stats, entity_type):
+    try:
+        counts = query_stats['counts']
+    except (AttributeError, TypeError):
+        counts = query_stats.counts
+    try:
+        rank = query_stats['rank__name']
+    except TypeError:
+        rank = query_stats.rank.name
+    try:
+        taxon = query_stats['name']
+    except TypeError:
+        taxon = query_stats.taxon_name
+
+    if counts:
+        if rank not in stats:
+            stats[rank] = {}
+        if taxon not in stats[rank]:
+            stats[rank][taxon] = {'num_accessions': 0,
+                                  'num_accessionsets': 0}
+        stats[rank][taxon]['num_{}s'.format(entity_type)] = counts
 
 
 class Country(models.Model):
@@ -91,6 +150,65 @@ class Country(models.Model):
     def num_accessions(self):
         queryset = Accession.objects.filter(passports__country=self).distinct()
         return queryset.count()
+
+    @property
+    def num_accessionsets(self):
+        queryset = AccessionSet.objects.filter(accessions__passports__country=self).distinct()
+        return queryset.count()
+
+    def stats_by_institute(self, user=None):
+        stats = {}
+
+        with connection.cursor() as cursor:
+            cursor.execute(get_country_stats_raw_sql(country_id=self.country_id,
+                                                     stats_type='institute',
+                                                     entity_type='accession',
+                                                     user=user))
+            accession_stats = cursor.fetchall()
+
+        with connection.cursor() as cursor:
+            cursor.execute(get_country_stats_raw_sql(country_id=self.country_id,
+                                                     stats_type='institute',
+                                                     entity_type='accessionset',
+                                                     user=user))
+            accessionset_stats = cursor.fetchall()
+#         accession_stats = Country.objects.raw(
+#             get_country_stats_raw_sql(country_id=self.country_id,
+#                                       stats_type='institute',
+#                                       entity_type='accession',
+#                                       user=user))
+
+#         accessionset_stats = Country.objects.raw(
+#             get_country_stats_raw_sql(country_id=self.country_id,
+#                                       stats_type='institute',
+#                                       entity_type='accessionset',
+#                                       user=user))
+#         print(accession_stats.columns)
+        for row in accession_stats:
+            row = {'name': row[1], 'code': row[2], 'counts': row[3]}
+            _integrate_institute_stats(stats, row, 'accession')
+        for row in accessionset_stats:
+            row = {'name': row[1], 'code': row[2], 'counts': row[3]}
+            _integrate_institute_stats(stats, row, 'accessionset')
+        return stats.values()
+
+    def stats_by_taxa(self, user=None):
+        stats = {}
+        accession_stats = Taxon.objects.raw(
+            get_country_stats_raw_sql(country_id=self.country_id,
+                                      stats_type='taxa',
+                                      entity_type='accession',
+                                      user=user))
+        accessionset_stats = Taxon.objects.raw(
+            get_country_stats_raw_sql(country_id=self.country_id,
+                                      stats_type='taxa',
+                                      entity_type='accessionset',
+                                      user=user))
+        for row in accession_stats:
+            _integrate_taxa_stats(stats, row, 'accession')
+        for row in accessionset_stats:
+            _integrate_taxa_stats(stats, row, 'accessionset')
+        return stats
 
 
 class DataSource(models.Model):

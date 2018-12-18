@@ -31,15 +31,16 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
         distinct=True)
     taxon = filters.CharFilter(
         label='Passport taxon',
-        field_name='accessions__passports__taxonpassport__taxon__name',
+        field_name='accessions__passports__taxa__name',
         lookup_expr='iexact', distinct=True)
+
     taxon_contains = filters.CharFilter(
         label='Passport taxon contains',
-        field_name='accessions__passports__taxonpassport__taxon__name',
+        field_name='accessions__passports__taxa__name',
         lookup_expr='icontains', distinct=True)
     rank = filters.CharFilter(
         label='Passport rank',
-        field_name='accessions__passports__taxonpassport__taxon__rank__name',
+        field_name='accessions__passports__taxa__rank__name',
         lookup_expr='exact', distinct=True)
     number_contains = filters.CharFilter(label='Number Contain',
                                          method='number_contain_filter')

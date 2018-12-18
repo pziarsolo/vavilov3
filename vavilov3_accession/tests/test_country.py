@@ -5,7 +5,8 @@ from rest_framework import status
 
 from vavilov3_accession.tests import BaseTest
 from vavilov3_accession.tests.data_io import (load_institutes_from_file,
-                                              load_accessions_from_file)
+                                              load_accessions_from_file,
+                                              load_accessionsets_from_file)
 from vavilov3_accession.data_io import initialize_db
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
@@ -60,7 +61,8 @@ class CountryViewTest(BaseTest):
         self.assertEqual(len(response.json()), 19)
 
         response = self.client.get(list_url,
-                                   data={'only_with_accessions': True})
+                                   data={'only_with_accessions': True,
+                                         'fields': 'code,name,num_accessions'})
         self.assertEqual(len(response.json()), 2)
         self.assertEqual(response.json()[0],
                          {'code': 'PER', 'name': 'Peru', 'num_accessions': 3})
@@ -70,7 +72,26 @@ class CountryViewTest(BaseTest):
                                          'limit': 10})
         self.assertEqual(len(response.json()), 10)
 
+
+class CountryStatsTest(BaseTest):
+
+    def setUp(self):
+        self.initialize()
+        initialize_db()
+        institutes_fpath = join(TEST_DATA_DIR, 'institutes.json')
+        load_institutes_from_file(institutes_fpath)
+        accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
+        load_accessions_from_file(accessions_fpath)
+        accessionsets_fpath = join(TEST_DATA_DIR, 'accessionsets.json')
+        load_accessionsets_from_file(accessionsets_fpath)
+
     def test_stats(self):
         detail_url = reverse('country-detail', kwargs={'code': 'PER'})
-        self.client.get(detail_url)
-        print('No country stat tests')
+        response = self.client.get(detail_url)
+        result = response.json()
+        self.assertEqual(result['stats_by_taxa']['species'],
+                         {'Solanum lycopersicum':
+                          {'num_accessions': 3, 'num_accessionsets': 2}})
+        self.assertEqual(result['stats_by_institute'][0],
+                         {'code': 'CRF genebank', 'name': 'ESP004',
+                          'num_accessions': 1, 'num_accessionsets': 2})

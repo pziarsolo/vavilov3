@@ -59,8 +59,13 @@ class InstituteSerializer(DynamicFieldsSerializer):
         list_serializer_class = InstituteListSerializer
 
     def to_representation(self, instance):
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
         institute_struct = InstituteStruct(instance=instance,
-                                           fields=self.selected_fields)
+                                           fields=self.selected_fields,
+                                           user=user)
         return institute_struct.get_api_document()
 
     def run_validation(self, data=empty):
