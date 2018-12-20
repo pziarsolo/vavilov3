@@ -1,3 +1,5 @@
+from numpy import histogram
+
 from django.db import models
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.postgres.fields.jsonb import JSONField
@@ -5,6 +7,7 @@ from django.contrib.postgres.fields.jsonb import JSONField
 from vavilov3_accession.raw_stat_sql_commands import (
     get_institute_stats_raw_sql, get_country_stats_raw_sql)
 from django.db import connection
+from _operator import itemgetter
 
 
 class Group(DjangoGroup):
@@ -55,7 +58,8 @@ class Institute(models.Model):
             _integrate_country_stats(stats, row, 'accession')
         for row in accessionset_stats:
             _integrate_country_stats(stats, row, 'accessionset')
-        return stats.values()
+        return sorted(stats.values(), key=itemgetter('num_accessions'),
+                      reverse=True)
 
     def stats_by_taxa(self, user=None):
         stats = {}
@@ -74,6 +78,21 @@ class Institute(models.Model):
         for row in accessionset_stats:
             _integrate_taxa_stats(stats, row, 'accessionset')
         return stats
+
+    @property
+    def pdcis(self):
+        pdcis = [float(p['pdci']) for p in Passport.objects.filter(institute=self).values('pdci')]
+        return pdci_distrib(pdcis)
+
+
+def pdci_distrib(pdcis):
+        range_ = {}
+        for i in range(10):
+            range_[(i, i + 0.5)] = []
+            range_[(i + 0.5, i + 1)] = []
+
+        hist, bin_edges = histogram(pdcis, bins=20, range=(0, 10))
+        return zip(bin_edges, hist)
 
 
 def _integrate_country_stats(stats, query_stats, entity_type):
@@ -190,7 +209,8 @@ class Country(models.Model):
         for row in accessionset_stats:
             row = {'name': row[1], 'code': row[2], 'counts': row[3]}
             _integrate_institute_stats(stats, row, 'accessionset')
-        return stats.values()
+        return sorted(stats.values(), key=itemgetter('num_accessions'),
+                      reverse=True)
 
     def stats_by_taxa(self, user=None):
         stats = {}

@@ -63,6 +63,8 @@ class InstituteStruct():
             self._data['stats_by_country'] = instance.stats_by_country(self.user)
         if fields is None or 'stats_by_taxa' in fields:
             self._data['stats_by_taxa'] = instance.stats_by_taxa(self.user)
+        if fields is None or 'pdcis' in fields:
+            self._data['pdcis'] = instance.pdcis
 
     def populate_from_csvrow(self, row):
         for field, value in row.items():
