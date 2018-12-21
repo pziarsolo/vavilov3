@@ -114,9 +114,9 @@ def _integrate_institute_stats(stats, query_stats, entity_type):
     except AttributeError:
         counts = query_stats['counts']
     try:
-        code = query_stats.code
+        code = query_stats.instituteCode
     except AttributeError:
-        code = query_stats['code']
+        code = query_stats['instituteCode']
 
     try:
         name = query_stats.name
@@ -125,7 +125,7 @@ def _integrate_institute_stats(stats, query_stats, entity_type):
 
     if counts:
         if code not in stats:
-            stats[code] = {'code': code, 'name': name,
+            stats[code] = {'instituteCode': code, 'name': name,
                            'num_accessions': 0, 'num_accessionsets': 0}
 
         stats[code]['num_{}s'.format(entity_type)] = counts
@@ -204,10 +204,10 @@ class Country(models.Model):
 #                                       user=user))
 #         print(accession_stats.columns)
         for row in accession_stats:
-            row = {'name': row[1], 'code': row[2], 'counts': row[3]}
+            row = {'instituteCode': row[1], 'name': row[2], 'counts': row[3]}
             _integrate_institute_stats(stats, row, 'accession')
         for row in accessionset_stats:
-            row = {'name': row[1], 'code': row[2], 'counts': row[3]}
+            row = {'instituteCode': row[1], 'name': row[2], 'counts': row[3]}
             _integrate_institute_stats(stats, row, 'accessionset')
         return sorted(stats.values(), key=itemgetter('num_accessions'),
                       reverse=True)
