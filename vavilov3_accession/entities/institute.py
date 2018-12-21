@@ -1,4 +1,5 @@
-from vavilov3_accession.entities.tags import INSTITUTE_CODE, INSTITUTE_NAME
+from vavilov3_accession.entities.tags import INSTITUTE_CODE, INSTITUTE_NAME, \
+    INSTITUTE_TYPE
 from collections import OrderedDict
 
 
@@ -50,6 +51,14 @@ class InstituteStruct():
     def institute_name(self, name):
         self._data[INSTITUTE_NAME] = name
 
+    @property
+    def institute_type(self):
+        return self._data.get(INSTITUTE_TYPE, None)
+
+    @institute_type.setter
+    def institute_type(self, type_):
+        self._data[INSTITUTE_TYPE] = type_
+
     def _populate_with_instance(self, instance, fields):
         if fields is None or 'instituteCode' in fields:
             self.institute_code = instance.code
@@ -76,6 +85,13 @@ class InstituteStruct():
 
             setter = field_conf['setter']
             setter(self, value)
+
+    def to_list_representation(self, fields):
+        items = []
+        for field in fields[:5]:
+            getter = INSTITUTE_CSV_FIELD_CONFS.get(field)['getter']
+            items.append(getter(self))
+        return items
 
 
 _INSTITUTE_CSV_FIELD_CONFS = [
