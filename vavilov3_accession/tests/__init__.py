@@ -28,9 +28,9 @@ class BaseTest(TestCase):
         return response.data['access']
 
     def configure_users(self):
-        self.crf_user = User.objects.create_user(username='crf1',
+        self.crf_user = User.objects.create_user(username='admin',
                                                  email='p@p.es',
-                                                 password='pass')
+                                                 password='pass1')
 
         admin_group = Group.objects.create(name=ADMIN_GROUP)
         self.crf_user.groups.add(admin_group)
@@ -44,7 +44,7 @@ class BaseTest(TestCase):
 #         self.user_token = self.get_token('user', 'pass')
 
     def add_admin_credentials(self):
-        token = self.get_token('crf1', 'pass')
+        token = self.get_token('admin', 'pass1')
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
 
     def add_user_credentials(self):

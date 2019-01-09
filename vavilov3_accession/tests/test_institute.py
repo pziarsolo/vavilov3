@@ -60,6 +60,7 @@ class InstituteViewTest(BaseTest):
         doc.pop('num_accessionsets', None)
         doc.pop('stats_by_taxa', None)
         doc.pop('stats_by_country', None)
+        doc.pop('pdcis', None)
         self.assertEqual(doc, input_doc)
 
     def test_create_delete(self):
@@ -200,5 +201,6 @@ class InstituteStatsTest(BaseTest):
                                         {'Solanum lycopersicum var. cerasiforme':
                                             {'num_accessions': 2,
                                              'num_accessionsets': 2}}}}
-
-        self.assertEqual(response.json(), result)
+        response_json = response.json()
+        del response_json['pdcis']
+        self.assertEqual(response_json, result)
