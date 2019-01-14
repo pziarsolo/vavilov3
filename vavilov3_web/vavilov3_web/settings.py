@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'vavilov3_accession',
+    'vavilov3',
     'drf_yasg']
 
 MIDDLEWARE = [
@@ -115,7 +115,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# AUTH_USER_MODEL = 'vavilov3_accession.User'
+# AUTH_USER_MODEL = 'vavilov3.User'
 CORS_ORIGIN_WHITELIST = ('localhost:4200',)
 CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
 CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
