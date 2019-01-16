@@ -18,3 +18,16 @@ PASSPORTS = 'passports'
 ACCESSIONSET_NUMBER = 'accessionsetNumber'
 ACCESSIONS = 'accessions'
 VALID_CONSERVATION_STATUSES = [IS_ACTIVE, IS_BASE, IS_HISTORIC, IS_ARCHIVE]
+
+# phenotyping
+STUDY_NAME = 'name'
+STUDY_DESCRIPTION = 'description'
+STUDY_ACTIVE = 'active'
+START_DATE = 'start_date'
+END_DATE = 'end_date'
+LOCATION = 'location'
+CONTACT = 'contacts'
+PROJECT_NAME = 'project_name'
+
+YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
+NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')

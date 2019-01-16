@@ -366,3 +366,83 @@ class Passport(models.Model):
     class Meta:
         db_table = 'vavilov_passport'
         unique_together = ('institute', 'germplasm_number', 'data_source')
+
+#  Phenotyping #
+
+
+class Project(models.Model):
+    project_id = models.AutoField(primary_key=True, editable=False)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    is_public = models.BooleanField()
+    name = models.CharField(max_length=255, db_index=True)
+    active = models.BooleanField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    class Meta:
+        db_table = 'vavilov_project'
+
+
+class Study(models.Model):
+    study_id = models.AutoField(primary_key=True, editable=False)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    is_public = models.BooleanField()
+    is_active = models.BooleanField()
+    name = models.CharField(max_length=255, db_index=True, unique=True)
+    description = models.CharField(max_length=255)
+    project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
+    data = JSONField()
+
+    class Meta:
+        db_table = 'vavilov_study'
+
+
+class ObservationDataType(models.Model):
+    observation_data_type_id = models.AutoField(primary_key=True,
+                                                editable=False)
+    data_type = models.CharField(max_length=255, db_index=True, unique=True)
+
+    class Meta:
+        db_table = 'vavilov_observation_data_type'
+
+
+class ObservationVariable(models.Model):
+    observation_variable_id = models.AutoField(primary_key=True, editable=False)
+    name = models.CharField(max_length=255, db_index=True)
+    description = models.CharField(max_length=255)
+    method = models.CharField(max_length=255)
+    data_type = models.ForeignKey(ObservationDataType, on_delete=models.CASCADE)
+    unit = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'vavilov_observation_variable'
+        unique_together = ('name', 'method', 'data_type', 'unit')
+
+
+class ObservationUnit(models.Model):
+    observation_unit_id = models.AutoField(primary_key=True, editable=False)
+    name = models.CharField(max_length=255)
+    accession = models.ForeignKey(Accession, on_delete=models.CASCADE)
+    level = models.CharField(max_length=255)
+    replicate = models.CharField(max_length=255)
+    study = models.ForeignKey(Study, on_delete=models.CASCADE)
+
+
+class Plant():
+    x = models.CharField(max_length=255)
+    y = models.CharField(max_length=255)
+    block_number = models.CharField(max_length=255)
+    entry_number = models.CharField(max_length=255)
+    plant_number = models.CharField(max_length=255)
+    plot_number = models.CharField(max_length=255)
+    observation_units = models.ManyToManyField(ObservationUnit)
+
+
+class Observation(models.Model):
+    observation_id = models.AutoField(primary_key=True, editable=False)
+    observation_variable = models.ForeignKey(ObservationVariable,
+                                             on_delete=models.CASCADE)
+    observation_unit = models.ForeignKey(ObservationUnit, on_delete=models.CASCADE)
+    observationTimeStamp = models.DateField()
+    observer = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)

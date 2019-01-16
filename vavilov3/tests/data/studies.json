@@ -1,0 +1,62 @@
+[
+    {
+        "data": {
+            "name": "study1", 
+            "description": "description1", 
+            "active": false, 
+            "start_date": "17/01/2017", 
+            "end_date": "01/12/2017", 
+            "location": "Valencia", 
+            "contacts": "Alguien"
+        }, 
+        "metadata": {
+            "group": "admin", 
+            "is_public": true
+        }
+    },
+        {
+        "data": {
+            "name": "study2", 
+            "description": "description2", 
+            "active": true, 
+            "start_date": "17/01/2017", 
+            "end_date": "01/12/2017", 
+            "location": "Valencia", 
+            "contacts": "Alguien"
+        }, 
+        "metadata": {
+            "group": "admin", 
+            "is_public": false
+        }
+    },
+        {
+        "data": {
+            "name": "study3", 
+            "description": "description3", 
+            "active": true, 
+            "start_date": "17/01/2017", 
+            "end_date": "01/12/2017", 
+            "location": "Valencia", 
+            "contacts": "Alguien"
+        }, 
+        "metadata": {
+            "group": "userGroup", 
+            "is_public": true
+        }
+    },
+        {
+        "data": {
+            "name": "study4", 
+            "description": "description3", 
+            "active": true, 
+            "start_date": "17/01/2017", 
+            "end_date": "01/12/2017", 
+            "location": "Valencia", 
+            "contacts": "Alguien"
+        }, 
+        "metadata": {
+            "group": "userGroup", 
+            "is_public": false
+        }
+    }
+]
