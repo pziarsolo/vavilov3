@@ -11,11 +11,11 @@ from vavilov3.models import Accession
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
-                                   GroupObjectPermMixin)
+                                   GroupObjectPublicPermMixin)
 from vavilov3.serializers.accession import (
     AccessionSerializer, serialize_accessions_from_csv)
 from vavilov3.filters.accession import AccessionFilter
-from vavilov3.permissions import UserGroupObjectPermission
+from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.entities.accession import AccessionStruct, \
     AccessionValidationError
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
@@ -31,7 +31,7 @@ class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
             yield accession.to_list_representation(ACCESSION_CSV_FIELDS)
 
 
-class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
+class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                        DynamicFieldsViewMixin, viewsets.ModelViewSet):
     lookup_fields = ('institute_code', 'germplasm_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<germplasm_number'
@@ -40,7 +40,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
     queryset = Accession.objects.all()
     serializer_class = AccessionSerializer
     filter_class = AccessionFilter
-    permission_classes = (UserGroupObjectPermission,)
+    permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionCSVRenderer]
 

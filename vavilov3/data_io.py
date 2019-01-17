@@ -3,7 +3,7 @@ import csv
 
 from django.contrib.auth.models import User
 
-from vavilov3.models import Group, Country, Rank
+from vavilov3.models import Group, Country, Rank, ObservationDataType
 from vavilov3.conf.settings import (ADMIN_GROUP,
                                     ALLOWED_TAXONOMIC_RANKS)
 
@@ -12,6 +12,8 @@ OLD_COUNTRIES = {'CSHH': 'Czechoslovakia',
                  'SUHH': 'Union of Soviet Socialist Republics',
                  'ANHH': 'Netherlands Antilles'}
 
+OBSERVATION_DATA_TYPES = ['Numerical', 'Nominal', 'Ordinal']
+
 
 def initialize_db(users_fhand=None):
     Group.objects.get_or_create(name=ADMIN_GROUP)
@@ -19,6 +21,7 @@ def initialize_db(users_fhand=None):
         load_users(users_fhand)
     load_countries()
     load_ranks()
+    load_observation_variable_data_types()
 
 
 def load_users(fhand):
@@ -45,3 +48,8 @@ def load_countries():
 def load_ranks():
     for level, rank in enumerate(ALLOWED_TAXONOMIC_RANKS):
         Rank.objects.create(name=rank, level=level)
+
+
+def load_observation_variable_data_types():
+    for data_type in OBSERVATION_DATA_TYPES:
+        ObservationDataType.objects.create(name=data_type)

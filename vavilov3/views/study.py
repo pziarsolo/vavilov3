@@ -7,18 +7,17 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from vavilov3.models import Study
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
-                                   GroupObjectPermMixin)
-
-from vavilov3.permissions import UserGroupObjectPermission
+                                   GroupObjectPublicPermMixin)
+from vavilov3.models import Study
+from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.views import format_error_message
-from vavilov3.serializers.study import (StudySerializer,
-                                        serialize_study_from_csv)
+from vavilov3.serializers.study import StudySerializer
 from vavilov3.entities.study import StudyStruct, StudyValidationError
 from vavilov3.conf.settings import STUDY_CSV_FIELDS
 from vavilov3.filters.study import StudyFilter
+from vavilov3.entities.shared import serialize_entity_from_csv
 
 
 class PaginatedStudyCSVRenderer(renderers.CSVRenderer):
@@ -30,13 +29,13 @@ class PaginatedStudyCSVRenderer(renderers.CSVRenderer):
             yield study.to_list_representation(STUDY_CSV_FIELDS)
 
 
-class StudyViewSet(GroupObjectPermMixin, DynamicFieldsViewMixin,
+class StudyViewSet(GroupObjectPublicPermMixin, DynamicFieldsViewMixin,
                    viewsets.ModelViewSet):
     lookup_field = 'name'
     queryset = Study.objects.all()
     serializer_class = StudySerializer
     filter_class = StudyFilter
-    permission_classes = (UserGroupObjectPermission,)
+    permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedStudyCSVRenderer]
 
@@ -52,7 +51,7 @@ class StudyViewSet(GroupObjectPermMixin, DynamicFieldsViewMixin,
                 msg = 'could not found csv file or data_store info'
                 raise ValidationError(msg)
             try:
-                data = serialize_study_from_csv(fhand)
+                data = serialize_entity_from_csv(fhand, StudyStruct)
             except StudyValidationError as error:
                 raise ValueError(format_error_message(error))
         else:

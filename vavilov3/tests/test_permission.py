@@ -4,13 +4,13 @@ from unittest.mock import MagicMock
 
 from django.contrib.auth.models import AnonymousUser
 
-from vavilov3.permissions import UserGroupObjectPermission
+from vavilov3.permissions import UserGroupObjectPublicPermission
 
 
 class PermissionsTest(unittest.TestCase):
 
     def setUp(self):
-        self.permisions = UserGroupObjectPermission()
+        self.permisions = UserGroupObjectPublicPermission()
 
     @staticmethod
     def set_up_mocks(obj_owner, obj_is_public, action, user_is_staff,

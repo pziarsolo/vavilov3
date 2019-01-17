@@ -7,7 +7,7 @@ from rest_framework.permissions import SAFE_METHODS
 from vavilov3.conf.settings import USERS_CAN_CREATE_ACCESSIONSETS, ADMIN_GROUP
 
 
-def _user_is_admin(user):
+def is_user_admin(user):
     if isinstance(user, AnonymousUser):
         return False
     if user.is_staff:
@@ -23,7 +23,7 @@ class UserPermission(permissions.BasePermission):
         action = view.action
         if action in ('list', 'create'):
             return (request.user.is_authenticated and
-                    _user_is_admin(request.user))
+                    is_user_admin(request.user))
         elif action in ('retrieve', 'update', 'partial_update', 'destroy',
                         'set_password', 'add_group', 'remove_group'):
             return True
@@ -33,15 +33,15 @@ class UserPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         action = view.action
         if action in ['update', 'partial_update', 'set_password', 'retrieve']:
-            return (_user_is_admin(request.user) or
+            return (is_user_admin(request.user) or
                     (request.user.is_authenticated and
                      obj.id == request.user.id))
         elif action in ('destroy', 'add_group', 'remove_group'):
-            return _user_is_admin(request.user)
+            return is_user_admin(request.user)
         return False
 
 
-class UserGroupObjectPermission(permissions.BasePermission):
+class UserGroupObjectPublicPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if (view.action in ('create', 'bulk')):
@@ -50,9 +50,9 @@ class UserGroupObjectPermission(permissions.BasePermission):
 
             elif (not USERS_CAN_CREATE_ACCESSIONSETS and
                   view.basename == 'accessionset' and
-                  not _user_is_admin(request.user)):
+                  not is_user_admin(request.user)):
                 return False
-        elif view.action == 'partial_update' and not _user_is_admin(request.user):
+        elif view.action == 'partial_update' and not is_user_admin(request.user):
             return False
         return True
 
@@ -61,17 +61,36 @@ class UserGroupObjectPermission(permissions.BasePermission):
         action = view.action
         user_is_owner = bool(request.user.groups.filter(name=obj.group).count())
         if action in ['retrieve']:
-            if (obj.is_public or _user_is_admin(request.user) or
+            if (obj.is_public or is_user_admin(request.user) or
                     user_is_owner):
                 return True
         # partial updates only change metadata and it only can be changed by
         # admins
-        elif action in ['partial_update'] and _user_is_admin(request.user):
+        elif action in ['partial_update'] and is_user_admin(request.user):
             return True
         elif action in ['update', 'destroy']:
-            if (_user_is_admin(request.user) or
+            if (is_user_admin(request.user) or
                (request.user.is_authenticated and user_is_owner and
                     not is_public)):
+                return True
+
+        return False
+
+
+class UserGroupObjectPermission(UserGroupObjectPublicPermission):
+
+    def has_object_permission(self, request, view, obj):
+        action = view.action
+        user_is_owner = bool(request.user.groups.filter(name=obj.group).count())
+        if action in ['retrieve']:
+            return True
+        # partial updates only change metadata and it only can be changed by
+        # admins
+        elif action in ['partial_update'] and is_user_admin(request.user):
+            return True
+        elif action in ['update', 'destroy']:
+            if (is_user_admin(request.user) or
+               (request.user.is_authenticated and user_is_owner)):
                 return True
 
         return False
@@ -81,15 +100,15 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, _):
         return (request.method in SAFE_METHODS or
-                request.user and _user_is_admin(request.user))
+                request.user and is_user_admin(request.user))
 
 
-def filter_queryset_by_user_group_permissions(queryset, user):
+def filter_queryset_by_user_group_public_permissions(queryset, user):
     # this is the implementation of queryste filtering of
-    # UserGroupObjectPermission
+    # UserGroupObjectPublicPermission
     if isinstance(user, AnonymousUser):
         return queryset.filter(is_public=True)
-    elif _user_is_admin(user):
+    elif is_user_admin(user):
         return queryset
     else:
         try:

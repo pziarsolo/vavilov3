@@ -4,109 +4,43 @@ from collections import OrderedDict
 
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.utils.datastructures import MultiValueDictKeyError
 
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import empty
-from rest_framework import serializers
 
 from vavilov3.models import (Group, Accession, Institute, DataSource,
                              Country, Passport, Rank, Taxon)
 from vavilov3.entities.accession import (AccessionValidationError,
                                          AccessionStruct,
                                          validate_accession_data)
-from vavilov3.serializers.shared import DynamicFieldsSerializer
-from vavilov3.entities.metadata import (validate_metadata_data,
-                                        MetadataValidationError)
+
 from vavilov3.entities.passport import PassportValidationError
-from vavilov3.permissions import _user_is_admin
+from vavilov3.permissions import is_user_admin
 from vavilov3.views import format_error_message
+from vavilov3.entities.shared import VavilovListSerializer, VavilovSerializer
 
 
-class AccessionListSerializer(serializers.ListSerializer):
+class AccessionMixinSerializer():
 
-    def create(self, validated_data):
-        errors = []
-        instances = []
-        group = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            group = request.user.groups.first()
+    def update_item_in_db(self, payload, instance, user):
+        return update_accession_in_db(payload, instance, user)
 
-        with transaction.atomic():
-            for item in validated_data:
-                try:
-                    instances.append(create_accession_in_db(item, group))
-                except ValueError as error:
-                    errors.append(error)
+    def create_item_in_db(self, item, group):
+        return create_accession_in_db(item, group)
 
-            if errors:
-                raise ValidationError(format_error_message(errors))
-            else:
-                return instances
-
-    def update(self, instance, validated_data):
-        instances = []
-        errors = []
-        with transaction.atomic():
-            for instance, payload in zip(instance, validated_data):
-                try:
-                    instances.append(update_accession_in_db(payload, instance))
-                except ValueError as error:
-                    errors.append(error)
-
-            if errors:
-                raise ValidationError(format_error_message(errors))
-            else:
-                return instances
+    def validate_data(self, data):
+        return validate_accession_data(data)
 
 
-class AccessionSerializer(DynamicFieldsSerializer):
+class AccessionListSerializer(AccessionMixinSerializer, VavilovListSerializer):
+    pass
+
+
+class AccessionSerializer(AccessionMixinSerializer, VavilovSerializer):
 
     class Meta:
         list_serializer_class = AccessionListSerializer
-
-    def to_representation(self, instance):
-        accession_struct = AccessionStruct(instance=instance,
-                                           fields=self.selected_fields)
-        return accession_struct.get_api_document()
-
-    def run_validation(self, data=empty):
-        try:
-            validate_accession_data(data['data'])
-        except AccessionValidationError as error:
-            raise ValidationError(format_error_message(error))
-        except MultiValueDictKeyError as error:
-            if 'data' in str(error):
-                msg = format_error_message('Data key not present')
-                raise ValidationError(msg)
-            raise ValidationError(format_error_message(error))
-
-        # only validate data updatint, not creating
-        if (self.context['request'].method != 'POST'):
-            try:
-                validate_metadata_data(data['metadata'])
-            except MetadataValidationError as error:
-                raise ValidationError(format_error_message(error))
-
-        return data
-
-    def create(self, validated_data):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user.groups.first()
-        try:
-            return create_accession_in_db(validated_data, user)
-        except ValueError as error:
-            raise ValidationError(format_error_message(error))
-
-    def update(self, instance, validated_data):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user
-        return update_accession_in_db(validated_data, instance, user)
+        Struct = AccessionStruct
+        ValidationError = AccessionValidationError
 
 
 def create_accession_in_db(api_data, group, is_public=None):
@@ -245,7 +179,7 @@ def update_accession_in_db(validated_data, instance, user):
 
     group_belong_to_user = bool(user.groups.filter(name=accession_struct.metadata.group).count())
 
-    if not group_belong_to_user and not _user_is_admin(user):
+    if not group_belong_to_user and not is_user_admin(user):
         msg = 'Can not change ownership if group does not belong to you : {}'
         msg = msg.format(accession_struct.metadata.group)
         raise ValidationError(format_error_message(msg))

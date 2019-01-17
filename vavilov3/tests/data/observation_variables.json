@@ -1,0 +1,41 @@
+[
+    {
+        "data": {
+            "name": "Plant size:cm",
+            "trait": "Plant size",
+            "description": "Measure of plant heigth",
+            "method": "by tape",
+            "data_type": "Numerical",
+            "unit": "centimeter"
+        },
+        "metadata": {
+            "group": "admin"
+        }
+    },
+    {
+        "data": {
+            "name": "Plant size:m",
+            "trait": "Plant size",
+            "description": "Measure of plant heigth",
+            "method": "by tape",
+            "data_type": "Numerical",
+            "unit": "metres"
+        },
+        "metadata": {
+            "group": "userGroup"
+        }
+    },
+    {
+        "data": {
+            "name": "Plant Growth type:categorical",
+            "trait": "Plant Growth type",
+            "description": "Measure of plant heigth",
+            "method": "observer",
+            "data_type": "Nominal",
+            "unit": ""
+        },
+        "metadata": {
+            "group": "admin"
+        }
+    }
+]
