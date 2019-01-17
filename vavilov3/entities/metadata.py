@@ -5,8 +5,10 @@ class MetadataValidationError(Exception):
     pass
 
 
-def validate_metadata_data(data):
-    for key in (IS_PUBLIC, GROUP):
+def validate_metadata_data(data, fields_to_validate=None):
+    if fields_to_validate is None:
+        fields_to_validate = (IS_PUBLIC, GROUP)
+    for key in fields_to_validate:
         if key not in data:
             msg = '{} is mandatory in metadata'.format(key)
             raise MetadataValidationError(msg)

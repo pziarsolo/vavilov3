@@ -3,107 +3,40 @@ from collections import OrderedDict
 
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.utils.datastructures import MultiValueDictKeyError
 
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import empty
-from rest_framework import serializers
 
 from vavilov3.models import (Group, Project, Study)
 
-from vavilov3.serializers.shared import DynamicFieldsSerializer
-from vavilov3.entities.metadata import (validate_metadata_data,
-                                        MetadataValidationError)
-from vavilov3.permissions import _user_is_admin
+from vavilov3.permissions import is_user_admin
 from vavilov3.views import format_error_message
 from vavilov3.entities.study import (StudyStruct, validate_study_data,
                                      StudyValidationError)
+from vavilov3.entities.shared import VavilovListSerializer, VavilovSerializer
 
 
-class StudyListSerializer(serializers.ListSerializer):
+class StudyMixinSerializer():
 
-    def create(self, validated_data):
-        errors = []
-        instances = []
-        group = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            group = request.user.groups.first()
+    def validate_data(self, data):
+        return validate_study_data(data)
 
-        with transaction.atomic():
-            for item in validated_data:
-                try:
-                    instances.append(create_study_in_db(item, group))
-                except ValueError as error:
-                    errors.append(error)
+    def update_item_in_db(self, payload, instance, user):
+        return update_study_in_db(payload, instance, user)
 
-            if errors:
-                raise ValidationError(format_error_message(errors))
-            else:
-                return instances
-
-    def update(self, instance, validated_data):
-        instances = []
-        errors = []
-        with transaction.atomic():
-            for instance, payload in zip(instance, validated_data):
-                try:
-                    instances.append(update_study_in_db(payload, instance))
-                except ValueError as error:
-                    errors.append(error)
-
-            if errors:
-                raise ValidationError(format_error_message(errors))
-            else:
-                return instances
+    def create_item_in_db(self, item, group):
+        return create_study_in_db(item, group)
 
 
-class StudySerializer(DynamicFieldsSerializer):
+class StudyListSerializer(StudyMixinSerializer, VavilovListSerializer):
+    pass
+
+
+class StudySerializer(StudyMixinSerializer, VavilovSerializer):
 
     class Meta:
         list_serializer_class = StudyListSerializer
-
-    def to_representation(self, instance):
-        study_struct = StudyStruct(instance=instance,
-                                   fields=self.selected_fields)
-        return study_struct.get_api_document()
-
-    def run_validation(self, data=empty):
-        try:
-            validate_study_data(data['data'])
-        except StudyValidationError as error:
-            raise ValidationError(format_error_message(error))
-        except MultiValueDictKeyError as error:
-            if 'data' in str(error):
-                msg = format_error_message('Data key not present')
-                raise ValidationError(msg)
-            raise ValidationError(format_error_message(error))
-
-        # only validate data updatint, not creating
-        if (self.context['request'].method != 'POST'):
-            try:
-                validate_metadata_data(data['metadata'])
-            except MetadataValidationError as error:
-                raise ValidationError(format_error_message(error))
-
-        return data
-
-    def create(self, validated_data):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user.groups.first()
-        try:
-            return create_study_in_db(validated_data, user)
-        except ValueError as error:
-            raise ValidationError(format_error_message(error))
-
-    def update(self, instance, validated_data):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user
-        return update_study_in_db(validated_data, instance, user)
+        Struct = StudyStruct
+        ValidationError = StudyValidationError
 
 
 def create_study_in_db(api_data, group, is_public=None):
@@ -159,7 +92,7 @@ def update_study_in_db(validated_data, instance, user):
 
     group_belong_to_user = bool(user.groups.filter(name=study_struct.metadata.group).count())
 
-    if not group_belong_to_user and not _user_is_admin(user):
+    if not group_belong_to_user and not is_user_admin(user):
         msg = 'Can not change ownership if group does not belong to you : {}'
         msg = msg.format(study_struct.metadata.group)
         raise ValidationError(format_error_message(msg))

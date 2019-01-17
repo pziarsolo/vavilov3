@@ -8,21 +8,21 @@ from rest_framework.decorators import action
 from rest_framework import status, mixins
 from rest_framework.settings import api_settings
 
-from vavilov3.views.shared import (GroupObjectPermMixin,
+from vavilov3.views.shared import (GroupObjectPublicPermMixin,
                                    DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin)
 
 from vavilov3.models import AccessionSet
-from vavilov3.permissions import UserGroupObjectPermission
-from vavilov3.serializers.accessionset import (
-    AccessionSetSerializer, serialize_accessionsets_from_csv)
+from vavilov3.permissions import UserGroupObjectPublicPermission
+from vavilov3.serializers.accessionset import AccessionSetSerializer
 from vavilov3.filters.accessionset import AccessionSetFilter
 
 from vavilov3.conf.settings import ACCESSIONSET_CSV_FIELDS
 from vavilov3.entities.accessionset import AccessionSetStruct
 from vavilov3.views import format_error_message
 from rest_framework.viewsets import GenericViewSet
+from vavilov3.entities.shared import serialize_entity_from_csv
 
 
 class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
@@ -34,7 +34,7 @@ class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
             yield accessionset.to_list_representation(ACCESSIONSET_CSV_FIELDS)
 
 
-class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
+class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                           DynamicFieldsViewMixin,
                           mixins.CreateModelMixin,
                           mixins.RetrieveModelMixin,
@@ -49,7 +49,7 @@ class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
     queryset = AccessionSet.objects.all()
     serializer_class = AccessionSetSerializer
     filter_class = AccessionSetFilter
-    permission_classes = (UserGroupObjectPermission,)
+    permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionSetCSVRenderer]
 
@@ -65,7 +65,7 @@ class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPermMixin,
                 msg = 'could not found csv file'
                 raise ValidationError(format_error_message(msg))
 
-            data = serialize_accessionsets_from_csv(fhand)
+            data = serialize_entity_from_csv(fhand, AccessionSetStruct)
         else:
             data = request.data
 

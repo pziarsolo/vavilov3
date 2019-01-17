@@ -400,7 +400,7 @@ class Study(models.Model):
 class ObservationDataType(models.Model):
     observation_data_type_id = models.AutoField(primary_key=True,
                                                 editable=False)
-    data_type = models.CharField(max_length=255, db_index=True, unique=True)
+    name = models.CharField(max_length=255, db_index=True, unique=True)
 
     class Meta:
         db_table = 'vavilov_observation_data_type'
@@ -408,11 +408,13 @@ class ObservationDataType(models.Model):
 
 class ObservationVariable(models.Model):
     observation_variable_id = models.AutoField(primary_key=True, editable=False)
-    name = models.CharField(max_length=255, db_index=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=255, db_index=True, unique=True)
+    trait = models.CharField(max_length=255, db_index=True)
     description = models.CharField(max_length=255)
     method = models.CharField(max_length=255)
     data_type = models.ForeignKey(ObservationDataType, on_delete=models.CASCADE)
-    unit = models.CharField(max_length=255)
+    unit = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = 'vavilov_observation_variable'

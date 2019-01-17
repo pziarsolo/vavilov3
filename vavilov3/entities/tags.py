@@ -20,6 +20,7 @@ ACCESSIONS = 'accessions'
 VALID_CONSERVATION_STATUSES = [IS_ACTIVE, IS_BASE, IS_HISTORIC, IS_ARCHIVE]
 
 # phenotyping
+# study
 STUDY_NAME = 'name'
 STUDY_DESCRIPTION = 'description'
 STUDY_ACTIVE = 'active'
@@ -28,6 +29,14 @@ END_DATE = 'end_date'
 LOCATION = 'location'
 CONTACT = 'contacts'
 PROJECT_NAME = 'project_name'
+
+# Observation Variable
+OBSERVATION_VARIABLE_NAME = 'name'
+TRAIT = 'trait'
+OBSERVATION_VARIABLE_DESCRIPTION = 'description'
+METHOD = 'method'
+DATA_TYPE = 'data_type'
+UNIT = 'unit'
 
 YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')

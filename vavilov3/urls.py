@@ -14,6 +14,7 @@ from vavilov3.views.auth import CRFTokenObtainPairView
 from vavilov3.views.accessionset import AccessionSetViewSet
 from vavilov3.views.taxon import TaxonViewSet
 from vavilov3.views.study import StudyViewSet
+from vavilov3.views.observation_variable import ObservationVariableViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -25,6 +26,7 @@ router.register(r'taxa', TaxonViewSet, base_name='taxon')
 router.register(r'accessions', AccessionViewSet)
 router.register(r'accessionsets', AccessionSetViewSet)
 router.register(r'studies', StudyViewSet)
+router.register(r'observation_variables', ObservationVariableViewSet)
 
 urlpatterns = [
     path('auth/token/', CRFTokenObtainPairView.as_view(),

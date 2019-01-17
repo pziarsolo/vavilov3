@@ -19,83 +19,27 @@ from vavilov3.entities.accessionset import (
     validate_accessionset_data)
 from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
 from vavilov3.views import format_error_message
+from vavilov3.entities.shared import VavilovSerializer, VavilovListSerializer
 
 
-class AccessionSetListSerializer(serializers.ListSerializer):
+class AccessionSetListSerializer(VavilovListSerializer):
 
-    def create(self, validated_data):
-        errors = []
-        instances = []
-        group = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            group = request.user.groups.first()
-
-        with transaction.atomic():
-            for item in validated_data:
-                try:
-                    instances.append(create_accessionset_in_db(item, group))
-                except ValueError as error:
-                    errors.append(error)
-
-            if errors:
-                raise ValidationError(format_error_message(errors))
-            else:
-                return instances
-
-#     def update(self, instance, validated_data):
-#         instances = []
-#         for instance, payload in zip(instance, validated_data):
-#             instances.append(update_accession_in_db(payload, instance))
-#         return instances
+    def create_item_in_db(self, item, group):
+        return create_accessionset_in_db(item, group)
 
 
-class AccessionSetSerializer(DynamicFieldsSerializer):
+class AccessionSetSerializer(VavilovSerializer):
 
     class Meta:
         list_serializer_class = AccessionSetListSerializer
+        Struct = AccessionSetStruct
+        ValidationError = AccessionSetValidationError
 
-    def to_representation(self, instance):
-        accessionset_struct = AccessionSetStruct(instance=instance,
-                                                 fields=self.selected_fields)
-        return accessionset_struct.get_api_document()
+    def validate_data(self, data):
+        return validate_accessionset_data(data)
 
-    def run_validation(self, data=empty):
-        try:
-            validate_accessionset_data(data['data'])
-        except AccessionSetValidationError as error:
-            raise ValidationError(format_error_message(error))
-        except MultiValueDictKeyError as error:
-            if 'data' in str(error):
-                msg = format_error_message('data key not present')
-                raise ValidationError(msg)
-            raise ValidationError(format_error_message(error))
-
-        # only validate data updatint, not creating
-        if (self.context['request'].method != 'POST'):
-            try:
-                validate_metadata_data(data['metadata'])
-            except MetadataValidationError as error:
-                raise ValidationError(format_error_message(error))
-
-        return data
-
-    def create(self, validated_data):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user.groups.first()
-        try:
-            return create_accessionset_in_db(validated_data, user)
-        except ValueError as error:
-            raise ValidationError(format_error_message(error))
-
-#     def update(self, instance, validated_data):
-#         user = None
-#         request = self.context.get("request")
-#         if request and hasattr(request, "user"):
-#             user = request.user
-#         return update_accessionset_in_db(validated_data, instance, user)
+    def create_item_in_db(self, item, group):
+        return create_accessionset_in_db(item, group)
 
 
 def create_accessionset_in_db(api_data, group, is_public=None):

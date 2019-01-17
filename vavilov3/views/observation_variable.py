@@ -7,22 +7,24 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
 from vavilov3.views import format_error_message
-from vavilov3.models import Institute
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination)
-from vavilov3.serializers.institute import InstituteSerializer
-from vavilov3.filters.institute import InstituteFilter
-from vavilov3.permissions import IsAdminOrReadOnly
-from vavilov3.entities.institute import InstituteStruct
+from vavilov3.serializers.observation_variable import (
+    ObservationVariableSerializer)
+from vavilov3.models import ObservationVariable
+from vavilov3.permissions import UserGroupObjectPermission
+from vavilov3.filters.observation_variable import ObservationVariableFilter
 from vavilov3.entities.shared import serialize_entity_from_csv
+from vavilov3.entities.observation_variable import ObservationVariableStruct
 
 
-class InstituteViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
-    lookup_field = 'code'
-    queryset = Institute.objects.order_by('code')
-    serializer_class = InstituteSerializer
-    filter_class = InstituteFilter
-    permission_classes = (IsAdminOrReadOnly,)
+class ObservationVariableViewSet(DynamicFieldsViewMixin,
+                                 viewsets.ModelViewSet):
+    lookup_field = "name"
+    serializer_class = ObservationVariableSerializer
+    queryset = ObservationVariable.objects.all()
+    filter_class = ObservationVariableFilter
+    permission_classes = (UserGroupObjectPermission,)
     pagination_class = StandardResultsSetPagination
 
     @action(methods=['post', 'put', 'patch'], detail=False)
@@ -37,7 +39,7 @@ class InstituteViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
                 msg = 'could not found csv file'
                 raise ValidationError(format_error_message(msg))
 
-            data = serialize_entity_from_csv(fhand, InstituteStruct)
+            data = serialize_entity_from_csv(fhand, ObservationVariableStruct)
         else:
             data = request.data
 

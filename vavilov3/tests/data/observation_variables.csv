@@ -1,0 +1,4 @@
+NAME,DESCRIPTION,TRAIT,METHOD,DATA_TYPE,UNIT
+color:colorimeter,trait2 desc,color,colorimeter,Nominal,
+color:eye,2descrip color,color,eye,Nominal,
+num_leaf,num_leaf,num_leaf,eye,Numerical,kg

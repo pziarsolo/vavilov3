@@ -1,6 +1,3 @@
-import csv
-from collections import OrderedDict
-
 from django.db import transaction
 from django.db.utils import IntegrityError
 
@@ -124,15 +121,3 @@ def update_institute_in_db(api_data, instance):
     instance.save()
 
     return instance
-
-
-def serialize_institute_from_csv(fhand):
-    reader = csv.DictReader(fhand, delimiter=',')
-    fields = reader.fieldnames
-    data = []
-    for row in reader:
-        row = OrderedDict(((field, row[field]) for field in fields))
-        institute_struct = InstituteStruct()
-        institute_struct.populate_from_csvrow(row)
-        data.append(institute_struct.get_api_document())
-    return data
