@@ -3,11 +3,15 @@ from operator import itemgetter
 from numpy import histogram
 
 from django.db import models, connection
-from django.contrib.auth.models import Group as DjangoGroup
+from django.contrib.auth.models import Group as DjangoGroup, AbstractUser
 from django.contrib.postgres.fields.jsonb import JSONField
 
 from vavilov3.raw_stat_sql_commands import (
     get_institute_stats_raw_sql, get_country_stats_raw_sql)
+
+
+class User(AbstractUser):
+    pass
 
 
 class Group(DjangoGroup):

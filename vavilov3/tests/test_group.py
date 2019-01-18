@@ -102,8 +102,24 @@ class GroupViewTest(TestCase):
         response = client.get(reverse('user-detail',
                                       kwargs={'username': 'user'}))
         assert not response.json()['groups']
-        return
+
         response = client.post(reverse('group-delete-user',
                                        kwargs={'name': 'group1'}),
                                {'username': 'user'})
-        print(response)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_signals(self):
+        user = User.objects.create_user(username='pep', email='em@ail.es',
+                                        password='pass')
+        admin_group = Group.objects.get(name=ADMIN_GROUP)
+        self.assertFalse(user.is_staff)
+
+        user.groups.add(admin_group)
+        self.assertTrue(user.is_staff)
+
+        user.groups.remove(admin_group)
+        self.assertEqual(0, user.groups.all().count())
+        self.assertFalse(user.is_staff)
+
+        user.groups.add(admin_group)
+        self.assertTrue(user.is_staff)

@@ -96,7 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': VALIDATION_MODULE + '.CommonPasswordValidator'},
     {'NAME': VALIDATION_MODULE + '.NumericPasswordValidator'}
 ]
-
+AUTH_USER_MODEL = 'vavilov3.User'
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
