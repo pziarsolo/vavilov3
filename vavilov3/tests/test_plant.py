@@ -6,10 +6,12 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 
 from vavilov3.tests import BaseTest
-from vavilov3.tests.data_io import load_observation_variables_from_file, \
-    assert_error_is_equal, load_plants_from_file, load_institutes_from_file, \
-    load_accessions_from_file, load_studies_from_file, \
-    load_observation_unit_from_file
+from vavilov3.tests.data_io import (assert_error_is_equal,
+                                    load_plants_from_file,
+                                    load_institutes_from_file,
+                                    load_accessions_from_file,
+                                    load_studies_from_file,
+                                    load_observation_unit_from_file)
 from vavilov3.data_io import initialize_db
 from vavilov3.views import DETAIL
 from copy import deepcopy
@@ -163,10 +165,11 @@ class PlantViewTest(BaseTest):
             ['can not set group while creating the plant',
              'can not set group while creating the plant'])
         # correct data
-        api_data = [{'data': {'name': 'Plant 5'},
-                     'metadata': {}},
-                     {'data': {'name': 'Plant 6'},
-                      'metadata': {}}]
+        api_data = [
+            {'data': {'name': 'Plant 5'},
+             'metadata': {}},
+            {'data': {'name': 'Plant 6'},
+             'metadata': {}}]
 
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
