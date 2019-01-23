@@ -1,0 +1,58 @@
+[
+    {
+        "data": {
+            "name": "Plant 1",
+            "x": "",
+            "y": "",
+            "block_number": "",
+            "entry_number": "",
+            "plant_number": "",
+            "plot_number": ""
+        },
+        "metadata": {
+            "group": "admin"
+        }
+    },
+    {
+        "data": {
+            "name": "Plant 2",
+            "x": "",
+            "y": "",
+            "block_number": "",
+            "entry_number": "",
+            "plant_number": "",
+            "plot_number": ""
+        },
+        "metadata": {
+            "group": "admin"
+        }
+    },
+    {
+        "data": {
+            "name": "Plant 3",
+            "x": "",
+            "y": "",
+            "block_number": "",
+            "entry_number": "",
+            "plant_number": "",
+            "plot_number": ""
+        },
+        "metadata": {
+            "group": "userGroup"
+        }
+    },
+    {
+        "data": {
+            "name": "Plant 4",
+            "x": "",
+            "y": "",
+            "block_number": "",
+            "entry_number": "",
+            "plant_number": "",
+            "plot_number": ""
+        },
+        "metadata": {
+            "group": "userGroup"
+        }
+    }
+]

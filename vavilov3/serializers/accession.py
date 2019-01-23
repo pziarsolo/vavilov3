@@ -24,8 +24,8 @@ class AccessionMixinSerializer():
     def update_item_in_db(self, payload, instance, user):
         return update_accession_in_db(payload, instance, user)
 
-    def create_item_in_db(self, item, group):
-        return create_accession_in_db(item, group)
+    def create_item_in_db(self, item, user):
+        return create_accession_in_db(item, user)
 
     def validate_data(self, data):
         return validate_accession_data(data)
@@ -43,7 +43,7 @@ class AccessionSerializer(AccessionMixinSerializer, VavilovSerializer):
         ValidationError = AccessionValidationError
 
 
-def create_accession_in_db(api_data, group, is_public=None):
+def create_accession_in_db(api_data, user, is_public=None):
     # when we are creating
     try:
         accession_struct = AccessionStruct(api_data=api_data)
@@ -65,6 +65,7 @@ def create_accession_in_db(api_data, group, is_public=None):
     # in the doc we must enter whole document
     if is_public is None:
         is_public = False
+    group = user.groups.first()
     accession_struct.metadata.is_public = is_public
     accession_struct.metadata.group = group.name
 

@@ -39,7 +39,7 @@ class StudyViewSet(GroupObjectPublicPermMixin, DynamicFieldsViewMixin,
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedStudyCSVRenderer]
 
-    @action(methods=['post', 'put', 'patch'], detail=False)
+    @action(methods=['post'], detail=False)
     def bulk(self, request, *args, **kwargs):
         action = request.method
         data = request.data

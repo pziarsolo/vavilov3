@@ -77,6 +77,53 @@ class UserGroupObjectPublicPermission(permissions.BasePermission):
         return False
 
 
+class ByStudyPermission(permissions.BasePermission):
+
+    def get_object_study(self, obj):
+        raise NotImplementedError('You need the function toget the study from instance')
+
+    def has_permission(self, request, view):
+        if (view.action in ('create', 'bulk')):
+            if isinstance(request.user, AnonymousUser):
+                return False
+        elif view.action == 'partial_update' and not is_user_admin(request.user):
+            return False
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        study = self.get_object_study(obj)
+        is_public = study.is_public
+        group = study.group
+        action = view.action
+        user_is_owner = bool(request.user.groups.filter(name=group.name).count())
+        if action in ['retrieve']:
+            if (is_public or is_user_admin(request.user) or
+                    user_is_owner):
+                return True
+        # partial updates only change metadata and it only can be changed by
+        # admins
+        elif action in ['partial_update'] and is_user_admin(request.user):
+            return True
+        elif action in ['update', 'destroy']:
+            if (is_user_admin(request.user) or
+               (request.user.is_authenticated and user_is_owner)):
+                return True
+
+        return False
+
+
+class ObservationUnitByStudyPermission(ByStudyPermission):
+
+    def get_object_study(self, obj):
+        return obj.study
+
+
+class ObservationByStudyPermission(ByStudyPermission):
+
+    def get_object_study(self, obj):
+        return obj.observation_unit.study
+
+
 class UserGroupObjectPermission(UserGroupObjectPublicPermission):
 
     def has_object_permission(self, request, view, obj):
@@ -120,3 +167,22 @@ def filter_queryset_by_user_group_public_permissions(queryset, user):
                                    Q(group__in=user_groups))
         else:
             return queryset.filter(is_public=True)
+
+
+def filter_queryset_by_study_permissions(queryset, user):
+        # this is the implementation of queryste filtering of
+    # UserGroupObjectPublicPermission
+    if isinstance(user, AnonymousUser):
+        return queryset.filter(study__is_public=True).distinct()
+    elif is_user_admin(user):
+        return queryset
+    else:
+        try:
+            user_groups = user.groups.all()
+        except (IndexError, AttributeError):
+            user_groups = None
+        if user_groups:
+            return queryset.filter(Q(study__is_public=True) |
+                                   Q(study__group__in=user_groups))
+        else:
+            return queryset.filter(study__is_public=True)

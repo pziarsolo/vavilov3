@@ -23,8 +23,8 @@ class StudyMixinSerializer():
     def update_item_in_db(self, payload, instance, user):
         return update_study_in_db(payload, instance, user)
 
-    def create_item_in_db(self, item, group):
-        return create_study_in_db(item, group)
+    def create_item_in_db(self, item, user):
+        return create_study_in_db(item, user)
 
 
 class StudyListSerializer(StudyMixinSerializer, VavilovListSerializer):
@@ -39,7 +39,7 @@ class StudySerializer(StudyMixinSerializer, VavilovSerializer):
         ValidationError = StudyValidationError
 
 
-def create_study_in_db(api_data, group, is_public=None):
+def create_study_in_db(api_data, user, is_public=None):
     # when we are creating
     try:
         study_struct = StudyStruct(api_data=api_data)
@@ -64,6 +64,8 @@ def create_study_in_db(api_data, group, is_public=None):
     # in the doc we must enter whole document
     if is_public is None:
         is_public = False
+
+    group = user.groups.first()
     study_struct.metadata.is_public = is_public
     study_struct.metadata.group = group.name
 

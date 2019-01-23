@@ -38,5 +38,22 @@ METHOD = 'method'
 DATA_TYPE = 'data_type'
 UNIT = 'unit'
 
+# Observation Unit
+OBSERVATION_UNIT_NAME = 'name'
+ACCESSION = 'accession'
+OBSERVATION_UNIT_LEVEL = 'level'
+OBSERVATION_UNIT_REPLICATE = 'replicate'
+OBSERVATION_UNIT_STUDY = 'study'
+PLANTS = 'plants'
+
+# Plant
+PLANT_NAME = 'name'
+PLANT_X = 'x'
+PLANT_Y = 'y'
+BLOCK_NUMBER = 'block_number'
+ENTRY_NUMBER = 'entry_number'
+PLANT_NUMBER = 'plant_number'
+PLOT_NUMBER = 'plot_number'
+
 YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')

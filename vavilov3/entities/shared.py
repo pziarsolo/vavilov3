@@ -19,15 +19,15 @@ class VavilovListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         errors = []
         instances = []
-        group = None
+        user = None
         request = self.context.get("request")
         if request and hasattr(request, "user"):
-            group = request.user.groups.first()
+            user = request.user
 
         with transaction.atomic():
             for item in validated_data:
                 try:
-                    instances.append(self.create_item_in_db(item, group))
+                    instances.append(self.create_item_in_db(item, user))
                 except ValueError as error:
                     errors.append(error)
 
@@ -59,7 +59,7 @@ class VavilovListSerializer(serializers.ListSerializer):
     def update_item_in_db(self, payload, instance, user):
         raise NotImplemented()
 
-    def create_item_in_db(self, item, group):
+    def create_item_in_db(self, item, user):
         raise NotImplemented()
 
 
@@ -106,12 +106,12 @@ class VavilovSerializer(DynamicFieldsSerializer):
         raise NotImplementedError()
 
     def create(self, validated_data):
-        group = None
+        user = None
         request = self.context.get("request")
         if request and hasattr(request, "user"):
-            group = request.user.groups.first()
+            user = request.user
         try:
-            return self.create_item_in_db(validated_data, group)
+            return self.create_item_in_db(validated_data, user)
         except ValueError as error:
             raise ValidationError(format_error_message(error))
 
@@ -120,7 +120,10 @@ class VavilovSerializer(DynamicFieldsSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user
-        return self.update_item_in_db(validated_data, instance, user)
+        try:
+            return self.update_item_in_db(validated_data, instance, user)
+        except ValueError as error:
+            raise ValidationError(format_error_message(error))
 
 
 def serialize_entity_from_csv(fhand, Struct):

@@ -22,8 +22,8 @@ class ObservationVariableMixinSerializer():
     def update_item_in_db(self, payload, instance, user):
         return update_observation_variable_in_db(payload, instance, user)
 
-    def create_item_in_db(self, item, group):
-        return create_observation_variable_in_db(item, group)
+    def create_item_in_db(self, item, user):
+        return create_observation_variable_in_db(item, user)
 
 
 class ObservationVariableListSerializer(ObservationVariableMixinSerializer,
@@ -41,7 +41,7 @@ class ObservationVariableSerializer(ObservationVariableMixinSerializer,
         metadata_validation_fields = [GROUP]
 
 
-def create_observation_variable_in_db(api_data, group):
+def create_observation_variable_in_db(api_data, user):
     try:
         struct = ObservationVariableStruct(api_data)
     except ObservationVariableValidationError as error:
@@ -56,6 +56,7 @@ def create_observation_variable_in_db(api_data, group):
     except ObservationDataType.DoesNotExist:
         raise ValidationError('data type not valid: ' + struct.data_type)
 
+    group = user.groups.first()
     struct.metadata.group = group.name
 
     with transaction.atomic():

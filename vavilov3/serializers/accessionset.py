@@ -3,23 +3,13 @@ from collections import OrderedDict
 
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.utils.datastructures import MultiValueDictKeyError
-
-from rest_framework.exceptions import ValidationError
-from rest_framework.fields import empty
-from rest_framework import serializers
 
 from vavilov3.models import (Institute, AccessionSet, Accession)
-from vavilov3.serializers.shared import DynamicFieldsSerializer
-from vavilov3.entities.metadata import (validate_metadata_data,
-                                        MetadataValidationError)
-
-from vavilov3.entities.accessionset import (
-    AccessionSetStruct, AccessionSetValidationError,
-    validate_accessionset_data)
 from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
-from vavilov3.views import format_error_message
 from vavilov3.entities.shared import VavilovSerializer, VavilovListSerializer
+from vavilov3.entities.accessionset import (AccessionSetStruct,
+                                            AccessionSetValidationError,
+                                            validate_accessionset_data)
 
 
 class AccessionSetListSerializer(VavilovListSerializer):
@@ -38,11 +28,11 @@ class AccessionSetSerializer(VavilovSerializer):
     def validate_data(self, data):
         return validate_accessionset_data(data)
 
-    def create_item_in_db(self, item, group):
-        return create_accessionset_in_db(item, group)
+    def create_item_in_db(self, item, user):
+        return create_accessionset_in_db(item, user)
 
 
-def create_accessionset_in_db(api_data, group, is_public=None):
+def create_accessionset_in_db(api_data, user, is_public=None):
     # when we are creating
     try:
         accessionset_struct = AccessionSetStruct(api_data=api_data)
@@ -63,6 +53,7 @@ def create_accessionset_in_db(api_data, group, is_public=None):
     # in the doc we must enter whole document
     if is_public is None:
         is_public = False
+    group = user.groups.first()
     accessionset_struct.metadata.is_public = is_public
     accessionset_struct.metadata.group = group.name
 

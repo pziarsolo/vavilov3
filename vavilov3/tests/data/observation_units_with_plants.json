@@ -1,0 +1,58 @@
+[
+    {
+        "data": {
+            "name": "Plant 1",
+            "accession": {
+                "instituteCode": "ESP004",
+                "germplasmNumber": "BGE0001"
+            },
+            "level": "plant",
+            "replicate": "0",
+            "study": "study1",
+            "plants": ["Plant 1"]
+        },
+        "metadata": {}
+    },
+    {
+        "data": {
+            "name": "Plant 2",
+            "accession": {
+                "instituteCode": "ESP026",
+                "germplasmNumber": "BGE0002"
+            },
+            "level": "plant",
+            "replicate": "0",
+            "study": "study2",
+            "plants": ["Plant 2"]
+        },
+        "metadata": {}
+    },
+    {
+        "data": {
+            "name": "Plant 3",
+            "accession": {
+                "instituteCode": "ESP058",
+                "germplasmNumber": "BGE0003"
+            },
+            "level": "plant",
+            "replicate": "0",
+            "study": "study3",
+            "plants": ["Plant 3"]
+        },
+        "metadata": {}
+    },
+    {
+        "data": {
+            "name": "Plant 4",
+            "accession": {
+                "instituteCode": "ESP004",
+                "germplasmNumber": "BGE0004"
+            },
+            "level": "plant",
+            "replicate": "0",
+            "study": "study4",
+            "plants": ["Plant 4"]
+        },
+        "metadata": {}
+    }
+]

@@ -15,6 +15,8 @@ from vavilov3.views.accessionset import AccessionSetViewSet
 from vavilov3.views.taxon import TaxonViewSet
 from vavilov3.views.study import StudyViewSet
 from vavilov3.views.observation_variable import ObservationVariableViewSet
+from vavilov3.views.observation_unit import ObservationUnitViewSet
+from vavilov3.views.plant import PlantViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -27,6 +29,8 @@ router.register(r'accessions', AccessionViewSet)
 router.register(r'accessionsets', AccessionSetViewSet)
 router.register(r'studies', StudyViewSet)
 router.register(r'observation_variables', ObservationVariableViewSet)
+router.register(r'observation_units', ObservationUnitViewSet)
+router.register(r'plants', PlantViewSet)
 
 urlpatterns = [
     path('auth/token/', CRFTokenObtainPairView.as_view(),
@@ -35,5 +39,4 @@ urlpatterns = [
          name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('', include(router.urls))
-
 ]

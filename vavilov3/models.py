@@ -427,21 +427,30 @@ class ObservationVariable(models.Model):
 
 class ObservationUnit(models.Model):
     observation_unit_id = models.AutoField(primary_key=True, editable=False)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True, db_index=True)
     accession = models.ForeignKey(Accession, on_delete=models.CASCADE)
-    level = models.CharField(max_length=255)
+    level = models.CharField(max_length=255, db_index=True)
     replicate = models.CharField(max_length=255)
     study = models.ForeignKey(Study, on_delete=models.CASCADE)
 
+    class Meta:
+        db_table = 'vavilov_observation_unit'
 
-class Plant():
-    x = models.CharField(max_length=255)
-    y = models.CharField(max_length=255)
-    block_number = models.CharField(max_length=255)
-    entry_number = models.CharField(max_length=255)
-    plant_number = models.CharField(max_length=255)
-    plot_number = models.CharField(max_length=255)
+
+class Plant(models.Model):
+    plant_id = models.AutoField(primary_key=True, editable=False)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    x = models.CharField(max_length=255, null=True)
+    y = models.CharField(max_length=255, null=True)
+    block_number = models.CharField(max_length=255, db_index=True, null=True)
+    entry_number = models.CharField(max_length=255, db_index=True, null=True)
+    plant_number = models.CharField(max_length=255, db_index=True, null=True)
+    plot_number = models.CharField(max_length=255, db_index=True, null=True)
     observation_units = models.ManyToManyField(ObservationUnit)
+
+    class Meta:
+        db_table = 'vavilov_plant'
 
 
 class Observation(models.Model):
