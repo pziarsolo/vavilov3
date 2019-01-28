@@ -1,28 +1,19 @@
-from io import TextIOWrapper
-
-from django.core.exceptions import ValidationError
-
 from rest_framework_csv import renderers
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import status, mixins
+from rest_framework import mixins
 from rest_framework.settings import api_settings
+from rest_framework.viewsets import GenericViewSet
 
 from vavilov3.views.shared import (GroupObjectPublicPermMixin,
                                    DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
-                                   MultipleFieldLookupMixin)
-
+                                   MultipleFieldLookupMixin,
+                                   BulkOperationsMixin)
 from vavilov3.models import AccessionSet
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.serializers.accessionset import AccessionSetSerializer
 from vavilov3.filters.accessionset import AccessionSetFilter
-
 from vavilov3.conf.settings import ACCESSIONSET_CSV_FIELDS
 from vavilov3.entities.accessionset import AccessionSetStruct
-from vavilov3.views import format_error_message
-from rest_framework.viewsets import GenericViewSet
-from vavilov3.entities.shared import serialize_entity_from_csv
 
 
 class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
@@ -35,6 +26,7 @@ class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
 
 
 class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
+                          BulkOperationsMixin,
                           DynamicFieldsViewMixin,
                           mixins.CreateModelMixin,
                           mixins.RetrieveModelMixin,
@@ -52,27 +44,4 @@ class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionSetCSVRenderer]
-
-    @action(methods=['post'], detail=False)
-    def bulk(self, request):
-        action = request.method
-        data = request.data
-        if 'multipart/form-data' in request.content_type:
-            try:
-                fhand = TextIOWrapper(request.FILES['csv'].file,
-                                      encoding='utf-8')
-            except KeyError:
-                msg = 'could not found csv file'
-                raise ValidationError(format_error_message(msg))
-
-            data = serialize_entity_from_csv(fhand, AccessionSetStruct)
-        else:
-            data = request.data
-
-        if action == 'POST':
-            serializer = self.get_serializer(data=data, many=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED,
-                            headers=headers)
+    Struct = AccessionSetStruct

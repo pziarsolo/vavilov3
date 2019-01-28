@@ -1,9 +1,44 @@
+from io import TextIOWrapper
+
+from rest_framework.exceptions import ValidationError
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.pagination import LimitOffsetPagination
+
 from vavilov3.permissions import (filter_queryset_by_user_group_public_permissions,
                                   filter_queryset_by_study_permissions,
                                   filter_queryset_by_obs_unit_in_study_permissions)
+from vavilov3.views import format_error_message
+from vavilov3.entities.shared import serialize_entity_from_csv
+
+
+class BulkOperationsMixin(object):
+
+    @action(methods=['post'], detail=False)
+    def bulk(self, request):
+        action = request.method
+        data = request.data
+        if 'multipart/form-data' in request.content_type:
+            try:
+                fhand = TextIOWrapper(request.FILES['csv'].file,
+                                      encoding='utf-8')
+            except KeyError:
+                msg = 'could not found csv file'
+                raise ValidationError(format_error_message(msg))
+
+            data = serialize_entity_from_csv(fhand, self.Struct)
+        else:
+            data = request.data
+
+        if action == 'POST':
+            serializer = self.get_serializer(data=data, many=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
 
 
 class GroupObjectPublicPermMixin(object):
