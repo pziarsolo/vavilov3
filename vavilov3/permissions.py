@@ -186,3 +186,22 @@ def filter_queryset_by_study_permissions(queryset, user):
                                    Q(study__group__in=user_groups))
         else:
             return queryset.filter(study__is_public=True)
+
+
+def filter_queryset_by_obs_unit_in_study_permissions(queryset, user):
+        # this is the implementation of queryste filtering of
+    # UserGroupObjectPublicPermission
+    if isinstance(user, AnonymousUser):
+        return queryset.filter(observation_unit__study__is_public=True).distinct()
+    elif is_user_admin(user):
+        return queryset
+    else:
+        try:
+            user_groups = user.groups.all()
+        except (IndexError, AttributeError):
+            user_groups = None
+        if user_groups:
+            return queryset.filter(Q(observation_unit__study__is_public=True) |
+                                   Q(observation_unit__study__group__in=user_groups))
+        else:
+            return queryset.filter(study__is_public=True)

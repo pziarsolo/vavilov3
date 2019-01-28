@@ -26,7 +26,7 @@ class InstituteViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     @action(methods=['post'], detail=False)
-    def bulk(self, request, *args, **kwargs):
+    def bulk(self, request):
         action = request.method
         data = request.data
         if 'multipart/form-data' in request.content_type:

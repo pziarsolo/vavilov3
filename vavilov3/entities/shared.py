@@ -88,9 +88,9 @@ class VavilovSerializer(DynamicFieldsSerializer):
                     fields_to_validate = self.Meta.metadata_validation_fields
                 except AttributeError:
                     fields_to_validate = None
-
-                validate_metadata_data(data['metadata'],
-                                       fields_to_validate=fields_to_validate)
+                if fields_to_validate:
+                    validate_metadata_data(data['metadata'],
+                                           fields_to_validate=fields_to_validate)
             except MetadataValidationError as error:
                 raise ValidationError(format_error_message(error))
 

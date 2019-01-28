@@ -2,7 +2,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from vavilov3.permissions import (filter_queryset_by_user_group_public_permissions,
-                                  filter_queryset_by_study_permissions)
+                                  filter_queryset_by_study_permissions,
+                                  filter_queryset_by_obs_unit_in_study_permissions)
 
 
 class GroupObjectPublicPermMixin(object):
@@ -18,6 +19,13 @@ class ByObjectStudyPermMixin(object):
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
         return filter_queryset_by_study_permissions(queryset, self.request.user)
+
+
+class ByObservationUnitInStudyPermMixin(object):
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        return filter_queryset_by_obs_unit_in_study_permissions(queryset, self.request.user)
 
 
 class DynamicFieldsViewMixin(object):

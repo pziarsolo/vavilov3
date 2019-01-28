@@ -22,7 +22,7 @@ class TaxonViewSet(MultipleFieldLookupMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     @action(methods=['GET'], detail=False)
-    def stats_by_rank(self, request, *args, **kwargs):
+    def stats_by_rank(self, request):
         stats = {}
 #         for accession_stat in Taxon.objects.raw(get_taxa_stas_raw_sql('accession')):
 #             print(accession_stat)

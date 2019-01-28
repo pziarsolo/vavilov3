@@ -55,5 +55,14 @@ ENTRY_NUMBER = 'entry_number'
 PLANT_NUMBER = 'plant_number'
 PLOT_NUMBER = 'plot_number'
 
+# Observation
+OBSERVATION_ID = 'observation_id'
+OBSERVATION_VARIABLE = 'observation_variable'
+OBSERVATION_UNIT = 'observation_unit'
+OBSERVATION_CREATION_TIME = 'creation_time'
+OBSERVER = 'observer'
+VALUE = 'value'
+OBSERVATION_STUDY = 'study'
+
 YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')

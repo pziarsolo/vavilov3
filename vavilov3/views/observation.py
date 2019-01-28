@@ -2,6 +2,7 @@ from io import TextIOWrapper
 
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.contrib.auth.models import AnonymousUser
 
 from rest_framework.response import Response
 from rest_framework import viewsets, status
@@ -10,30 +11,29 @@ from rest_framework.decorators import action
 from vavilov3.views import format_error_message
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination)
-from vavilov3.models import Plant
-from vavilov3.permissions import UserGroupObjectPermission, is_user_admin
+from vavilov3.models import Observation
+from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.entities.shared import serialize_entity_from_csv
-from vavilov3.serializers.plant import PlantSerializer
-from vavilov3.entities.plant import PlantStruct
-from vavilov3.filters.plant import PlantFilter
-from django.contrib.auth.models import AnonymousUser
+from vavilov3.serializers.observation import ObservationSerializer
+from vavilov3.entities.observation import ObservationStruct
+from vavilov3.filters.observation import ObservationFilter
 
 
-class PlantViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
-    lookup_field = "name"
-    serializer_class = PlantSerializer
-    queryset = Plant.objects.all()
-    filter_class = PlantFilter
-    permission_classes = (UserGroupObjectPermission,)
+class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
+    lookup_field = 'observation_id'
+    serializer_class = ObservationSerializer
+    queryset = Observation.objects.all()
+    filter_class = ObservationFilter
+    permission_classes = (ObservationByStudyPermission,)
     pagination_class = StandardResultsSetPagination
 
     def filter_queryset(self, queryset):
-        # filter plants by owner and look if they are plublic looing to
-        # the observatins units study tahat they belong to
+        # It filters by the study permissions. And the observations belong
+        # to a observation unit that is in a study
         queryset = super().filter_queryset(queryset)
         user = self.request.user
         if isinstance(user, AnonymousUser):
-            return queryset.filter(observation_units__study__is_public=True).distinct()
+            return queryset.filter(observation_unit__study__is_public=True).distinct()
         elif is_user_admin(user):
             return queryset
         else:
@@ -42,10 +42,10 @@ class PlantViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
             except (IndexError, AttributeError):
                 user_groups = None
             if user_groups:
-                return queryset.filter(Q(observation_units__study__is_public=True) |
-                                       Q(group__in=user_groups)).distinct()
+                return queryset.filter(Q(observation_unit__study__is_public=True) |
+                                       Q(observation_unit__study__group__in=user_groups))
             else:
-                return queryset.filter(observation_units__study__is_public=True).distinct()
+                return queryset.filter(study__is_public=True)
 
     @action(methods=['post'], detail=False)
     def bulk(self, request):
@@ -59,7 +59,7 @@ class PlantViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
                 msg = 'could not found csv file'
                 raise ValidationError(format_error_message(msg))
 
-            data = serialize_entity_from_csv(fhand, PlantStruct)
+            data = serialize_entity_from_csv(fhand, ObservationStruct)
         else:
             data = request.data
 

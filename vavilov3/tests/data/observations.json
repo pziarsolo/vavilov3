@@ -1,0 +1,71 @@
+{
+    "OBS1": [
+        {
+            "observation_variable": "Plant size:cm",
+            "observation_unit": "Plant 1",
+            "value": "12",
+            "observer": "observer1",
+            "creation_time": "1911-12-01 18:23:00"
+        },
+        {
+            "observation_variable": "Plant Growth type:categorical",
+            "observation_unit": "Plant 1",
+            "value": "Big",
+            "observer": "observer1",
+            "creation_time": "1911-12-01 18:23:00"
+        },
+        {
+            "observation_variable": "Plant size:m",
+            "observation_unit": "Plant 2",
+            "value": "1,2",
+            "observer": "observer1",
+            "creation_time": "1911-12-01 18:23:00"
+        }
+    ],
+    "OBS2": [
+        {
+             "observation_variable": "Plant size:cm",
+            "observation_unit": "Plant 2",
+            "value": "12",
+            "observer": "observer1",
+            "creation_time": "1911-12-01 18:23:00"
+        },
+        {
+             "observation_variable": "Plant size:cm",
+            "observation_unit": "Plant 3",
+            "value": "11",
+            "observer": "observer1",
+            "creation_time": "1911-12-01 18:23:00"
+        },
+        {
+             "observation_variable": "Plant size:cm",
+            "observation_unit": "Plant 4",
+            "value": "13",
+            "observer": "observer1",
+            "creation_time": "1911-12-01 18:23:00"
+        }
+    ],
+    "OBS3": [
+        {
+            "observation_variable": "",
+            "observation_unit": "",
+            "value": "",
+            "observer": "",
+            "creation_time": ""
+        },
+        {
+            "observation_variable": "",
+            "observation_unit": "",
+            "value": "",
+            "observer": "",
+            "creation_time": ""
+        },
+        {
+            "observation_variable": "",
+            "observation_unit": "",
+            "value": "",
+            "observer": "",
+            "creation_time": ""
+        }
+    ]
+}

@@ -10,6 +10,7 @@ from vavilov3.serializers.observation_variable import create_observation_variabl
 from vavilov3.serializers.observation_unit import create_observation_unit_in_db
 from vavilov3.entities.tags import OBSERVATION_UNIT_STUDY
 from vavilov3.serializers.plant import create_plant_in_db
+from vavilov3.serializers.observation import create_observation_in_db
 
 
 def _load_items_from_file(fpath, kind):
@@ -90,5 +91,14 @@ def load_plants_from_file(fpath):
         create_plant_in_db(item, user)
 
 
+def load_observations_from_file(fpath, obs_group, user=None):
+    fhand = open(fpath)
+    items = json.load(fhand)
+    items = items[obs_group]
+    for item in items:
+        create_observation_in_db(item, user)
+
+
 def assert_error_is_equal(error, error_message):
-    assert error[DETAIL] == error_message
+    assert error[DETAIL] == error_message, '{} != {}'.format(error[DETAIL],
+                                                             error_message)

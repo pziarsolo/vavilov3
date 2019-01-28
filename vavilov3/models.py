@@ -457,7 +457,13 @@ class Observation(models.Model):
     observation_id = models.AutoField(primary_key=True, editable=False)
     observation_variable = models.ForeignKey(ObservationVariable,
                                              on_delete=models.CASCADE)
-    observation_unit = models.ForeignKey(ObservationUnit, on_delete=models.CASCADE)
-    observationTimeStamp = models.DateField()
-    observer = models.CharField(max_length=255)
+    observation_unit = models.ForeignKey(ObservationUnit,
+                                         on_delete=models.CASCADE)
     value = models.CharField(max_length=255)
+    observer = models.CharField(max_length=255)
+    creation_time = models.DateTimeField(null=True)
+
+    class Meta:
+        db_table = 'vavilov_observation'
+        unique_together = ('observation_variable', 'observation_unit', 'value',
+                           'observer', 'creation_time')

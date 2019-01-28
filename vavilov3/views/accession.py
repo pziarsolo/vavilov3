@@ -45,7 +45,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionCSVRenderer]
 
     @action(methods=['post'], detail=False)
-    def bulk(self, request, *args, **kwargs):
+    def bulk(self, request):
         action = request.method
         data = request.data
         if 'multipart/form-data' in request.content_type:
