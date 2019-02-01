@@ -11,8 +11,24 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import socket
 from corsheaders.defaults import default_headers
 from _datetime import timedelta
+
+
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
+
+
+HOST_IP = get_ip_address()
+if HOST_IP.startswith('192.168'):
+    DEVELOPMENT_MACHINE = False
+else:
+    DEVELOPMENT_MACHINE = True
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +40,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2irb)d)e*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -78,15 +93,29 @@ WSGI_APPLICATION = 'vavilov3_web.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'test_crf_db',
-        'USER': 'crf_user',
-        'HOST': 'localhost',
-        'PASSWORD': 'crf_pass'
+if DEVELOPMENT_MACHINE:
+    DEBUG = True
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'test_crf_db',
+            'USER': 'crf_user',
+            'HOST': 'localhost',
+            'PASSWORD': 'crf_pass'
+        }
     }
-}
+else:
+    DEBUG = False
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'crf_db',
+            'USER': 'crf_user',
+            'HOST': 'localhost',
+            'PASSWORD': 'crf_pass'
+        }
+    }
+    ALLOWED_HOSTS = ['vavilov.comav.upv.es']
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
