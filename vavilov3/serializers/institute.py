@@ -8,27 +8,25 @@ from rest_framework.exceptions import ValidationError
 from vavilov3.serializers.shared import DynamicFieldsSerializer
 from vavilov3.entities.institute import (InstituteStruct,
                                          InstituteValidationError,
-                                         validate_institute_data)
-from vavilov3.models import Institute
+                                         validate_institute_data,
+                                         create_institute_in_db,
+                                         update_institute_in_db)
 from vavilov3.views import format_error_message
+from vavilov3.tasks import create_institutes_task, wait_func, add_task_to_user
 
 
 class InstituteListSerializer(serializers.ListSerializer):
 
     def create(self, validated_data):
-        errors = []
-        instances = []
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
 
-        with transaction.atomic():
-            for item in validated_data:
-                try:
-                    instances.append(create_institute_in_db(item))
-                except ValueError as error:
-                    errors.append(error)
-            if errors:
-                raise ValidationError(format_error_message(errors))
-            else:
-                return instances
+        async_result = create_institutes_task.delay(validated_data)
+#         async_result = wait_func.delay(5)
+        add_task_to_user(user, async_result)
+        return async_result
 
     def update(self, instance, validated_data):
         instances = []
@@ -85,39 +83,3 @@ class InstituteSerializer(DynamicFieldsSerializer):
             return update_institute_in_db(validated_data, instance)
         except ValueError as error:
             raise ValidationError(format_error_message(error))
-
-
-def create_institute_in_db(api_data):
-    try:
-        institute_struct = InstituteStruct(api_data)
-    except InstituteValidationError as error:
-        print(error)
-        raise
-
-    with transaction.atomic():
-        try:
-            institute = Institute.objects.create(
-                code=institute_struct.institute_code,
-                name=institute_struct.institute_name,
-                data=institute_struct.data)
-        except IntegrityError:
-            msg = '{} already exist in db'
-            msg = msg .format(institute_struct.institute_code)
-            raise ValueError(msg)
-        return institute
-
-
-def update_institute_in_db(api_data, instance):
-    try:
-        institute_struct = InstituteStruct(api_data)
-    except InstituteValidationError as error:
-        raise ValueError(error)
-
-    if institute_struct.institute_code != instance.code:
-        raise ValueError('Can not change id in an update operation')
-
-    instance.name = institute_struct.institute_name
-    instance.data = institute_struct.data
-    instance.save()
-
-    return instance

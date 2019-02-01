@@ -14,7 +14,6 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
 
 from vavilov3.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
                                     ACCESSIONS)
-from vavilov3.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -194,74 +193,6 @@ class AccessionSetViewTest(BaseTest):
                                    data={'biological_status': 100})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
-
-    def test_bulk_create(self):
-        self.add_admin_credentials()
-        list_url = reverse('accessionset-list')
-        api_data = [{'data': {'instituteCode': 'ESP004',
-                              'accessionsetNumber': 'BGE0006'},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    {'data': {'instituteCode': 'ESP004',
-                              'accessionsetNumber': 'BGE0007'},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        assert_error_is_equal(
-            response.json(),
-            ['can not set group or is public while creating the accession',
-             'can not set group or is public while creating the accession'])
-        # correct data
-        self.assertEqual(len(self.client.get(list_url).json()), 2)
-        api_data = [{'data': {'instituteCode': 'ESP004',
-                              'accessionsetNumber': 'BGE0006'},
-                     'metadata': {}},
-                    {'data': {'instituteCode': 'ESP004',
-                              'accessionsetNumber': 'BGE0007'},
-                     'metadata': {}}]
-
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-        # Should fail, can not add again same item
-        api_data = [{'data': {'instituteCode': 'ESP004',
-                              'accessionsetNumber': 'BGE0006'},
-                     'metadata': {}},
-                    {'data': {'instituteCode': 'ESP004',
-                              'accessionsetNumber': 'BGE0007'},
-                     'metadata': {}}]
-
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-    def test_bulk_create_csv(self):
-        self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'accessionsets_extra.csv')
-        list_url = reverse('accessionset-list')
-        bulk_url = reverse('accessionset-bulk')
-        content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 2)
-        response = self.client.post(bulk_url,
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-        # adding again fails with error
-        response = self.client.post(bulk_url,
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
 
 
 class AccessionSetPermissionViewTest(BaseTest):

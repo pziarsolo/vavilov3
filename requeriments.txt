@@ -8,3 +8,5 @@ djangorestframework-csv
 django-crispy-forms
 drf-yasg
 django-cors-headers
+celery
+django-celery-results

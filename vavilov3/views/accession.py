@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+from time import time
 
 from rest_framework import viewsets, status
 from rest_framework_csv import renderers
@@ -11,15 +12,16 @@ from vavilov3.models import Accession
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
-                                   GroupObjectPublicPermMixin)
+                                   GroupObjectPublicPermMixin, calc_duration)
 from vavilov3.serializers.accession import (
-    AccessionSerializer, serialize_accessions_from_csv)
+    AccessionSerializer)
 from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.entities.accession import AccessionStruct, \
-    AccessionValidationError
+    AccessionValidationError, serialize_accessions_from_csv
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
-from vavilov3.views import format_error_message
+from vavilov3.views import format_error_message, DETAIL
+from django_celery_results.models import TaskResult
 
 
 class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
@@ -47,6 +49,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     @action(methods=['post'], detail=False)
     def bulk(self, request):
         action = request.method
+#         prev_time = time()
         data = request.data
         if 'multipart/form-data' in request.content_type:
             try:
@@ -64,11 +67,15 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                 raise ValueError(format_error_message(error))
         else:
             data = request.data
+#         prev_time = calc_duration('csv to json', prev_time)
 
         if action == 'POST':
+
             serializer = self.get_serializer(data=data, many=True)
+#             prev_time = calc_duration('get_serializer', prev_time)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED,
-                            headers=headers)
+
+#             prev_time = calc_duration('perform_create', prev_time)
+            return Response({'task_id': serializer.instance.id},
+                            status=status.HTTP_200_OK, headers={})

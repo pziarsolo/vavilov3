@@ -1,3 +1,4 @@
+from time import time
 from io import TextIOWrapper
 
 from rest_framework.exceptions import ValidationError
@@ -11,7 +12,14 @@ from vavilov3.permissions import (filter_queryset_by_user_group_public_permissio
                                   filter_queryset_by_study_permissions,
                                   filter_queryset_by_obs_unit_in_study_permissions)
 from vavilov3.views import format_error_message
-from vavilov3.entities.shared import serialize_entity_from_csv
+from vavilov3.serializers.shared import serialize_entity_from_csv
+
+
+def calc_duration(action, prev_time):
+    now = time()
+    print('{}: Took {} secs'.format(action, round(now - prev_time, 2)))
+#     logger.debug('{}: Took {} secs'.format(action, round(now - prev_time, 2)))
+    return now
 
 
 class BulkOperationsMixin(object):
@@ -19,6 +27,7 @@ class BulkOperationsMixin(object):
     @action(methods=['post'], detail=False)
     def bulk(self, request):
         action = request.method
+#         prev_time = time()
         data = request.data
         if 'multipart/form-data' in request.content_type:
             try:
@@ -36,9 +45,9 @@ class BulkOperationsMixin(object):
             serializer = self.get_serializer(data=data, many=True)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED,
-                            headers=headers)
+            return Response({'task_id': serializer.instance.id},
+                            status=status.HTTP_200_OK,
+                            headers={})
 
 
 class GroupObjectPublicPermMixin(object):

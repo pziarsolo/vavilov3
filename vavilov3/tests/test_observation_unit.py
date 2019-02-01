@@ -1,4 +1,5 @@
 from os.path import join, abspath, dirname
+from copy import deepcopy
 
 from django.db import transaction
 
@@ -13,9 +14,6 @@ from vavilov3.tests.data_io import (assert_error_is_equal,
                                     load_observation_unit_from_file,
                                     load_plants_from_file)
 from vavilov3.data_io import initialize_db
-from vavilov3.views import DETAIL
-from copy import deepcopy
-from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -218,116 +216,6 @@ class ObservationUnitViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 0)
 
-    def test_bulk_create(self):
-        self.add_admin_credentials()
-        list_url = reverse('observationunit-list')
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-        api_data = [
-            {'data': {
-                "name": "Plant 5",
-                "accession": {
-                    "instituteCode": "ESP004",
-                    "germplasmNumber": "BGE0001"
-                },
-                "level": "plant",
-                "replicate": "0",
-                "study": "study2"},
-             'metadata': {'group': 'admin'}},
-            {'data': {
-                "name": "Plant 6",
-                "accession": {
-                    "instituteCode": "ESP004",
-                    "germplasmNumber": "BGE0001"
-                },
-                "level": "plant",
-                "replicate": "0",
-                "study": "study2"},
-             'metadata': {'group': 'admin'}}
-        ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        assert_error_is_equal(
-            response.json(),
-            ['can not set group while creating the observation unit',
-             'can not set group while creating the observation unit'])
-        # correct data
-        api_data = [{'data': {"name": "Plant 5",
-                              "accession": {
-                                  "instituteCode": "ESP004",
-                                  "germplasmNumber": "BGE0001"
-                              },
-                              "level": "plant",
-                              "replicate": "0",
-                              "study": "study2"},
-                     'metadata': {}},
-                    {'data': {"name": "Plant 6",
-                              "accession": {
-                                  "instituteCode": "ESP004",
-                                  "germplasmNumber": "BGE0001"
-                              },
-                              "level": "plant",
-                              "replicate": "0",
-                              "study": "study2"},
-                     'metadata': {}},
-                    ]
-
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-        # Should fail, can not add again same item
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-    def test_bulk_create_csv(self):
-        self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'observation_units.csv')
-        list_url = reverse('observationunit-list')
-        content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 8)
-        result = response.json()[0]
-        self.assertEqual(result['data']['name'], 'Plant 7')
-        self.assertEqual(result['data']['accession'], {INSTITUTE_CODE: 'ESP004',
-                                                       GERMPLASM_NUMBER: 'BGE0001'})
-        self.assertEqual(result['data']['level'], 'Plant')
-        self.assertEqual(result['data']['replicate'], '0')
-        self.assertEqual(result['data']['study'], 'study1')
-
-        detail_url = reverse('observationunit-detail',
-                             kwargs={'name': 'Plant 7'})
-        response = self.client.get(detail_url)
-
-        self.assertEqual(response.json(),
-                         {'data': {"name": "Plant 7",
-                                   "accession": {
-                                       "instituteCode": "ESP004",
-                                       "germplasmNumber": "BGE0001"
-                                   },
-                                   "level": "Plant",
-                                   "replicate": "0",
-                                   "study": "study1"},
-                          'metadata': {'group': 'admin'}})
-
-        # adding again fails with error
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 4)
-
 
 class ObservationUnitPermissionsViewTest(BaseTest):
 
@@ -497,15 +385,16 @@ class ObservationUnitPlantViewTest(BaseTest):
     def test_create_observation_unit_with_plant(self):
         api_data = {
             "data":
-                {"name": "Plant 10",
-                 "accession": {
-                     "instituteCode": "ESP004",
-                     "germplasmNumber": "BGE0001"
-                },
-                 "level": "plant",
-                 "replicate": "0",
-                 "study": "study3",
-                 "plants": ["Plant 1"]},
+                {
+                    "name": "Plant 10",
+                    "accession": {
+                        "instituteCode": "ESP004",
+                        "germplasmNumber": "BGE0001"
+                    },
+                    "level": "plant",
+                    "replicate": "0",
+                    "study": "study3",
+                    "plants": ["Plant 1"]},
             "metadata": {}}
 
         self.add_user_credentials()
@@ -564,4 +453,3 @@ class ObservationUnitPlantViewTest(BaseTest):
         response = self.client.get(list_url, data={'plant_contains': 'Plant'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 4)
-

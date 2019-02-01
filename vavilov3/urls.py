@@ -18,6 +18,7 @@ from vavilov3.views.observation_variable import ObservationVariableViewSet
 from vavilov3.views.observation_unit import ObservationUnitViewSet
 from vavilov3.views.plant import PlantViewSet
 from vavilov3.views.observation import ObservationViewSet
+from vavilov3.views.task import TaskViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -33,6 +34,7 @@ router.register(r'observation_variables', ObservationVariableViewSet)
 router.register(r'observation_units', ObservationUnitViewSet)
 router.register(r'plants', PlantViewSet)
 router.register(r'observations', ObservationViewSet)
+router.register(r'tasks', TaskViewSet, basename='task')
 
 urlpatterns = [
     path('auth/token/', CRFTokenObtainPairView.as_view(),

@@ -1,6 +1,11 @@
+from collections import OrderedDict
+
+from django.db import transaction
+from django.db.utils import IntegrityError
+
+from vavilov3.models import Institute
 from vavilov3.entities.tags import (INSTITUTE_CODE, INSTITUTE_NAME,
                                     INSTITUTE_TYPE)
-from collections import OrderedDict
 
 
 class InstituteValidationError(Exception):
@@ -105,3 +110,39 @@ _INSTITUTE_CSV_FIELD_CONFS = [
 ]
 INSTITUTE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f)
                                          for f in _INSTITUTE_CSV_FIELD_CONFS])
+
+
+def create_institute_in_db(api_data):
+    try:
+        institute_struct = InstituteStruct(api_data)
+    except InstituteValidationError as error:
+        print(error)
+        raise
+
+    with transaction.atomic():
+        try:
+            institute = Institute.objects.create(
+                code=institute_struct.institute_code,
+                name=institute_struct.institute_name,
+                data=institute_struct.data)
+        except IntegrityError:
+            msg = '{} already exist in db'
+            msg = msg .format(institute_struct.institute_code)
+            raise ValueError(msg)
+        return institute
+
+
+def update_institute_in_db(api_data, instance):
+    try:
+        institute_struct = InstituteStruct(api_data)
+    except InstituteValidationError as error:
+        raise ValueError(error)
+
+    if institute_struct.institute_code != instance.code:
+        raise ValueError('Can not change id in an update operation')
+
+    instance.name = institute_struct.institute_name
+    instance.data = institute_struct.data
+    instance.save()
+
+    return instance

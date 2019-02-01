@@ -14,6 +14,15 @@ class User(AbstractUser):
     pass
 
 
+class UserTasks(models.Model):
+    user_task_id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    task_id = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'vavilov_user_task'
+
+
 class Group(DjangoGroup):
 
     class Meta:

@@ -13,7 +13,6 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
                                     assert_error_is_equal)
 
 from vavilov3.data_io import initialize_db
-from vavilov3.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -128,42 +127,6 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(len(response.json()), 1)
         response = self.client.get(list_url, data={'code__icontain': 'esp'})
         self.assertEqual(len(response.json()), 4)
-
-    def test_bulk_create(self):
-        fpath = join(TEST_DATA_DIR, 'institutes_extra.csv')
-        bulk_url = reverse('institute-bulk')
-        list_url = reverse('institute-list')
-        content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-        response = self.client.post(bulk_url,
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-        self.add_admin_credentials()
-        response = self.client.post(bulk_url,
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 7)
-
-        # adding again fails with error
-        response = self.client.post(bulk_url,
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 3)
-
-        # adding again fails with error
-        fpath = join(TEST_DATA_DIR, 'institutes_extra_with_one_repeated.csv')
-        response = self.client.post(bulk_url,
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 1)
-        self.assertEqual(len(self.client.get(list_url).json()), 7)
 
 
 class InstituteStatsTest(BaseTest):

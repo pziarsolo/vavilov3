@@ -1,4 +1,5 @@
 from os.path import join, abspath, dirname
+from copy import deepcopy
 
 from django.db import transaction
 
@@ -13,8 +14,6 @@ from vavilov3.tests.data_io import (assert_error_is_equal,
                                     load_studies_from_file,
                                     load_observation_unit_from_file)
 from vavilov3.data_io import initialize_db
-from vavilov3.views import DETAIL
-from copy import deepcopy
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -145,82 +144,6 @@ class PlantViewTest(BaseTest):
                                    data={'group': 'admin'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
-
-    def test_bulk_create(self):
-        self.add_admin_credentials()
-        list_url = reverse('plant-list')
-        api_data = [{'data': {'name': 'Plant 5'
-                              },
-                     'metadata': {'group': 'userGroup'}},
-                    {'data': {'name': 'Plant 6'
-                              },
-                     'metadata': {'group': 'admin'}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        assert_error_is_equal(
-            response.json(),
-            ['can not set group while creating the plant',
-             'can not set group while creating the plant'])
-        # correct data
-        api_data = [
-            {'data': {'name': 'Plant 5'},
-             'metadata': {}},
-            {'data': {'name': 'Plant 6'},
-             'metadata': {}}]
-
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-        # Should fail, can not add again same item
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-    def test_bulk_create_csv(self):
-        self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'plants.csv')
-        list_url = reverse('plant-list')
-        content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-        result = response.json()[0]
-        self.assertEqual(result['data']['name'], 'Plant 7')
-        self.assertEqual(result['data']['x'], '1')
-        self.assertEqual(result['data']['y'], '1')
-        self.assertEqual(result['data']['plant_number'], '6')
-        self.assertEqual(result['data']['entry_number'], '6')
-
-        detail_url = reverse('plant-detail',
-                             kwargs={'name': 'Plant 7'})
-        response = self.client.get(detail_url)
-
-        self.assertEqual(response.json(),
-                         {'data': {'name': 'Plant 7',
-                                   'x': '1',
-                                   'y': '1',
-                                   'plant_number': '6',
-                                   'entry_number': '6'},
-                          'metadata': {'group': 'admin'}})
-
-        # adding again fails with error
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
 
 
 class PlantPermissionsViewTest(BaseTest):

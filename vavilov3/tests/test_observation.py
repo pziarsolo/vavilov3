@@ -15,12 +15,11 @@ from vavilov3.tests.data_io import (assert_error_is_equal,
                                     load_observations_from_file,
                                     load_observation_variables_from_file)
 from vavilov3.data_io import initialize_db
-from vavilov3.views import DETAIL
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
 
-class ObservationUnitViewTest(BaseTest):
+class ObservationViewTest(BaseTest):
 
     def setUp(self):
         self.initialize()
@@ -208,83 +207,6 @@ class ObservationUnitViewTest(BaseTest):
                                    data={'accession_institute': 'ESP004'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
-
-    def test_bulk_create(self):
-        self.add_admin_credentials()
-        list_url = reverse('observation-list')
-        self.assertEqual(len(self.client.get(list_url).json()), 3)
-
-        api_data = [
-            {
-                'observation_variable': 'Plant size:cm',
-                'observation_unit': 'Plant 2',
-                'value': '12',
-                'observer': 'observer1',
-                'creation_time': '1911-12-03 00:23:00',
-            },
-            {
-                'observation_variable': 'Plant size:cm',
-                'observation_unit': 'Plant 2',
-                'value': '1',
-                'observer': 'observer1',
-                'creation_time': '1911-12-03 00:23:00',
-            },
-
-        ]
-
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
-
-        # Should fail, can not add again same item
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
-
-    def test_bulk_create_csv(self):
-        self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'observation.csv')
-        list_url = reverse('observation-list')
-        content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 3)
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-        result = response.json()[0]
-        self.assertEqual(result['observation_variable'], 'Plant size:cm')
-        self.assertEqual(result['observation_unit'], 'Plant 2')
-        self.assertEqual(result['creation_time'], '1911-12-03 00:23:00')
-        self.assertEqual(result['observer'], 'me')
-        self.assertEqual(result['value'], '12')
-
-        detail_url = reverse('observation-detail',
-                             kwargs={'observation_id': result['observation_id']})
-        response = self.client.get(detail_url)
-        self.assertEqual(response.json(),
-                         {'observation_id': result['observation_id'],
-                          'observation_variable': 'Plant size:cm',
-                          'observation_unit': 'Plant 2',
-                          'value': '12', 'observer': 'me',
-                          'creation_time': '1911-12-03 06:23:00',
-                          'study': 'study2',
-                          'accession': {
-                              'instituteCode': 'ESP026',
-                              'germplasmNumber': 'BGE0002'}})
-
-        # adding again fails with error
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 3)
 
 
 class ObservationUnitPermissionsViewTest(BaseTest):

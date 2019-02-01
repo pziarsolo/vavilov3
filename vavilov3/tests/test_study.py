@@ -7,7 +7,6 @@ from rest_framework import status
 
 from vavilov3.tests import BaseTest
 from vavilov3.data_io import initialize_db
-from vavilov3.views import DETAIL
 from vavilov3.tests.data_io import (load_studies_from_file,
                                     assert_error_is_equal)
 from copy import deepcopy
@@ -168,69 +167,6 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
 
-    def test_bulk_create(self):
-        self.add_admin_credentials()
-        list_url = reverse('study-list')
-        api_data = [{'data': {'name': 'study4',
-                              'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    {'data': {'name': 'study5', 'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        assert_error_is_equal(
-            response.json(),
-            ['can not set group or is public while creating the study',
-             'can not set group or is public while creating the study'])
-
-        # correct data
-        api_data = [{'data': {'name': 'study5', 'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {}},
-                    {'data': {'name': 'study6', 'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-        # Should fail, can not add again same item
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-    def test_bulk_create_csv(self):
-        self.add_admin_credentials()
-        fpath = join(TEST_DATA_DIR, 'studies.csv')
-        list_url = reverse('study-list')
-        content_type = 'multipart'
-        self.assertEqual(len(self.client.get(list_url).json()), 4)
-
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(len(self.client.get(list_url).json()), 6)
-
-        self.assertEqual(response.json()[0]['data']['name'], 'study6')
-        self.assertEqual(response.json()[1]['data']['name'], 'study7')
-
-        # adding again fails with error
-        response = self.client.post(list_url + 'bulk/',
-                                    data={'csv': open(fpath)},
-                                    format=content_type)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-
 
 class StudyPermissionsViewTest(BaseTest):
 
@@ -375,32 +311,9 @@ class StudyPermissionsViewTest(BaseTest):
                     ]
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
-        assert_error_is_equal(
-            response.json(),
-            ['can not set group or is public while creating the study',
-             'can not set group or is public while creating the study'])
 
-        self.assertEqual(len(self.client.get(list_url).json()), 3)
-        # correct data
-        api_data = [{'data': {'name': 'study5', 'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {}},
-                    {'data': {'name': 'study6', 'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
-
-        # Should fail, can not add again same item
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(len(response.json()[DETAIL]), 2)
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
+        assert 'task_id' in response.json().keys()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class StudyCsvViewTest(BaseTest):

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'vavilov3',
+    'django_celery_results',
     'drf_yasg']
 
 MIDDLEWARE = [
@@ -136,3 +137,11 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1)
 }
+
+# celery
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_BACKEND_DB = 'postgresql://..'
+CELERY_BROKER_URL = 'amqp:///'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'

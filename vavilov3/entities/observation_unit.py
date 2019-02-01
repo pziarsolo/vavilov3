@@ -1,6 +1,8 @@
 from copy import deepcopy
 from collections import OrderedDict
 
+from django.db import transaction
+from django.db.utils import IntegrityError
 from rest_framework.exceptions import ValidationError
 
 from vavilov3.entities.metadata import Metadata
@@ -10,6 +12,8 @@ from vavilov3.entities.tags import (OBSERVATION_UNIT_NAME,
                                     OBSERVATION_UNIT_REPLICATE,
                                     INSTITUTE_CODE, GERMPLASM_NUMBER, ACCESSION,
                                     OBSERVATION_UNIT_STUDY, PLANTS)
+from vavilov3.models import Accession, Study, Plant, ObservationUnit
+from vavilov3.permissions import is_user_admin
 
 
 class ObservationUnitValidationError(Exception):
@@ -205,3 +209,108 @@ _OBSERVATION_UNIT_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'plants', val.split(':') if val else None)},
 ]
 OBSERVATION_UNIT_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _OBSERVATION_UNIT_CSV_FIELD_CONFS])
+
+
+def create_observation_unit_in_db(api_data, user=None):
+    try:
+        struct = ObservationUnitStruct(api_data)
+    except ObservationUnitValidationError as error:
+        print(error)
+        raise
+
+    if struct.metadata.group:
+        msg = 'can not set group while creating the observation unit'
+        raise ValueError(msg)
+    try:
+        study = Study.objects.get(name=struct.study)
+    except Study.DoesNotExist:
+        msg = 'The study has not been added yet to the database: ' + struct.study
+        raise ValueError(msg)
+    institute_code = struct.accession[INSTITUTE_CODE]
+    germplasm_number = struct.accession[GERMPLASM_NUMBER]
+    try:
+        accession = Accession.objects.get(institute__code=institute_code,
+                                          germplasm_number=germplasm_number)
+    except Accession.DoesNotExist:
+        msg = 'The given accessoin is not in db: {} {}'.format(institute_code,
+                                                               germplasm_number)
+        raise ValueError(msg)
+    study_belongs_to_user = bool(user.groups.filter(name=study.group.name).count())
+
+    if not study_belongs_to_user and not is_user_admin(user):
+        msg = 'Can not add observation unit to a study you dont own: {}'
+        msg = msg.format(study.group.name)
+        raise ValueError(msg)
+
+    with transaction.atomic():
+        try:
+            observation_unit = ObservationUnit.objects.create(
+                name=struct.name,
+                accession=accession,
+                level=struct.level,
+                replicate=struct.replicate,
+                study=study)
+        except IntegrityError:
+            msg = 'This observation unit already exists in db: {}'.format(struct.name)
+            raise ValueError(msg)
+        if struct.plants:
+            _add_plants_to_observation_unit(struct.plants, user, observation_unit)
+
+    return observation_unit
+
+
+def _add_plants_to_observation_unit(plants, user, observation_unit):
+    for plant in plants:
+        try:
+            plant = Plant.objects.get(name=plant)
+            plant_belongs_to_user = bool(user.groups.filter(name=plant.group.name).count())
+            if not plant_belongs_to_user and not is_user_admin(user):
+                msg = 'Can not add plant you dont own to observation unit: {}'
+                msg = msg.format(plant.name)
+                raise ValueError(msg)
+        except Plant.DoesNotExist:
+            msg = 'The given plant does not exist in {} : {}'
+            raise ValueError(msg.format(observation_unit.name, plant))
+        observation_unit.plant_set.add(plant)
+
+
+def update_observation_unit_in_db(validated_data, instance, user):
+    struct = ObservationUnitStruct(api_data=validated_data)
+    if struct.name != instance.name:
+        msg = 'Can not change id in an update operation'
+        raise ValidationError(format_error_message(msg))
+    try:
+        study = Study.objects.get(name=struct.study)
+    except Study.DoesNotExist:
+        msg = 'The study has not been added yet to the database: ' + struct.study
+        raise ValueError(msg)
+    institute_code = struct.accession[INSTITUTE_CODE]
+    germplasm_number = struct.accession[GERMPLASM_NUMBER]
+
+    try:
+        accession = Accession.objects.get(institute__code=institute_code,
+                                          germplasm_number=germplasm_number)
+    except Accession.DoesNotExist:
+        msg = 'The given accessoin is not in db: {} {}'.format(institute_code,
+                                                               germplasm_number)
+        raise ValueError(msg)
+
+    study_belongs_to_user = bool(user.groups.filter(name=study.group.name).count())
+
+    if not study_belongs_to_user and not is_user_admin(user):
+        msg = 'Can not change ownership if study does not belong to you : {}'
+        msg = msg.format(study.group.name)
+        raise ValidationError(format_error_message(msg))
+
+    instance.accession = accession
+    instance.level = struct.level
+    instance.replicate = struct.replicate
+    instance.study = study
+
+    instance.save()
+    plants = [] if struct.plants is None else struct.plants
+
+    instance.plant_set.clear()
+    _add_plants_to_observation_unit(plants, user, instance)
+
+    return instance
