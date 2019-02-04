@@ -3,6 +3,8 @@ from collections import OrderedDict
 from passports.passport import Passport, OtherNumbers, AccessionId
 from passports.validation import validate_passport_data as validate_passport
 from passports.merge import merge_passports as _merge_passports
+from vavilov3.entities.tags import INSTITUTE_CODE
+from passports.tags import BREEDING_INSTITUTE
 
 
 class PassportValidationError(Exception):
@@ -253,7 +255,7 @@ _PASSPORT_CSV_FIELD_CONFS = [
     {'csv_field_name': 'MLSSTAT', 'getter': lambda x: x.mls_status,
      'setter': lambda obj, val: setattr(obj, 'mls_status', val)},
     {'csv_field_name': 'REMARKS', 'getter': build_remarks,
-     'setter': set_remarks},
+     'setter': set_remarks}
 ]
 
 PASSPORT_CSV_FIELD_CONFS = OrderedDict([
