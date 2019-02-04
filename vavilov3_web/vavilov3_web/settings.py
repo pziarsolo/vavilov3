@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import socket
 from corsheaders.defaults import default_headers
-from _datetime import timedelta
+from datetime import timedelta
 
 
 def get_ip_address():
@@ -40,8 +40,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2irb)d)e*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-
-ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -104,6 +102,7 @@ if DEVELOPMENT_MACHINE:
             'PASSWORD': 'crf_pass'
         }
     }
+    ALLOWED_HOSTS = ['vavilov.comav.upv.es', 'tomatocrf.comav.upv.es']
 else:
     DEBUG = False
     DATABASES = {
@@ -115,7 +114,7 @@ else:
             'PASSWORD': 'crf_pass'
         }
     }
-    ALLOWED_HOSTS = ['vavilov.comav.upv.es']
+    ALLOWED_HOSTS = ['vavilov.comav.upv.es', 'tomatocrf.comav.upv.es', '192.168.1.1']
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -146,7 +145,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # AUTH_USER_MODEL = 'vavilov3.User'
-CORS_ORIGIN_WHITELIST = ('localhost:4200',)
+CORS_ORIGIN_WHITELIST = ('localhost:4200', 'tomatocrf.comav.upv.es')
 CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
 CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
 CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
@@ -164,7 +163,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': REST_AUTHENTICATION_CLASSES
 }
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1)
+    'ACCESS_TOKEN_LIFETIME': "" timedelta(days=1)
 }
 
 # celery
@@ -178,7 +177,7 @@ if not DEVELOPMENT_MACHINE:
     CELERYD_NODES = "worker1"
 
     # Absolute or relative path to the 'celery' command:
-    CELERY_BIN = "/usr/local/bin/celery"
+    CELERY_BIN = "/home/jope/devel/bin/celery"
     # CELERY_BIN="/virtualenvs/def/bin/celery"
 
     # App instance to use
@@ -188,14 +187,14 @@ if not DEVELOPMENT_MACHINE:
     # CELERY_APP="proj.tasks:app"
 
     # Where to chdir at start.
-    CELERYD_CHDIR = "/var/lib/celery/"
+    CELERYD_CHDIR = "/home/jope/devel/vavilov3/vavilov3_web"
 
     # Extra command-line arguments to the worker
     CELERYD_OPTS = "--time-limit=300 --concurrency=8"
     # Configure node-specific settings by appending node name to arguments:
     # CELERYD_OPTS="--time-limit=300 -c 8 -c:worker2 4 -c:worker3 2 -Ofair:worker1"
     # Set logging level to DEBUG
-    # CELERYD_LOG_LEVEL="DEBUG"
+    CELERYD_LOG_LEVEL="DEBUG"
     # %n will be replaced with the first part of the nodename.
     CELERYD_LOG_FILE = "/var/log/celery/%n%I.log"
     CELERYD_PID_FILE = "/var/run/celery/%n.pid"
@@ -209,3 +208,4 @@ if not DEVELOPMENT_MACHINE:
     # If enabled pid and log directories will be created if missing,
     # and owned by the userid/group configured.
     CELERY_CREATE_DIRS = 1
+
