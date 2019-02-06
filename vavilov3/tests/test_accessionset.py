@@ -130,6 +130,27 @@ class AccessionSetViewTest(BaseTest):
         assert_error_is_equal(response.json(),
                               ['NC004: accession not found ESP004:fake'])
 
+    def test_update(self):
+        self.add_admin_credentials()
+        detail_url = reverse('accessionset-detail',
+                             kwargs={'institute_code': 'ESP004',
+                                     'accessionset_number': 'NC001'})
+        response = self.client.get(detail_url)
+        accessionset = response.json()
+        is_public = accessionset['metadata']['is_public']
+        accessionset['metadata']['is_public'] = not is_public
+
+        response = self.client.put(detail_url, data=accessionset, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['metadata']['is_public'], not is_public)
+
+        accessionset = response.json()
+        accessionset['data']['accessions'] = []
+        response = self.client.put(detail_url, data=accessionset, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(),
+                              ["you are not allowed to change accessionsets's: accessions"])
+
     def test_filter(self):
         self.add_admin_credentials()
         list_url = reverse('accessionset-list')
@@ -227,8 +248,7 @@ class AccessionSetPermissionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code,
-                         status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_not_mine_and_not_public(self):
         self.add_user_credentials()
@@ -242,8 +262,7 @@ class AccessionSetPermissionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code,
-                         status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create(self):
         # users can not create accessionset
@@ -272,8 +291,7 @@ class AccessionSetPermissionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.put(detail_url, data={})
-        self.assertEqual(response.status_code,
-                         status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

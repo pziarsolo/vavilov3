@@ -3,8 +3,6 @@ from collections import OrderedDict
 from passports.passport import Passport, OtherNumbers, AccessionId
 from passports.validation import validate_passport_data as validate_passport
 from passports.merge import merge_passports as _merge_passports
-from vavilov3.entities.tags import INSTITUTE_CODE
-from passports.tags import BREEDING_INSTITUTE
 
 
 class PassportValidationError(Exception):

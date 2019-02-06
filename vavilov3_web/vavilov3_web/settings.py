@@ -102,7 +102,8 @@ if DEVELOPMENT_MACHINE:
             'PASSWORD': 'crf_pass'
         }
     }
-    ALLOWED_HOSTS = ['vavilov.comav.upv.es', 'tomatocrf.comav.upv.es']
+    ALLOWED_HOSTS = ['vavilov.comav.upv.es', 'tomatocrf.comav.upv.es',
+                     '127.0.0.1', 'localhost']
 else:
     DEBUG = False
     DATABASES = {
@@ -194,7 +195,7 @@ if not DEVELOPMENT_MACHINE:
     # Configure node-specific settings by appending node name to arguments:
     # CELERYD_OPTS="--time-limit=300 -c 8 -c:worker2 4 -c:worker3 2 -Ofair:worker1"
     # Set logging level to DEBUG
-    CELERYD_LOG_LEVEL="DEBUG"
+    CELERYD_LOG_LEVEL = "DEBUG"
     # %n will be replaced with the first part of the nodename.
     CELERYD_LOG_FILE = "/var/log/celery/%n%I.log"
     CELERYD_PID_FILE = "/var/run/celery/%n.pid"

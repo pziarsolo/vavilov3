@@ -1,7 +1,6 @@
 from rest_framework_csv import renderers
-from rest_framework import mixins
+from rest_framework import viewsets
 from rest_framework.settings import api_settings
-from rest_framework.viewsets import GenericViewSet
 
 from vavilov3.views.shared import (GroupObjectPublicPermMixin,
                                    DynamicFieldsViewMixin,
@@ -26,13 +25,8 @@ class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
 
 
 class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
-                          BulkOperationsMixin,
-                          DynamicFieldsViewMixin,
-                          mixins.CreateModelMixin,
-                          mixins.RetrieveModelMixin,
-                          mixins.DestroyModelMixin,
-                          mixins.ListModelMixin,
-                          GenericViewSet):
+                          BulkOperationsMixin, DynamicFieldsViewMixin,
+                          viewsets.ModelViewSet):
                         # viewsets.ModelViewSet):
     lookup_fields = ('institute_code', 'accessionset_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<accessionset_number'

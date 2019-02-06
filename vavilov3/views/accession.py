@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from time import time
+# from time import time
 
 from rest_framework import viewsets, status
 from rest_framework_csv import renderers
@@ -12,7 +12,7 @@ from vavilov3.models import Accession
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
-                                   GroupObjectPublicPermMixin, calc_duration)
+                                   GroupObjectPublicPermMixin)
 from vavilov3.serializers.accession import (
     AccessionSerializer)
 from vavilov3.filters.accession import AccessionFilter
@@ -20,8 +20,7 @@ from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.entities.accession import AccessionStruct, \
     AccessionValidationError, serialize_accessions_from_csv
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
-from vavilov3.views import format_error_message, DETAIL
-from django_celery_results.models import TaskResult
+from vavilov3.views import format_error_message
 
 
 class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):

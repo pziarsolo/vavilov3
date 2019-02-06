@@ -11,7 +11,8 @@ from vavilov3.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
                                     ACCESSIONS, ACCESSIONSET_NUMBER)
 from vavilov3.entities.metadata import Metadata
 from vavilov3.views import format_error_message
-from vavilov3.models import AccessionSet, Accession, Institute
+from vavilov3.models import AccessionSet, Accession, Institute, Group
+from vavilov3.permissions import is_user_admin
 
 
 class AccessionSetValidationError(Exception):
@@ -256,3 +257,54 @@ def create_accessionset_in_db(api_data, user, is_public=None):
                 accessionset.accessions.add(accession_instance)
 
     return accessionset
+
+
+def update_accessionset_in_db(payload, instance, user):
+    struct = AccessionSetStruct(payload)
+
+    allowed_changes = set(['is_public', 'group'])
+    changes_in_payload = set()
+    if instance.institute.code != struct.institute_code:
+        changes_in_payload.add('institute')
+    if instance.accessionset_number != struct.accessionset_number:
+        changes_in_payload.add('accessionset_number')
+    db_accessions = set([(accession.institute.code, accession.germplasm_number)
+                         for accession in instance.accessions.all()])
+    payload_accessions = set([(accession[INSTITUTE_CODE], accession[GERMPLASM_NUMBER])
+                              for accession in struct.accessions])
+
+    are_payload_accessions_diff = bool(db_accessions.difference(payload_accessions))
+    if are_payload_accessions_diff:
+        changes_in_payload.add('accessions')
+
+    if instance.is_public != struct.metadata.is_public:
+        changes_in_payload.add('is_public')
+
+    if instance.group != struct.metadata.group:
+        changes_in_payload.add('group')
+
+    not_allowed_changes = changes_in_payload.difference(allowed_changes)
+
+    if not_allowed_changes:
+        msg = "you are not allowed to change accessionsets's: {}"
+        msg = msg.format(','.join(not_allowed_changes))
+        raise ValidationError(format_error_message(msg))
+
+    group_belong_to_user = bool(user.groups.filter(name=struct.metadata.group).count())
+
+    if not group_belong_to_user and not is_user_admin(user):
+        msg = 'Can not change ownership if group does not belong to you : {}'
+        msg = msg.format(struct.metadata.group)
+        raise ValidationError(format_error_message(msg))
+
+    try:
+        group = Group.objects.get(name=struct.metadata.group)
+    except Group.DoesNotExist:
+        msg = 'Provided group does not exist in db: {}'
+        msg = msg.format(struct.metadata.group)
+        raise ValidationError(format_error_message(msg))
+
+    instance.is_public = struct.metadata.is_public
+    instance.owner = group
+
+    return instance
