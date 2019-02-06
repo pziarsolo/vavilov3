@@ -15,7 +15,10 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
                                                   lookup_expr='icontains')
     accessionset_number = filters.CharFilter(field_name='accessionset_number',
                                              lookup_expr='iexact')
-
+    accession_institute = filters.CharFilter(field_name='accessions__institute__code',
+                                             lookup_expr='iexact', distinct=True)
+    accession_number = filters.CharFilter(field_name='accessions__germplasm_number',
+                                          lookup_expr='iexact', distinct=True)
     is_available = filters.BooleanFilter()
 
     # passport realted filters
