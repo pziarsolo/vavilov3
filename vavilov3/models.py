@@ -311,6 +311,16 @@ class AccessionSet(models.Model):
         queryset = Country.objects.filter(passport__accession__accessionset=self).distinct()
         return queryset.values_list('code', flat=True)
 
+    @property
+    def latitudes(self):
+        queryset = Passport.objects.filter(accession__accessionset=self).distinct()
+        return queryset.values_list('latitude', flat=True)
+
+    @property
+    def longitudes(self):
+        queryset = Passport.objects.filter(accession__accessionset=self).distinct()
+        return queryset.values_list('longitude', flat=True)
+
 
 class Rank(models.Model):
     rank_id = models.AutoField(primary_key=True)

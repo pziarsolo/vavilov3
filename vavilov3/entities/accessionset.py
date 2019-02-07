@@ -116,11 +116,27 @@ class AccessionSetStruct():
     def countries(self, countries):
         self._data['countries'] = countries
 
+    @property
+    def latitudes(self):
+        return self._data.get('latitudes', None)
+
+    @latitudes.setter
+    def latitudes(self, latitudes):
+        self._data['latitudes'] = latitudes
+
+    @property
+    def longitudes(self):
+        return self._data.get('longitudes', None)
+
+    @longitudes.setter
+    def longitudes(self, longitudes):
+        self._data['longitudes'] = longitudes
+
     def _populate_with_instance(self, instance, fields):
         self.metadata.group = instance.group.name
         self.metadata.is_public = instance.is_public
         accepted_fields = [INSTITUTE_CODE, ACCESSIONSET_NUMBER, ACCESSIONS,
-                           'genera', 'countries']
+                           'genera', 'countries', 'latitudes', 'longitudes']
         if (fields is not None and
                 len(set(fields).intersection(accepted_fields)) == 0):
             msg = format_error_message('Passed fields are not allowed')
@@ -136,6 +152,11 @@ class AccessionSetStruct():
 
         if instance.countries and fields and 'countries' in fields:
             self.countries = instance.countries
+
+        if instance.latitudes and fields and 'latitudes' in fields:
+            self.latitudes = instance.latitudes
+        if instance.longitudes and fields and 'longitudes' in fields:
+            self.longitudes = instance.longitudes
 
         if fields is None or ACCESSIONS in fields:
             accessions = []
