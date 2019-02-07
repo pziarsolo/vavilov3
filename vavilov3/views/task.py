@@ -225,12 +225,18 @@ class TaskViewSet(viewsets.ViewSet):
 
 def get_active_tasks():
     inspect = app.control.inspect()
-    active_tasks = inspect.active()
     active_tasks_by_id = {}
+
+    try:
+        active_tasks = inspect.active()
+    except ConnectionResetError:
+        time.sleep(0.2)
+        active_tasks = inspect.active()
+
     try:
         active_tasks_by_queue = active_tasks.values()
     except AttributeError:
-        time.sleep(0.1)
+        time.sleep(0.2)
         active_tasks_by_queue = active_tasks.values()
 
     for tasks_in_queue in active_tasks_by_queue:
