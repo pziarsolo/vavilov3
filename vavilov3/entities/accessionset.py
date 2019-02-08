@@ -327,5 +327,6 @@ def update_accessionset_in_db(payload, instance, user):
 
     instance.is_public = struct.metadata.is_public
     instance.owner = group
+    instance.save()
 
     return instance
