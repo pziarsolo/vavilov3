@@ -24,9 +24,11 @@ def get_ip_address():
     return ip
 
 
+API_URL = None
 HOST_IP = get_ip_address()
 if HOST_IP.startswith('192.168'):
     DEVELOPMENT_MACHINE = False
+    API_URL = 'https://vavilov.comav.upv.es/api/'
 else:
     DEVELOPMENT_MACHINE = True
 
