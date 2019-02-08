@@ -17,12 +17,15 @@ OBSERVATION_UNITS_FPATH = join(DATA_DIR, 'observation_units.csv')
 OBSERVATION_VARIABLES_FPATH = join(DATA_DIR, 'observation_variables.csv')
 OBSERVATIONS_FPATH = join(DATA_DIR, 'observations.csv')
 
+ADMINUSER = 'admin'
+ADMINPASS = 'pass'
+
 
 def main():
     print('It needs django server with fresh db and celery running')
     # get token
     response = requests.post(SERVER_URL + 'api/auth/token/',
-                             json={'username': 'crf', 'password': 'tomate..'})
+                             json={'username': ADMINUSER, 'password': ADMINPASS})
     token = response.json()['access']
     headers = {'Authorization': 'Bearer {}'.format(token)}
 

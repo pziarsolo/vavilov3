@@ -1,0 +1,3 @@
+username,mail,password,group
+admin,p@example.com,pass,admin
+user,p2@example.com,pass,userGroup
