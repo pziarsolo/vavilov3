@@ -11,26 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import socket
 from corsheaders.defaults import default_headers
 from datetime import timedelta
-
-
-def get_ip_address():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    ip = s.getsockname()[0]
-    s.close()
-    return ip
-
-
-API_URL = None
-HOST_IP = get_ip_address()
-if HOST_IP.startswith('192.168'):
-    DEVELOPMENT_MACHINE = False
-    API_URL = 'https://vavilov.comav.upv.es/api/'
-else:
-    DEVELOPMENT_MACHINE = True
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -93,30 +75,17 @@ WSGI_APPLICATION = 'vavilov3_web.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-if DEVELOPMENT_MACHINE:
-    DEBUG = True
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'test_crf_db',
-            'USER': 'crf_user',
-            'HOST': 'localhost',
-            'PASSWORD': 'crf_pass'
-        }
+DEBUG = True
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'test_vavilov_db',
+        'USER': 'vavilov_user',
+        'HOST': 'localhost',
+        'PASSWORD': 'vavilov_pass'
     }
-    ALLOWED_HOSTS = ['localhost']
-else:
-    DEBUG = False
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'crf_db',
-            'USER': 'crf_user',
-            'HOST': 'localhost',
-            'PASSWORD': 'crf_pass'
-        }
-    }
-    ALLOWED_HOSTS = ['vavilov.comav.upv.es', 'tomatocrf.comav.upv.es', '192.168.1.1']
+}
+ALLOWED_HOSTS = ['localhost']
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -146,11 +115,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# AUTH_USER_MODEL = 'vavilov3.User'
-if DEVELOPMENT_MACHINE:
-    CORS_ORIGIN_WHITELIST = ('localhost:4200', 'tomatocrf.comav.upv.es')
-else:
-    CORS_ORIGIN_WHITELIST = ('tomatocrf.comav.upv.es',)
+CORS_ORIGIN_WHITELIST = ('localhost:4200',)
 CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
 CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
 CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
