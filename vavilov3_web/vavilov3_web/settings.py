@@ -104,8 +104,7 @@ if DEVELOPMENT_MACHINE:
             'PASSWORD': 'crf_pass'
         }
     }
-    ALLOWED_HOSTS = ['vavilov.comav.upv.es', 'tomatocrf.comav.upv.es',
-                     '127.0.0.1', 'localhost']
+    ALLOWED_HOSTS = ['localhost']
 else:
     DEBUG = False
     DATABASES = {
@@ -148,7 +147,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # AUTH_USER_MODEL = 'vavilov3.User'
-CORS_ORIGIN_WHITELIST = ('localhost:4200', 'tomatocrf.comav.upv.es')
+if DEVELOPMENT_MACHINE:
+    CORS_ORIGIN_WHITELIST = ('localhost:4200', 'tomatocrf.comav.upv.es')
+else:
+    CORS_ORIGIN_WHITELIST = ('tomatocrf.comav.upv.es',)
 CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
 CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
 CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
@@ -176,39 +178,3 @@ CELERY_BROKER_URL = 'amqp:///'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-if not DEVELOPMENT_MACHINE:
-    CELERYD_NODES = "worker1"
-
-    # Absolute or relative path to the 'celery' command:
-    CELERY_BIN = "/home/jope/devel/bin/celery"
-    # CELERY_BIN="/virtualenvs/def/bin/celery"
-
-    # App instance to use
-    # comment out this line if you don't use an app
-    CELERY_APP = "vavilov3_web"
-    # or fully qualified:
-    # CELERY_APP="proj.tasks:app"
-
-    # Where to chdir at start.
-    CELERYD_CHDIR = "/home/jope/devel/vavilov3/vavilov3_web"
-
-    # Extra command-line arguments to the worker
-    CELERYD_OPTS = "--time-limit=300 --concurrency=8"
-    # Configure node-specific settings by appending node name to arguments:
-    # CELERYD_OPTS="--time-limit=300 -c 8 -c:worker2 4 -c:worker3 2 -Ofair:worker1"
-    # Set logging level to DEBUG
-    CELERYD_LOG_LEVEL = "DEBUG"
-    # %n will be replaced with the first part of the nodename.
-    CELERYD_LOG_FILE = "/var/log/celery/%n%I.log"
-    CELERYD_PID_FILE = "/var/run/celery/%n.pid"
-
-    # Workers should run as an unprivileged user.
-    #   You need to create this user manually (or you can choose
-    #   a user/group combination that already exists (e.g., nobody).
-    CELERYD_USER = "celery"
-    CELERYD_GROUP = "celery"
-
-    # If enabled pid and log directories will be created if missing,
-    # and owned by the userid/group configured.
-    CELERY_CREATE_DIRS = 1
-
