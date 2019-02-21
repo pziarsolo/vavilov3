@@ -197,7 +197,8 @@ def transform_to_trait_entity_format(ontology):
         description = term.get('def', None)
         if not description:
             description = name
-
+        else:
+            description = description.replace('"', '')
         if obsolete:
             name += ' OBSOLETE'
 
