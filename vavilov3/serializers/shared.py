@@ -97,7 +97,7 @@ class VavilovListSerializer(serializers.ListSerializer):
         else:
             msg = 'We dont have a create task for the given data type {}'
             raise NotImplementedError(msg.format(self.data_type))
-        print(async_result)
+
         add_task_to_user(user, async_result)
         return async_result
 
