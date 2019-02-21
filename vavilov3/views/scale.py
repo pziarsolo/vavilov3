@@ -2,7 +2,8 @@
 from rest_framework import viewsets
 
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
-                                   StandardResultsSetPagination)
+                                   StandardResultsSetPagination,
+                                   BulkOperationsMixin)
 from vavilov3.models import Scale
 from vavilov3.permissions import IsAdminOrReadOnly
 
@@ -11,7 +12,8 @@ from vavilov3.entities.scale import ScaleStruct
 from vavilov3.filters.scale import ScaleFilter
 
 
-class ScaleViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
+class ScaleViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
+                   BulkOperationsMixin):
     lookup_field = 'name'
     serializer_class = ScaleSerializer
     queryset = Scale.objects.all()

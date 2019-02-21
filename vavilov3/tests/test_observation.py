@@ -13,7 +13,8 @@ from vavilov3.tests.data_io import (assert_error_is_equal,
                                     load_studies_from_file,
                                     load_observation_unit_from_file,
                                     load_observations_from_file,
-                                    load_observation_variables_from_file)
+                                    load_observation_variables_from_file,
+                                    load_scales_from_file, load_traits_from_file)
 from vavilov3.data_io import initialize_db
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
@@ -32,6 +33,13 @@ class ObservationViewTest(BaseTest):
         load_studies_from_file(studies_fpath)
         fpath = join(TEST_DATA_DIR, 'observation_units.json')
         load_observation_unit_from_file(fpath)
+
+        scale_fpath = join(TEST_DATA_DIR, 'scales.json')
+        load_scales_from_file(scale_fpath)
+
+        trait_fpath = join(TEST_DATA_DIR, 'traits.json')
+        load_traits_from_file(trait_fpath)
+
         fpath = join(TEST_DATA_DIR, 'observation_variables.json')
         load_observation_variables_from_file(fpath)
 
@@ -222,6 +230,13 @@ class ObservationUnitPermissionsViewTest(BaseTest):
         load_studies_from_file(studies_fpath)
         fpath = join(TEST_DATA_DIR, 'observation_units.json')
         load_observation_unit_from_file(fpath)
+
+        scale_fpath = join(TEST_DATA_DIR, 'scales.json')
+        load_scales_from_file(scale_fpath)
+
+        trait_fpath = join(TEST_DATA_DIR, 'traits.json')
+        load_traits_from_file(trait_fpath)
+
         fpath = join(TEST_DATA_DIR, 'observation_variables.json')
         load_observation_variables_from_file(fpath)
 

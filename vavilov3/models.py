@@ -454,20 +454,12 @@ class ScaleCategory(models.Model):
     rank = models.IntegerField(null=True)
 
 
-class Ontology(models.Model):
-    ontology_id = models.AutoField(primary_key=True, editable=False)
-    code = models.CharField(max_length=255, db_index=True, unique=True)
-    name = models.CharField(max_length=255, db_index=True, unique=True)
-    description = models.CharField(max_length=255)
-    term_url = models.URLField()
-    ontology_url = models.URLField()
-
-
 class Trait(models.Model):
     trait_id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField(max_length=255, db_index=True, unique=True)
-    description = models.CharField(max_length=255)
-    ontology = models.ForeignKey(Ontology, null=True, on_delete=models.SET_NULL)
+    description = models.TextField()
+    ontology = models.CharField(max_length=100, null=True)
+    ontology_id = models.CharField(max_length=100, null=True)
 
     class Meta:
         db_table = 'vavilov_trait'
@@ -481,7 +473,6 @@ class ObservationVariable(models.Model):
     trait = models.ForeignKey(Trait, null=True, on_delete=models.SET_NULL)
     method = models.CharField(max_length=255)
     scale = models.ForeignKey(Scale, null=True, on_delete=models.SET_NULL)
-    ontology = models.ForeignKey(Ontology, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         db_table = 'vavilov_observation_variable'

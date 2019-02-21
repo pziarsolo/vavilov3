@@ -76,5 +76,7 @@ SCALE_VALID_VALUES = 'valid_values'
 # TRAIT
 TRAIT_NAME = 'name'
 TRAIT_DESCRIPTION = 'description'
+ONTOLOGY_NAME = 'ontology'
+ONTOLOGY_ID = 'ontology_id'
 YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')

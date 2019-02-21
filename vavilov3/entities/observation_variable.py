@@ -23,7 +23,7 @@ OBSERVATION_VARIABLE_ALLOWED_FIELDS = [OBSERVATION_VARIABLE_NAME,
                                        TRAIT, OBSERVATION_VARIABLE_DESCRIPTION,
                                        METHOD, DATA_TYPE, SCALE]
 MANDATORY_FIELDS = [OBSERVATION_VARIABLE_NAME, TRAIT,
-                    OBSERVATION_VARIABLE_DESCRIPTION, METHOD]
+                    OBSERVATION_VARIABLE_DESCRIPTION, METHOD, SCALE]
 
 
 def validate_observation_variable_data(data):
@@ -50,6 +50,7 @@ class ObservationVariableStruct():
 
         elif api_data:
             payload = deepcopy(api_data['data'])
+            validate_observation_variable_data(payload)
             self._data = payload
             self._metadata = Metadata(api_data['metadata'])
 
@@ -176,8 +177,8 @@ _OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'method', val)},
     {'csv_field_name': 'DATA_TYPE', 'getter': lambda x: x.data_type,
      'setter': lambda obj, val: setattr(obj, 'data_type', val)},
-    {'csv_field_name': 'UNIT', 'getter': lambda x: x.unit,
-     'setter': lambda obj, val: setattr(obj, 'unit', val)},
+    {'csv_field_name': 'SCALE', 'getter': lambda x: x.scale,
+     'setter': lambda obj, val: setattr(obj, 'scale', val)},
 ]
 OBSERVATION_VARIABLE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _OBSERVATION_VARIABLE_CSV_FIELD_CONFS])
 
@@ -192,6 +193,7 @@ def create_observation_variable_in_db(api_data, user):
     if (struct.metadata.group):
         msg = 'can not set group while creating the observation variable'
         raise ValueError(msg)
+
     try:
         scale = Scale.objects.get(name=struct.scale)
     except Scale.DoesNotExist:

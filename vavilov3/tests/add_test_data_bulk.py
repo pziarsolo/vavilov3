@@ -16,7 +16,8 @@ PLANTS_FPATH = join(DATA_DIR, 'plants.csv')
 OBSERVATION_UNITS_FPATH = join(DATA_DIR, 'observation_units.csv')
 OBSERVATION_VARIABLES_FPATH = join(DATA_DIR, 'observation_variables.csv')
 OBSERVATIONS_FPATH = join(DATA_DIR, 'observations.csv')
-
+TRAITS_FPATH = join(DATA_DIR, 'to.obo')
+SCALE_FPATH = join(DATA_DIR, 'scales.csv')
 ADMINUSER = 'admin'
 ADMINPASS = 'pass'
 
@@ -121,7 +122,19 @@ def main():
     except RuntimeError:
         pass
 
-    # adding studies
+    # adding traits
+    response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',
+                             headers=headers,
+                             files={'obo': open(TRAITS_FPATH)})
+    process_task_response(response, headers)
+
+    # adding scales
+    response = requests.post(SERVER_URL + 'api/scales/bulk/',
+                             headers=headers,
+                             files={'csv': open(SCALE_FPATH)})
+    process_task_response(response, headers)
+
+    # adding observation_variables
     response = requests.post(SERVER_URL + 'api/observation_variables/bulk/',
                              headers=headers,
                              files={'csv': open(OBSERVATION_VARIABLES_FPATH)})
@@ -146,7 +159,7 @@ def main():
 
 def process_task_response(response, headers):
     if response.status_code != status.HTTP_200_OK:
-        raise ValueError('there was a error\n')
+        raise ValueError('there was a error\n: {}'.format(response.json()))
     task = response.json()
     task_response = requests.get(SERVER_URL + 'api/tasks/' + task['task_id'] + '/',
                                  headers=headers)
@@ -155,6 +168,7 @@ def process_task_response(response, headers):
         task_response = requests.get(SERVER_URL + 'api/tasks/' + task['task_id'] + '/',
                                      headers=headers)
     task = task_response.json()
+
     if task['status'] == 'SUCCESS':
         sys.stdout.write('{} OK: {}\n'.format(task['name'], task['result']))
     elif task['status'] == 'PENDING':

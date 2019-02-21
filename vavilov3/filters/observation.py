@@ -78,6 +78,6 @@ class ObservationFilter(TermFilterMixin, filters.FilterSet):
             msg = 'Used observation_variable to filter does not exist'
             raise ValidationError(format_error_message(msg))
 
-        if observation_variable.data_type.name not in ('Numerical',):
+        if observation_variable.scale.data_type.name not in ('Numerical',):
             msg = "Used observation_variable's data type is not numeric"
             raise ValidationError(format_error_message(msg))

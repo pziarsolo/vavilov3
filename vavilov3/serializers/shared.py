@@ -17,7 +17,7 @@ from vavilov3.tasks import (create_accessions_task, add_task_to_user,
                             create_plants_task,
                             create_observation_variables_task,
                             create_studies_task, create_observations_task,
-    wait_func)
+                            create_trait_task, wait_func, create_scale_task)
 
 
 class DynamicFieldsSerializer(serializers.Serializer):
@@ -90,7 +90,14 @@ class VavilovListSerializer(serializers.ListSerializer):
         elif self.data_type == 'observation':
             async_result = create_observations_task.delay(validated_data,
                                                           user.username)
-
+        elif self.data_type == 'trait':
+            async_result = create_trait_task.delay(validated_data, user.username)
+        elif self.data_type == 'scale':
+            async_result = create_scale_task.delay(validated_data, user.username)
+        else:
+            msg = 'We dont have a create task for the given data type {}'
+            raise NotImplementedError(msg.format(self.data_type))
+        print(async_result)
         add_task_to_user(user, async_result)
         return async_result
 

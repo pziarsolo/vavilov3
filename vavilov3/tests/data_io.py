@@ -14,7 +14,8 @@ from vavilov3.entities.tags import OBSERVATION_UNIT_STUDY
 from vavilov3.serializers.plant import create_plant_in_db
 from vavilov3.serializers.observation import create_observation_in_db
 from vavilov3.entities.scale import create_scale_in_db
-from vavilov3.entities.trait import create_trait_in_db
+from vavilov3.entities.trait import create_trait_in_db, parse_obo, \
+    transform_to_trait_entity_format
 
 User = get_user_model()
 
@@ -117,6 +118,14 @@ def load_traits_from_file(fpath):
     fhand = open(fpath)
     items = json.load(fhand)
     for item in items:
+        user = User.objects.get(username='admin')
+        create_trait_in_db(item, user)
+
+
+def load_traits_from_obo_file(obo_fpath):
+    ontology = parse_obo(open(obo_fpath))
+    traits = transform_to_trait_entity_format(ontology)
+    for item in traits:
         user = User.objects.get(username='admin')
         create_trait_in_db(item, user)
 

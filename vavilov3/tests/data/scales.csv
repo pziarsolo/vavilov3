@@ -1,0 +1,5 @@
+NAME,DESCRIPTION,DECIMAL_PLACES,DATA_TYPE,MIN,MAX,VALID_VALUES
+color,trait2 desc,,Nominal,,,"red,blue,black"
+centimeter,2descrip color,3,Numerical,0,100,
+meter,num_leaf,2,Numerical,0,100,
+number items,number of items,3,Numerical,0,1000,

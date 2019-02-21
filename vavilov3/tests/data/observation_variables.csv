@@ -1,5 +1,5 @@
-NAME,DESCRIPTION,TRAIT,METHOD,DATA_TYPE,UNIT
-color:colorimeter,trait2 desc,color,colorimeter,Nominal,
-color:eye,2descrip color,color,eye,Nominal,
-num_leaf,num_leaf,num_leaf,eye,Numerical,kg
-Plant size:cm,Plant size:cm,Plat size,eye,Numerical,cm
+NAME,DESCRIPTION,TRAIT,METHOD,DATA_TYPE,SCALE
+color:colorimeter,trait2 desc,node color,colorimeter,Nominal,color
+color:eye,2descrip color,node color,eye,Nominal,color
+num_leaf,num_leaf,leaf number,eye,Numerical,number items
+Plant size:cm,Plant size:cm,whole plant size,eye,Numerical,centimeter

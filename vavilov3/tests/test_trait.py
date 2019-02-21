@@ -6,8 +6,10 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 
 from vavilov3.tests import BaseTest
-from vavilov3.tests.data_io import assert_error_is_equal, load_traits_from_file
+from vavilov3.tests.data_io import assert_error_is_equal, load_traits_from_file, \
+    load_traits_from_obo_file
 from vavilov3.data_io import initialize_db
+from vavilov3.entities.trait import parse_obo, transform_to_trait_entity_format
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -28,10 +30,11 @@ class TraitViewTest(BaseTest):
         self.assertEqual(len(result), 2)
 
         expected = [
-            {"name": "Plant size",
-             "description": "Plant size"},
+            {"name": "Plant size", "description": "Plant size",
+             'ontology': None, 'ontology_id': None},
             {"name": "Plant Growth type",
-             "description": "Plant Growth type"}]
+             "description": "Plant Growth type",
+             'ontology': None, 'ontology_id': None}]
         self.assertEqual(result, expected)
 
     def test_readonly_with_fields(self):
@@ -78,6 +81,7 @@ class TraitViewTest(BaseTest):
 
         api_data = {
             'name': 'Plant size', 'description': 'centimeter',
+            'ontology': None, 'ontology_id': None
         }
 
         response = self.client.put(detail_url, data=api_data, format='json')
@@ -133,3 +137,28 @@ class TraitViewTest(BaseTest):
         list_url = reverse('trait-list')
         response = self.client.post(list_url, data={})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+#     def test_create_by_obo(self):
+#         self.add_admin_credentials()
+#         obo_fpath = join(TEST_DATA_DIR, 'to.obo')
+#         create_obo_url = reverse('trait-create-by-obo')
+#         response = self.client.post(create_obo_url,
+#                                     data={'obo': open(obo_fpath)})
+#         print(response.json())
+
+
+class TraitOboViewTest(BaseTest):
+
+    def setUp(self):
+        self.initialize()
+        initialize_db()
+
+    def test_obo_serializer(self):
+        obo_fpath = join(TEST_DATA_DIR, 'to.obo')
+        ontology = parse_obo(open(obo_fpath))
+        traits = transform_to_trait_entity_format(ontology)
+        assert len(traits) == 1528
+
+    def test_load_to(self):
+        obo_fpath = join(TEST_DATA_DIR, 'to.obo')
+        load_traits_from_obo_file(obo_fpath)

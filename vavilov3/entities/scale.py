@@ -1,4 +1,5 @@
 from copy import deepcopy
+from collections import OrderedDict
 
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -147,6 +148,36 @@ class ScaleStruct():
             self.max = instance.max
         if fields is None or SCALE_VALID_VALUES in fields:
             self.valid_values = instance.valid_values
+
+    def populate_from_csvrow(self, row):
+
+        for field, value in row.items():
+            if not value:
+                continue
+            field_conf = SCALE_CSV_FIELD_CONFS.get(field)
+
+            if field_conf:
+                setter = field_conf['setter']
+                setter(self, value)
+
+
+_SCALE_CSV_FIELD_CONFS = [
+    {'csv_field_name': 'NAME', 'getter': lambda x: x.name,
+     'setter': lambda obj, val: setattr(obj, 'name', val)},
+    {'csv_field_name': 'DESCRIPTION', 'getter': lambda x: x.description,
+     'setter': lambda obj, val: setattr(obj, 'description', val)},
+    {'csv_field_name': 'DECIMAL_PLACES', 'getter': lambda x: x.decimal_places,
+     'setter': lambda obj, val: setattr(obj, 'decimal_places', val)},
+    {'csv_field_name': 'DATA_TYPE', 'getter': lambda x: x.data_type,
+     'setter': lambda obj, val: setattr(obj, 'data_type', val)},
+    {'csv_field_name': 'MIN', 'getter': lambda x: x.min,
+     'setter': lambda obj, val: setattr(obj, 'min', val)},
+    {'csv_field_name': 'MAX', 'getter': lambda x: x.max,
+     'setter': lambda obj, val: setattr(obj, 'max', val)},
+    {'csv_field_name': 'VALID_VALUES', 'getter': lambda x: ','.join(x.valid_values),
+     'setter': lambda obj, val: setattr(obj, 'valid_values', val.split(','))},
+]
+SCALE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _SCALE_CSV_FIELD_CONFS])
 
 
 def create_scale_in_db(api_data, user):
