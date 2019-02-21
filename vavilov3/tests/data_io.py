@@ -1,5 +1,7 @@
 import json
 
+from django.contrib.auth import get_user_model
+
 from vavilov3.serializers.institute import create_institute_in_db
 from vavilov3.serializers.accession import create_accession_in_db
 from vavilov3.models import Group, Study
@@ -11,6 +13,10 @@ from vavilov3.serializers.observation_unit import create_observation_unit_in_db
 from vavilov3.entities.tags import OBSERVATION_UNIT_STUDY
 from vavilov3.serializers.plant import create_plant_in_db
 from vavilov3.serializers.observation import create_observation_in_db
+from vavilov3.entities.scale import create_scale_in_db
+from vavilov3.entities.trait import create_trait_in_db
+
+User = get_user_model()
 
 
 def _load_items_from_file(fpath, kind):
@@ -71,6 +77,14 @@ def load_observation_variables_from_file(fpath):
         create_observation_variable_in_db(item, user)
 
 
+def load_scales_from_file(fpath):
+    fhand = open(fpath)
+    items = json.load(fhand)
+    for item in items:
+        user = User.objects.get(username='admin')
+        create_scale_in_db(item, user)
+
+
 def load_observation_unit_from_file(fpath):
     fhand = open(fpath)
     items = json.load(fhand)
@@ -97,6 +111,14 @@ def load_observations_from_file(fpath, obs_group, user=None):
     items = items[obs_group]
     for item in items:
         create_observation_in_db(item, user)
+
+
+def load_traits_from_file(fpath):
+    fhand = open(fpath)
+    items = json.load(fhand)
+    for item in items:
+        user = User.objects.get(username='admin')
+        create_trait_in_db(item, user)
 
 
 def assert_error_is_equal(error, error_message):

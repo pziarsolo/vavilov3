@@ -1,0 +1,29 @@
+[
+    {
+        "name": "centimeter",
+        "description": "centimeter",
+        "data_type": "Numerical",
+        "decimal_places": 2,
+        "min": 0,
+        "max": 100,
+        "valid_values": null
+    },
+    {
+        "name": "meter",
+        "description": "meter",
+        "data_type": "Numerical",
+        "decimal_places": 2,
+        "min": 0,
+        "max": 100,
+        "valid_values": null
+    },
+    {
+        "name": "grow type",
+        "description": "Grow Type",
+        "data_type": "Nominal",
+        "decimal_places": null,
+        "min": null,
+        "max": null,
+        "valid_values": ["big", "small"]
+    }
+]

@@ -192,6 +192,8 @@ class ObservationStruct():
 
 
 _OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
+    {'csv_field_name': 'OBSERVATION_ID', 'getter': lambda x: x.observation_id,
+     'setter': lambda obj, val: setattr(obj, 'observation_id', val)},
     {'csv_field_name': 'OBSERVATION_VARIABLE', 'getter': lambda x: x.observation_variable,
      'setter': lambda obj, val: setattr(obj, 'observation_variable', val)},
     {'csv_field_name': 'OBSERVATION_UNIT', 'getter': lambda x: x.observation_unit,
@@ -204,8 +206,10 @@ _OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'value', val)},
     {'csv_field_name': 'STUDY', 'getter': lambda x: x.study,
      'setter': lambda obj, val: setattr(obj, 'study', val)},
-    {'csv_field_name': 'ACCESSION', 'getter': lambda x: x.accession,
-     'setter': lambda obj, val: setattr(obj, 'study', val)},
+    {'csv_field_name': 'ACCESSION',
+     'getter': lambda x: '{}:{}'.format(x.accession[INSTITUTE_CODE],
+                                        x.accession[GERMPLASM_NUMBER]),
+     'setter': lambda obj, val: setattr(obj, 'accession', val)},
 ]
 OBSERVATION_VARIABLE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _OBSERVATION_VARIABLE_CSV_FIELD_CONFS])
 

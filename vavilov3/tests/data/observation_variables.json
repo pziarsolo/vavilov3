@@ -3,10 +3,10 @@
         "data": {
             "name": "Plant size:cm",
             "trait": "Plant size",
-            "description": "Measure of plant heigth",
+            "description": "Measure of plant heigth in centimetres",
             "method": "by tape",
             "data_type": "Numerical",
-            "unit": "centimeter"
+            "scale": "centimeter"
         },
         "metadata": {
             "group": "admin"
@@ -16,10 +16,10 @@
         "data": {
             "name": "Plant size:m",
             "trait": "Plant size",
-            "description": "Measure of plant heigth",
+            "description": "Measure of plant heigth in meters",
             "method": "by tape",
             "data_type": "Numerical",
-            "unit": "metres"
+            "scale": "meter"
         },
         "metadata": {
             "group": "userGroup"
@@ -32,7 +32,7 @@
             "description": "Measure of plant heigth",
             "method": "observer",
             "data_type": "Nominal",
-            "unit": ""
+            "scale": "grow type"
         },
         "metadata": {
             "group": "admin"

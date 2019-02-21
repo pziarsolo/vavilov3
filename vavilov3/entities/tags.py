@@ -36,7 +36,7 @@ TRAIT = 'trait'
 OBSERVATION_VARIABLE_DESCRIPTION = 'description'
 METHOD = 'method'
 DATA_TYPE = 'data_type'
-UNIT = 'unit'
+SCALE = 'scale'
 
 # Observation Unit
 OBSERVATION_UNIT_NAME = 'name'
@@ -64,5 +64,17 @@ OBSERVER = 'observer'
 VALUE = 'value'
 OBSERVATION_STUDY = 'study'
 
+# scale
+SCALE_NAME = 'name'
+SCALE_DESCRIPTION = 'description'
+SCALE_DATA_TYPE = 'data_type'
+SCALE_DECIMAL_PLACES = 'decimal_places'
+SCALE_MIN = 'min'
+SCALE_MAX = 'max'
+SCALE_VALID_VALUES = 'valid_values'
+
+# TRAIT
+TRAIT_NAME = 'name'
+TRAIT_DESCRIPTION = 'description'
 YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')

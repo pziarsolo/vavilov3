@@ -12,6 +12,6 @@ class ObservationVariableFilter(TermFilterMixin, filters.FilterSet):
         model = ObservationVariable
         fields = {'name': ['exact', 'iexact', 'icontains'],
                   'description': ['exact', 'iexact', 'icontains'],
-                  'trait': ['exact', 'iexact', 'icontains'],
+                  'trait__name': ['exact', 'iexact', 'icontains'],
                   'method': ['exact', 'iexact', 'icontains'],
-                  'unit': ['exact', 'iexact', 'icontains'], }
+                  'scale__name': ['exact', 'iexact', 'icontains'], }

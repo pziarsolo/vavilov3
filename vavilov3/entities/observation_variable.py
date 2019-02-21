@@ -10,8 +10,8 @@ from vavilov3.entities.metadata import Metadata
 from vavilov3.views import format_error_message
 from vavilov3.entities.tags import (OBSERVATION_VARIABLE_NAME, TRAIT,
                                     OBSERVATION_VARIABLE_DESCRIPTION, METHOD,
-                                    DATA_TYPE, UNIT)
-from vavilov3.models import ObservationDataType, Group, ObservationVariable
+                                    DATA_TYPE, SCALE)
+from vavilov3.models import Group, ObservationVariable, Scale, Trait
 from vavilov3.permissions import is_user_admin
 
 
@@ -21,22 +21,15 @@ class ObservationVariableValidationError(Exception):
 
 OBSERVATION_VARIABLE_ALLOWED_FIELDS = [OBSERVATION_VARIABLE_NAME,
                                        TRAIT, OBSERVATION_VARIABLE_DESCRIPTION,
-                                       METHOD, DATA_TYPE, UNIT]
+                                       METHOD, DATA_TYPE, SCALE]
+MANDATORY_FIELDS = [OBSERVATION_VARIABLE_NAME, TRAIT,
+                    OBSERVATION_VARIABLE_DESCRIPTION, METHOD]
 
 
 def validate_observation_variable_data(data):
-    if OBSERVATION_VARIABLE_NAME not in data:
-        raise ObservationVariableValidationError('{} mandatory'.format(OBSERVATION_VARIABLE_NAME))
-    if TRAIT not in data:
-        raise ObservationVariableValidationError('{} mandatory'.format(TRAIT))
-    if OBSERVATION_VARIABLE_DESCRIPTION not in data:
-        raise ObservationVariableValidationError('{} mandatory'.format(OBSERVATION_VARIABLE_DESCRIPTION))
-    if METHOD not in data:
-        raise ObservationVariableValidationError('{} mandatory'.format(METHOD))
-    if DATA_TYPE not in data:
-        raise ObservationVariableValidationError('{} mandatory'.format(DATA_TYPE))
-    if OBSERVATION_VARIABLE_DESCRIPTION not in data:
-        raise ObservationVariableValidationError('{} mandatory'.format(OBSERVATION_VARIABLE_DESCRIPTION))
+    for mandatory_field in MANDATORY_FIELDS:
+        if mandatory_field not in data:
+            raise ObservationVariableValidationError('{} mandatory'.format(mandatory_field))
 
     not_allowed_fields = set(data.keys()).difference(OBSERVATION_VARIABLE_ALLOWED_FIELDS)
 
@@ -125,13 +118,13 @@ class ObservationVariableStruct():
             self._data[DATA_TYPE] = data_type
 
     @property
-    def unit(self):
-        return self._data.get(UNIT, None)
+    def scale(self):
+        return self._data.get(SCALE, None)
 
-    @unit.setter
-    def unit(self, unit):
-        if unit:
-            self._data[UNIT] = unit
+    @scale.setter
+    def scale(self, scale):
+        if scale:
+            self._data[SCALE] = scale
 
     def _populate_with_instance(self, instance, fields):
         self.metadata.group = instance.group.name
@@ -146,13 +139,12 @@ class ObservationVariableStruct():
         if fields is None or OBSERVATION_VARIABLE_DESCRIPTION in fields:
             self.description = instance.description
         if fields is None or TRAIT in fields:
-            self.trait = instance.trait
+            self.trait = instance.trait.name
         if fields is None or METHOD in fields:
             self.method = instance.method
-        if fields is None or DATA_TYPE in fields:
-            self.data_type = instance.data_type.name
-        if fields is None or UNIT in fields:
-            self.unit = instance.unit
+
+        if fields is None or SCALE in fields:
+            self.scale = instance.scale.name
 
     def to_list_representation(self, fields):
         items = []
@@ -201,9 +193,13 @@ def create_observation_variable_in_db(api_data, user):
         msg = 'can not set group while creating the observation variable'
         raise ValueError(msg)
     try:
-        data_type = ObservationDataType.objects.get(name=struct.data_type)
-    except ObservationDataType.DoesNotExist:
-        raise ValidationError('data type not valid: ' + struct.data_type)
+        scale = Scale.objects.get(name=struct.scale)
+    except Scale.DoesNotExist:
+        raise ValidationError('Scale not valid: ' + struct.scale)
+    try:
+        trait = Trait.objects.get(name=struct.trait)
+    except Trait.DoesNotExist:
+        raise ValidationError('Trait not valid: ' + struct.scale)
 
     group = user.groups.first()
     struct.metadata.group = group.name
@@ -213,12 +209,11 @@ def create_observation_variable_in_db(api_data, user):
             observation_variable = ObservationVariable.objects.create(
                 name=struct.name,
                 description=struct.description,
-                trait=struct.trait,
+                trait=trait,
                 method=struct.method,
                 group=group,
-                data_type=data_type,
-                unit=struct.unit)
-        except IntegrityError:
+                scale=scale)
+        except IntegrityError as error:
             msg = 'This observation variable already exists in db: {}'.format(struct.name)
             raise ValueError(msg)
 
@@ -244,18 +239,20 @@ def update_observation_variable_in_db(validated_data, instance, user):
         msg = 'Provided group does not exist in db: {}'
         msg = msg.format(struct.metadata.group)
         raise ValidationError(format_error_message(msg))
+    try:
+        scale = Scale.objects.get(name=struct.scale)
+    except Scale.DoesNotExist:
+        raise ValidationError('Scale not valid: ' + struct.scale)
+    try:
+        trait = Trait.objects.get(name=struct.trait)
+    except Trait.DoesNotExist:
+        raise ValidationError('Trait not valid: ' + struct.scale)
 
     instance.description = struct.description
-    instance.trait = struct.trait
+    instance.trait = trait
     instance.group = group
     instance.method = struct.method
-    instance.unit = struct.unit
-    if struct.data_type != instance.data_type.name:
-        try:
-            instance.data_type = ObservationDataType.objects.get(name=struct.data_type)
-        except ObservationDataType.DoesNotExist:
-            msg = 'data type not valid: ' + struct.data_type
-            raise ValidationError(format_error_message(msg))
+    instance.scale = scale
 
     instance.save()
     return instance

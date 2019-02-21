@@ -420,28 +420,72 @@ class Study(models.Model):
         db_table = 'vavilov_study'
 
 
-class ObservationDataType(models.Model):
-    observation_data_type_id = models.AutoField(primary_key=True,
-                                                editable=False)
+class ScaleDataType(models.Model):
+    scale_data_type_id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField(max_length=255, db_index=True, unique=True)
 
     class Meta:
         db_table = 'vavilov_observation_data_type'
 
 
+class Scale(models.Model):
+    scale_id = models.AutoField(primary_key=True, editable=False)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=255, db_index=True, unique=True)
+    description = models.CharField(max_length=255)
+    data_type = models.ForeignKey(ScaleDataType, on_delete=models.CASCADE)
+    decimal_places = models.IntegerField(null=True)
+    max = models.FloatField(null=True)
+    min = models.FloatField(null=True)
+
+    class Meta:
+        db_table = 'vavilov_scale'
+
+    @property
+    def valid_values(self):
+        return ScaleCategory.objects.filter(scale=self).values_list('category',
+                                                                    flat=True)
+
+
+class ScaleCategory(models.Model):
+    scale_categories_id = models.AutoField(primary_key=True, editable=False)
+    scale = models.ForeignKey(Scale, on_delete=models.CASCADE)
+    category = models.CharField(max_length=100)
+    rank = models.IntegerField(null=True)
+
+
+class Ontology(models.Model):
+    ontology_id = models.AutoField(primary_key=True, editable=False)
+    code = models.CharField(max_length=255, db_index=True, unique=True)
+    name = models.CharField(max_length=255, db_index=True, unique=True)
+    description = models.CharField(max_length=255)
+    term_url = models.URLField()
+    ontology_url = models.URLField()
+
+
+class Trait(models.Model):
+    trait_id = models.AutoField(primary_key=True, editable=False)
+    name = models.CharField(max_length=255, db_index=True, unique=True)
+    description = models.CharField(max_length=255)
+    ontology = models.ForeignKey(Ontology, null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        db_table = 'vavilov_trait'
+
+
 class ObservationVariable(models.Model):
     observation_variable_id = models.AutoField(primary_key=True, editable=False)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=255, db_index=True, unique=True)
-    trait = models.CharField(max_length=255, db_index=True)
     description = models.CharField(max_length=255)
+    trait = models.ForeignKey(Trait, null=True, on_delete=models.SET_NULL)
     method = models.CharField(max_length=255)
-    data_type = models.ForeignKey(ObservationDataType, on_delete=models.CASCADE)
-    unit = models.CharField(max_length=255, null=True, blank=True)
+    scale = models.ForeignKey(Scale, null=True, on_delete=models.SET_NULL)
+    ontology = models.ForeignKey(Ontology, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         db_table = 'vavilov_observation_variable'
-        unique_together = ('name', 'method', 'data_type', 'unit')
+        unique_together = ('trait', 'method', 'scale')
 
 
 class ObservationUnit(models.Model):

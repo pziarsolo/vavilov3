@@ -3,7 +3,7 @@ import csv
 
 from django.contrib.auth import get_user_model
 
-from vavilov3.models import Group, Country, Rank, ObservationDataType
+from vavilov3.models import Group, Country, Rank, ScaleDataType
 from vavilov3.conf.settings import (ADMIN_GROUP,
                                     ALLOWED_TAXONOMIC_RANKS)
 
@@ -12,7 +12,7 @@ OLD_COUNTRIES = {'CSHH': 'Czechoslovakia',
                  'SUHH': 'Union of Soviet Socialist Republics',
                  'ANHH': 'Netherlands Antilles'}
 
-OBSERVATION_DATA_TYPES = ['Numerical', 'Nominal', 'Ordinal']
+SCALE_DATA_TYPES = ['Numerical', 'Nominal', 'Ordinal']
 
 
 def initialize_db(users_fhand=None):
@@ -21,7 +21,7 @@ def initialize_db(users_fhand=None):
         load_users(users_fhand)
     load_countries()
     load_ranks()
-    load_observation_variable_data_types()
+    load_scale_data_types()
 
 
 def load_users(fhand):
@@ -51,6 +51,6 @@ def load_ranks():
         Rank.objects.create(name=rank, level=level)
 
 
-def load_observation_variable_data_types():
-    for data_type in OBSERVATION_DATA_TYPES:
-        ObservationDataType.objects.create(name=data_type)
+def load_scale_data_types():
+    for data_type in SCALE_DATA_TYPES:
+        ScaleDataType.objects.create(name=data_type)

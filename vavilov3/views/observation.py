@@ -1,8 +1,9 @@
-
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 
 from rest_framework import viewsets
+from rest_framework.settings import api_settings
+from rest_framework_csv import renderers
 
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
@@ -12,6 +13,17 @@ from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation import ObservationSerializer
 from vavilov3.entities.observation import ObservationStruct
 from vavilov3.filters.observation import ObservationFilter
+
+from vavilov3.conf.settings import OBSERVATION_CSV_FIELDS
+
+
+class PaginatedObservationCSVRenderer(renderers.CSVRenderer):
+
+    def tablize(self, data, header=None, labels=None):
+        yield OBSERVATION_CSV_FIELDS
+        for row in data:
+            accession = ObservationStruct(row)
+            yield accession.to_list_representation(OBSERVATION_CSV_FIELDS)
 
 
 class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
@@ -23,6 +35,7 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
     permission_classes = (ObservationByStudyPermission,)
     pagination_class = StandardResultsSetPagination
     Struct = ObservationStruct
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedObservationCSVRenderer]
 
     def filter_queryset(self, queryset):
         # It filters by the study permissions. And the observations belong

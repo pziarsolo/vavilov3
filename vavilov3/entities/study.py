@@ -68,9 +68,9 @@ class StudyStruct():
     def data(self):
         _data = deepcopy(self._data)
         if START_DATE in _data:
-            _data[START_DATE] = _data[START_DATE].strftime('%d/%m/%Y')
+            _data[START_DATE] = _data[START_DATE].strftime('%Y/%m/%d')
         if END_DATE in _data:
-            _data[END_DATE] = _data[END_DATE].strftime('%d/%m/%Y')
+            _data[END_DATE] = _data[END_DATE].strftime('%Y/%m/%d')
         return _data
 
     def get_api_document(self):
@@ -116,7 +116,7 @@ class StudyStruct():
     @start_date.setter
     def start_date(self, start_date: str):
         if start_date:
-            day, month, year = start_date.split('/')
+            year, month, day = start_date.split('/')
             self._data[START_DATE] = date(int(year), int(month), int(day))
 
     @property
@@ -126,7 +126,7 @@ class StudyStruct():
     @end_date.setter
     def end_date(self, end_date: str):
         if end_date:
-            day, month, year = end_date.split('/')
+            year, month, day = end_date.split('/')
             self._data[END_DATE] = date(int(year), int(month), int(day))
 
     @property

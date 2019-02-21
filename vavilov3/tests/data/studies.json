@@ -4,8 +4,8 @@
             "name": "study1", 
             "description": "description1", 
             "active": false, 
-            "start_date": "17/01/2017", 
-            "end_date": "01/12/2017", 
+            "start_date": "2017/01/17", 
+            "end_date": "2017/12/01", 
             "location": "Valencia", 
             "contacts": "Alguien"
         }, 
@@ -19,8 +19,8 @@
             "name": "study2", 
             "description": "description2", 
             "active": true, 
-            "start_date": "17/01/2017", 
-            "end_date": "01/12/2017", 
+            "start_date": "2017/01/17", 
+            "end_date": "2017/12/01", 
             "location": "Valencia", 
             "contacts": "Alguien"
         }, 
@@ -34,8 +34,8 @@
             "name": "study3", 
             "description": "description3", 
             "active": true, 
-            "start_date": "17/01/2017", 
-            "end_date": "01/12/2017", 
+            "start_date": "2017/01/17", 
+            "end_date": "2017/12/01", 
             "location": "Valencia", 
             "contacts": "Alguien"
         }, 
@@ -49,8 +49,8 @@
             "name": "study4", 
             "description": "description3", 
             "active": true, 
-            "start_date": "17/01/2017", 
-            "end_date": "01/12/2017", 
+            "start_date": "2017/01/17", 
+            "end_date": "2017/12/01", 
             "location": "Valencia", 
             "contacts": "Alguien"
         }, 

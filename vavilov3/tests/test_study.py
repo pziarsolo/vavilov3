@@ -30,8 +30,8 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.json()
         expected = {'data': {'name': 'study1', 'description': 'description1',
-                             'active': False, 'start_date': '17/01/2017',
-                             'end_date': '01/12/2017', 'location': 'Valencia',
+                             'active': False, 'start_date': '2017/01/17',
+                             'end_date': '2017/12/01', 'location': 'Valencia',
                              'contacts': 'Alguien'},
                     'metadata': {'group': 'admin', 'is_public': True}}
         self.assertEqual(result, expected)

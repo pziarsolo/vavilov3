@@ -8,7 +8,9 @@ from rest_framework import status
 
 from vavilov3.tests import BaseTest
 from vavilov3.tests.data_io import (load_observation_variables_from_file,
-                                    assert_error_is_equal)
+                                    assert_error_is_equal,
+                                    load_scales_from_file,
+                                    load_traits_from_file)
 from vavilov3.data_io import initialize_db
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
@@ -19,6 +21,13 @@ class ObservationVariableViewTest(BaseTest):
     def setUp(self):
         self.initialize()
         initialize_db()
+
+        scale_fpath = join(TEST_DATA_DIR, 'scales.json')
+        load_scales_from_file(scale_fpath)
+
+        trait_fpath = join(TEST_DATA_DIR, 'traits.json')
+        load_traits_from_file(trait_fpath)
+
         fpath = join(TEST_DATA_DIR, 'observation_variables.json')
         load_observation_variables_from_file(fpath)
 
@@ -30,9 +39,8 @@ class ObservationVariableViewTest(BaseTest):
 
         expected = {'name': 'Plant size:cm',
                     'trait': 'Plant size',
-                    'description': 'Measure of plant heigth',
-                    'method': 'by tape', 'data_type': 'Numerical',
-                    'unit': 'centimeter'}
+                    'description': 'Measure of plant heigth in centimetres',
+                    'method': 'by tape', 'scale': 'centimeter'}
         self.assertEqual(result[0]['data'], expected)
         self.assertEqual(result[0]['metadata'], {'group': 'admin'})
 
@@ -44,11 +52,11 @@ class ObservationVariableViewTest(BaseTest):
 
         response = self.client.get(edit_url, data={'fields': 'name,description'})
         self.assertEqual(response.json()['data'], {'name': 'Plant size:cm',
-                                                   'description': "Measure of plant heigth"})
+                                                   'description': "Measure of plant heigth in centimetres"})
 
-        response = self.client.get(edit_url, data={'fields': 'name,data_type'})
+        response = self.client.get(edit_url, data={'fields': 'name,method'})
         self.assertEqual(response.json()['data'], {'name': 'Plant size:cm',
-                                                   'data_type': 'Numerical'})
+                                                   'method': 'by tape'})
 
     def test_create_delete(self):
         self.add_admin_credentials()
@@ -56,11 +64,10 @@ class ObservationVariableViewTest(BaseTest):
         api_data = {
             "data": {
                 "name": "Plant size2",
-                "trait": "Plat size",
+                "trait": "Plant Growth type",
                 "description": "Measure of plant heigth",
                 "method": "by tape",
-                "data_type": "Numerical",
-                "unit": "centimeter"},
+                "scale": "centimeter"},
             "metadata": {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -72,8 +79,7 @@ class ObservationVariableViewTest(BaseTest):
                 "name": "Plant",
                 "description": "Measure of plant heigth",
                 "method": "by tape",
-                "data_type": "Numerical",
-                "unit": "centimeter"},
+                "scale": "centimeter"},
             "metadata": {}}
         response = self.client.post(list_url, data=bad_api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -97,10 +103,10 @@ class ObservationVariableViewTest(BaseTest):
         api_data = {
             'data': {
                 'name': 'Plant size:cm',
-                'trait': 'Plant sizeee',
+                'trait': 'Plant Growth type',
                 'description': 'Measure of plant heigth',
-                'method': 'by tape', 'data_type': 'Numerical',
-                'unit': 'centimeter'},
+                'method': 'by tape',
+                'scale': 'centimeter'},
             'metadata': {'group': 'admin'}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -110,10 +116,10 @@ class ObservationVariableViewTest(BaseTest):
         api_data = {
             'data': {
                 'name': 'Plant size:cm',
-                'trait': 'Plant sizeee',
+                'trait': 'Plant Growth type',
                 'description': 'Measure of plant heigth',
-                'method': 'by tape', 'data_type': 'Numerical',
-                'unit': 'centimeter'},
+                'method': 'by tape',
+                'scale': 'centimeter'},
             'metadata': {'group': 'userGroup'}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -123,10 +129,10 @@ class ObservationVariableViewTest(BaseTest):
         api_data = {
             'data': {
                 'name': 'Plant size:cm',
-                'trait': 'Plant sizeee',
+                'trait': 'Plant Growth type',
                 'description': 'Measure of plant heigth',
-                'method': 'by tape', 'data_type': 'Numerical',
-                'unit': 'centimeter'},
+                'method': 'by tape',
+                'scale': 'centimeter'},
             'metadata': {'group': 'rGroup'}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -167,6 +173,13 @@ class ObservationVariablePermissionsViewTest(BaseTest):
     def setUp(self):
         self.initialize()
         initialize_db()
+
+        scale_fpath = join(TEST_DATA_DIR, 'scales.json')
+        load_scales_from_file(scale_fpath)
+
+        trait_fpath = join(TEST_DATA_DIR, 'traits.json')
+        load_traits_from_file(trait_fpath)
+
         fpath = join(TEST_DATA_DIR, 'observation_variables.json')
         load_observation_variables_from_file(fpath)
         return
@@ -178,11 +191,10 @@ class ObservationVariablePermissionsViewTest(BaseTest):
         api_data = {
             "data": {
                 "name": "Plant size2",
-                "trait": "Plat size",
+                "trait": "Plant Growth type",
                 "description": "Measure of plant heigth",
                 "method": "by tape",
-                "data_type": "Numerical",
-                "unit": "centimeter"},
+                "scale": "centimeter"},
             "metadata": {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
