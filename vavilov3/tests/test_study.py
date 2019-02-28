@@ -110,6 +110,16 @@ class StudyViewTest(BaseTest):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+        # acive false
+        api_data = {'data': {'name': 'study9',
+                             'description': 'description3',
+                             'active': False},
+                    'metadata': {}}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()['data'], api_data['data'])
+
     def test_update(self):
         self.add_admin_credentials()
         detail_url = reverse('study-detail', kwargs={'name': 'study1'})
