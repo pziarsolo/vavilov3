@@ -443,15 +443,16 @@ class Scale(models.Model):
 
     @property
     def valid_values(self):
-        return ScaleCategory.objects.filter(scale=self).values_list('category',
-                                                                    flat=True)
+        return ScaleCategory.objects.filter(scale=self).order_by('rank').values('value',
+                                                                                'description')
 
 
 class ScaleCategory(models.Model):
     scale_categories_id = models.AutoField(primary_key=True, editable=False)
     scale = models.ForeignKey(Scale, on_delete=models.CASCADE)
-    category = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
     rank = models.IntegerField(null=True)
+    description = models.CharField(max_length=255)
 
 
 class Trait(models.Model):

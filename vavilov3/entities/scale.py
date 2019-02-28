@@ -29,6 +29,10 @@ def validate_scale_data(data):
         if mandatory_field not in data:
             raise ScaleValidationError('{} mandatory'.format(mandatory_field))
 
+    if SCALE_VALID_VALUES in data and data[SCALE_VALID_VALUES]:
+        for valid_value in data[SCALE_VALID_VALUES]:
+            if 'value' not in valid_value or 'description' not in valid_value:
+                raise ScaleValidationError('Categories must have value and description')
     not_allowed_fields = set(data.keys()).difference(SCALE_ALLOWED_FIELDS)
 
     if not_allowed_fields:
@@ -161,6 +165,16 @@ class ScaleStruct():
                 setter(self, value)
 
 
+def valid_value_setter(obj, val):
+    valid_values = []
+    categories = val.split(',')
+    for category in categories:
+        name, description = category.split('-')
+        valid_values.append({'name': name.strip(),
+                             'description': description.strip()})
+    setattr(obj, 'valid_values', valid_values)
+
+
 _SCALE_CSV_FIELD_CONFS = [
     {'csv_field_name': 'NAME', 'getter': lambda x: x.name,
      'setter': lambda obj, val: setattr(obj, 'name', val)},
@@ -175,7 +189,7 @@ _SCALE_CSV_FIELD_CONFS = [
     {'csv_field_name': 'MAX', 'getter': lambda x: x.max,
      'setter': lambda obj, val: setattr(obj, 'max', val)},
     {'csv_field_name': 'VALID_VALUES', 'getter': lambda x: ','.join(x.valid_values),
-     'setter': lambda obj, val: setattr(obj, 'valid_values', val.split(','))},
+     'setter': valid_value_setter},
 ]
 SCALE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _SCALE_CSV_FIELD_CONFS])
 
@@ -209,7 +223,10 @@ def create_scale_in_db(api_data, user):
             raise ValueError(msg)
     if struct.data_type in ('Cardinal', 'Ordinal', 'Nominal'):
         for index, category in enumerate(struct.valid_values):
-            ScaleCategory.objects.create(scale=scale, category=category, rank=index)
+            value = category['value']
+            description = category['description']
+            ScaleCategory.objects.create(scale=scale, value=value,
+                                         description=description, rank=index)
 
     return scale
 

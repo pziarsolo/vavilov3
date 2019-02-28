@@ -24,6 +24,13 @@
         "decimal_places": null,
         "min": null,
         "max": null,
-        "valid_values": ["big", "small"]
+        "valid_values": [
+            {
+                "value": "2", "description": "big"
+            },
+            {
+                "value": "1", "description": "small"
+              }
+         ]
     }
 ]

@@ -33,8 +33,9 @@ class ScaleViewTest(BaseTest):
         self.assertEqual(result[0], expected)
         expected2 = {'name': 'grow type', 'description': 'Grow Type',
                      'decimal_places': None, 'data_type': 'Nominal',
-                     'min': None, 'max': None, 'valid_values': ['big', 'small']}
-
+                     'min': None, 'max': None,
+                     'valid_values': [{'value': '2', 'description': 'big'},
+                                      {'value': '1', 'description': 'small'}]}
         self.assertEqual(result[2], expected2)
 
     def test_readonly_with_fields(self):
