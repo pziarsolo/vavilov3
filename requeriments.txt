@@ -10,3 +10,4 @@ drf-yasg
 django-cors-headers
 celery
 django-celery-results
+xlrd

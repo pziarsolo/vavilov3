@@ -170,7 +170,7 @@ def valid_value_setter(obj, val):
     categories = val.split(',')
     for category in categories:
         name, description = category.split('-')
-        valid_values.append({'name': name.strip(),
+        valid_values.append({'value': name.strip(),
                              'description': description.strip()})
     setattr(obj, 'valid_values', valid_values)
 
@@ -220,14 +220,17 @@ def create_scale_in_db(api_data, user):
                 group=group)
         except IntegrityError:
             msg = 'This scale already exists in db: {}'.format(struct.name)
-            raise ValueError(msg)
+            raise ValueError(format_error_message(msg))
     if struct.data_type in ('Cardinal', 'Ordinal', 'Nominal'):
         for index, category in enumerate(struct.valid_values):
             value = category['value']
             description = category['description']
-            ScaleCategory.objects.create(scale=scale, value=value,
-                                         description=description, rank=index)
-
+            try:
+                ScaleCategory.objects.create(scale=scale, value=value,
+                                             description=description, rank=index)
+            except IntegrityError:
+                msg = 'Can not repeate value or description in the same scale'
+                raise ValidationError(format_error_message(msg))
     return scale
 
 
@@ -241,7 +244,7 @@ def update_scale_in_db(api_data, instance, _):
     try:
         data_type = ScaleDataType.objects.get(name=struct.data_type)
     except ScaleDataType.DoesNotExist:
-        raise ValidationError('data type not valid: ' + struct.data_type)
+        raise ValidationError(format_error_message('data type not valid: ' + struct.data_type))
 
     if instance.description != struct.description:
         instance.description = struct.description
@@ -258,6 +261,13 @@ def update_scale_in_db(api_data, instance, _):
     if struct.data_type in ('Cardinal', 'Ordinal', 'Nominal'):
         ScaleCategory.objects.filter(scale=instance).delete()
         for index, category in enumerate(struct.valid_values):
-            ScaleCategory.objects.create(scale=instance, category=category, rank=index)
+            value = category['value']
+            description = category['description']
+            try:
+                ScaleCategory.objects.create(scale=instance, value=value,
+                                             description=description, rank=index)
+            except IntegrityError:
+                msg = 'Can not repeate value or description in the same scale'
+                raise ValidationError(format_error_message(msg))
 
     return instance

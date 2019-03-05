@@ -1,9 +1,14 @@
+from io import TextIOWrapper
+
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.settings import api_settings
 from rest_framework_csv import renderers
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
@@ -11,10 +16,13 @@ from vavilov3.views.shared import (DynamicFieldsViewMixin,
 from vavilov3.models import Observation
 from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation import ObservationSerializer
-from vavilov3.entities.observation import ObservationStruct
+from vavilov3.entities.observation import (ObservationStruct, TRAITS_IN_COLUMNS,
+                                           CREATE_OBSERVATION_UNITS)
 from vavilov3.filters.observation import ObservationFilter
-
 from vavilov3.conf.settings import OBSERVATION_CSV_FIELDS
+from vavilov3.views import format_error_message
+from vavilov3.serializers.shared import serialize_entity_from_csv
+from vavilov3.excel import excel_dict_reader
 
 
 class PaginatedObservationCSVRenderer(renderers.CSVRenderer):
@@ -56,3 +64,62 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
                                        Q(observation_unit__study__group__in=user_groups))
             else:
                 return queryset.filter(study__is_public=True)
+
+    @action(methods=['post'], detail=False)
+    def bulk(self, request):
+        action = request.method
+#         prev_time = time()
+        data, conf = serialize_observations_from_request(request)
+        self.conf = conf
+        if action == 'POST':
+            serializer = self.get_serializer(data=data, many=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return Response({'task_id': serializer.instance.id},
+                            status=status.HTTP_200_OK, headers={})
+
+    _conf = None
+
+    @property
+    def conf(self):
+        return self._conf
+
+    @conf.setter
+    def conf(self, conf):
+        self._conf = conf
+
+
+def parse_traits_in_columns_excel(fhand):
+    rows = excel_dict_reader(fhand)
+    for row in rows:
+        accession = row.pop('Accession', None)
+        study = row.pop('Study', None)
+        for key, cell in row.items():
+            yield {'accession': accession.value, 'study': study.value,
+                   'observation_variable': key, 'value': cell.value}
+
+
+def serialize_observations_from_request(request):
+    conf = None
+    if 'multipart/form-data' in request.content_type:
+        traits_in_columns = request.data.get(TRAITS_IN_COLUMNS, None)
+        create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
+        if traits_in_columns:
+            fhand = request.FILES['file'].file
+            data = list(parse_traits_in_columns_excel(fhand))
+            conf = {TRAITS_IN_COLUMNS: traits_in_columns,
+                    CREATE_OBSERVATION_UNITS: create_observation_units}
+
+        else:
+            try:
+                fhand = TextIOWrapper(request.FILES['file'].file,
+                                      encoding='utf-8')
+            except KeyError:
+                msg = 'could not found the file'
+                raise ValidationError(format_error_message(msg))
+
+            data = serialize_entity_from_csv(fhand, ObservationStruct)
+
+    else:
+        data = request.data
+    return data, conf

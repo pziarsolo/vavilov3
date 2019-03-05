@@ -14,13 +14,15 @@ class ObservationMixinSerializer():
     data_type = 'observation'
 
     def validate_data(self, data):
-        return validate_observation_data(data)
+        conf = self.context['view'].conf
+        return validate_observation_data(data, conf=conf)
 
     def update_item_in_db(self, payload, instance, user):
         return update_observation_in_db(payload, instance, user)
 
     def create_item_in_db(self, item, user):
-        return create_observation_in_db(item, user)
+        conf = self.context['view'].conf
+        return create_observation_in_db(item, user, conf=conf)
 
 
 class ObservationListSerializer(ObservationMixinSerializer,
@@ -37,7 +39,7 @@ class ObservationSerializer(ObservationMixinSerializer, VavilovSerializer):
 
     def run_validation(self, data=empty):
         try:
-            self.validate_data(data)
+            self.validate_data(data,)
         except self.Meta.ValidationError as error:
             raise ValidationError(format_error_message(error))
         return data

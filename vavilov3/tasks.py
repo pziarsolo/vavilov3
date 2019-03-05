@@ -39,15 +39,21 @@ def add_user_to_task(user):
     return decorator
 
 
-def _create_items_task(validated_data, username, func, item_type):
+def _create_items_task(validated_data, username, func, item_type, conf=None):
     errors = []
     with transaction.atomic():
         user = User.objects.get(username=username) if username else None
         for item in validated_data:
-            try:
-                func(item, user)
-            except ValueError as error:
-                errors.append(str(error))
+            if conf:
+                try:
+                    func(item, user, conf)
+                except ValueError as error:
+                    errors.append(str(error))
+            else:
+                try:
+                    func(item, user)
+                except ValueError as error:
+                    errors.append(str(error))
 
         if errors:
             raise ValidationError(errors)
@@ -92,9 +98,9 @@ def create_plants_task(validated_data, username):
 
 
 @shared_task
-def create_observations_task(validated_data, username):
+def create_observations_task(validated_data, username, conf=None):
     return _create_items_task(validated_data, username,
-                              create_observation_in_db, 'observations')
+                              create_observation_in_db, 'observations', conf)
 
 
 @shared_task

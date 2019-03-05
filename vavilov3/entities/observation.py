@@ -1,4 +1,5 @@
 import pytz
+import uuid
 
 from copy import deepcopy
 from collections import OrderedDict
@@ -17,7 +18,8 @@ from vavilov3.entities.tags import (OBSERVATION_VARIABLE, OBSERVATION_UNIT,
                                     OBSERVATION_STUDY, ACCESSION,
                                     OBSERVATION_ID)
 from vavilov3.conf.settings import DATETIME_FORMAT
-from vavilov3.models import ObservationUnit, ObservationVariable, Observation
+from vavilov3.models import (ObservationUnit, ObservationVariable, Observation,
+                             Study, Accession)
 from vavilov3.permissions import is_user_admin
 
 
@@ -25,15 +27,22 @@ class ObservationValidationError(Exception):
     pass
 
 
+TRAITS_IN_COLUMNS = 'traits_in_columns'
+CREATE_OBSERVATION_UNITS = 'create_observation_units'
+
 OBSERVATION_ALLOWED_FIELDS = [OBSERVATION_ID, OBSERVATION_VARIABLE, OBSERVATION_UNIT,
                               OBSERVATION_CREATION_TIME, OBSERVER, VALUE,
                               OBSERVATION_STUDY, ACCESSION]
 
 
-def validate_observation_data(data):
+def validate_observation_data(data, conf=None):
+
+    if conf is None:
+        conf = {}
+    create_observation_units = conf.get(CREATE_OBSERVATION_UNITS, None)
     if OBSERVATION_VARIABLE not in data:
         raise ObservationValidationError('{} mandatory'.format(OBSERVATION_VARIABLE))
-    if OBSERVATION_UNIT not in data:
+    if OBSERVATION_UNIT not in data and not create_observation_units:
         raise ObservationValidationError('{} mandatory'.format(OBSERVATION_UNIT))
     if VALUE not in data:
         raise ObservationValidationError('{} mandatory'.format(VALUE))
@@ -214,12 +223,38 @@ _OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
 OBSERVATION_VARIABLE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _OBSERVATION_VARIABLE_CSV_FIELD_CONFS])
 
 
-def _get_or_create_observation_unit(struct):
-    try:
-        observation_unit = ObservationUnit.objects.get(name=struct.observation_unit)
-    except ObservationUnit.DoesNotExist:
-        msg = 'This observation Unit {} does not exist in db'
-        msg = msg.format(struct.observation_unit)
+def _get_or_create_observation_unit(struct, create_observation_unit):
+    if not create_observation_unit and not struct.observation_unit:
+        msg = 'No observation unit provided'
+        raise ValueError(msg)
+    elif struct.observation_unit:
+        try:
+            observation_unit = ObservationUnit.objects.get(name=struct.observation_unit)
+        except ObservationUnit.DoesNotExist:
+            msg = 'This observation Unit {} does not exist in db'
+            msg = msg.format(struct.observation_unit)
+            raise ValueError(msg)
+    elif not struct.observation_unit and create_observation_unit == 'foreach_observation':
+        try:
+            study = Study.objects.get(name=struct.study)
+        except Study.DoesNotExist:
+            msg = 'Not able to get or create an observation unit with the given conf'
+            raise ValueError(msg)
+        try:
+            institute, germplasm_number = struct.accession.split(':')
+            accession = Accession.objects.get(germplasm_number=germplasm_number,
+                                              institute__code=institute)
+        except Accession.DoesNotExist:
+            msg = 'Not able to get or create an observation unit with the given conf'
+            raise ValueError(msg)
+
+        random_name = uuid.uuid4()
+        observation_unit = ObservationUnit.objects.create(study=study,
+                                                          accession=accession,
+                                                          level='whole plant',
+                                                          name=random_name)
+    else:
+        msg = 'Not able to get or create an observation unit with the given conf'
         raise ValueError(msg)
     return observation_unit
 
@@ -230,11 +265,14 @@ def get_datetime_from_strdate(str_date):
     datetime.strftime(str_date, "")
 
 
-def create_observation_in_db(api_data, user):
+def create_observation_in_db(api_data, user, conf=None):
+    if conf is None:
+        conf = {}
+    create_observation_unit = conf.get(CREATE_OBSERVATION_UNITS, None)
     try:
         struct = ObservationStruct(api_data)
     except ObservationValidationError as error:
-        print(error)
+        print('a', error)
         raise
     try:
         observation_variable = ObservationVariable.objects.get(name=struct.observation_variable)
@@ -243,7 +281,7 @@ def create_observation_in_db(api_data, user):
         msg = msg.format(struct.observation_variable)
         raise ValueError(msg)
 
-    observation_unit = _get_or_create_observation_unit(struct)
+    observation_unit = _get_or_create_observation_unit(struct, create_observation_unit)
     study_belongs_to_user = bool(user.groups.filter(name=observation_unit.study.group.name).count())
 
     if not study_belongs_to_user and not is_user_admin(user):
@@ -265,9 +303,11 @@ def create_observation_in_db(api_data, user):
                 value=struct.value,
                 observer=struct.observer,
                 creation_time=creation_time)
-        except IntegrityError:
-            msg = 'This observation variable already exists in db: {}'.format(struct.observation_id)
-            raise ValueError(msg)
+        except IntegrityError as error:
+            if 'duplicate key value' in str(error):
+                msg = 'This observation already exists in db'
+                raise ValueError(msg)
+            raise ValueError(str(error))
 
     return observation
 

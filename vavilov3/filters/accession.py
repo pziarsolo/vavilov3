@@ -46,6 +46,9 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
         method='number_filter', distinct=True)
     site = filters.CharFilter(label='site', method='site_filter')
 
+    study = filters.CharFilter(label='study', field_name='observationunit__study__name',
+                               lookup_expr='iexact', distinct=True)
+
     class Meta:
         model = Accession
         fields = {'germplasm_number': ['icontains']}

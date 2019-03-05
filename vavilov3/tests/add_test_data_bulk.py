@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import sys
-from os.path import join, dirname
-import requests
 import time
+from os.path import join, dirname
+
+import requests
 
 from rest_framework import status
 
@@ -16,10 +17,14 @@ PLANTS_FPATH = join(DATA_DIR, 'plants.csv')
 OBSERVATION_UNITS_FPATH = join(DATA_DIR, 'observation_units.csv')
 OBSERVATION_VARIABLES_FPATH = join(DATA_DIR, 'observation_variables.csv')
 OBSERVATIONS_FPATH = join(DATA_DIR, 'observations.csv')
+OBSERVATIONS_IN_COLUMNS_FPATH = join(DATA_DIR, 'observations_in_columns.xlsx')
 TRAITS_FPATH = join(DATA_DIR, 'to.obo')
 SCALE_FPATH = join(DATA_DIR, 'scales.csv')
 ADMINUSER = 'admin'
 ADMINPASS = 'pass'
+
+RUN_FAILLING_REQUESTS = True
+RUN_FAILLING_REQUESTS = False
 
 
 def main():
@@ -45,17 +50,18 @@ def main():
                                    'data_source_kind': 'project'})
     process_task_response(response, headers)
 
-    # Adding again fails
-    response = requests.post(SERVER_URL + 'api/accessions/bulk/',
-                             headers=headers,
-                             files={'csv': open(ACCESSIONS_FPATH)},
-                             data={'data_source_code': 'CRF',
-                                   'data_source_kind': 'project'})
-    try:
-        process_task_response(response, headers)
-        raise ValueError()
-    except RuntimeError:
-        pass
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/accessions/bulk/',
+                                 headers=headers,
+                                 files={'csv': open(ACCESSIONS_FPATH)},
+                                 data={'data_source_code': 'CRF',
+                                       'data_source_kind': 'project'})
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
     # install accessionset
     response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
@@ -63,16 +69,17 @@ def main():
                              files={'csv': open(ACCESSIONSETS_FPATH)})
     process_task_response(response, headers)
 
-    # Adding again fails
-    response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
-                             headers=headers,
-                             files={'csv': open(ACCESSIONSETS_FPATH)})
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
+                                 headers=headers,
+                                 files={'csv': open(ACCESSIONSETS_FPATH)})
 
-    try:
-        process_task_response(response, headers)
-        raise ValueError()
-    except RuntimeError:
-        pass
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
     # adding studies
     response = requests.post(SERVER_URL + 'api/studies/bulk/',
@@ -80,15 +87,16 @@ def main():
                              files={'csv': open(STUDIES_FPATH)})
     process_task_response(response, headers)
 
-    # Adding again fails
-    response = requests.post(SERVER_URL + 'api/studies/bulk/',
-                             headers=headers,
-                             files={'csv': open(STUDIES_FPATH)})
-    try:
-        process_task_response(response, headers)
-        raise ValueError()
-    except RuntimeError:
-        pass
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/studies/bulk/',
+                                 headers=headers,
+                                 files={'csv': open(STUDIES_FPATH)})
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
     # adding plants
     response = requests.post(SERVER_URL + 'api/plants/bulk/',
@@ -96,15 +104,16 @@ def main():
                              files={'csv': open(PLANTS_FPATH)})
     process_task_response(response, headers)
 
-    # Adding again fails
-    response = requests.post(SERVER_URL + 'api/plants/bulk/',
-                             headers=headers,
-                             files={'csv': open(PLANTS_FPATH)})
-    try:
-        process_task_response(response, headers)
-        raise ValueError()
-    except RuntimeError:
-        pass
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/plants/bulk/',
+                                 headers=headers,
+                                 files={'csv': open(PLANTS_FPATH)})
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
     # adding studies
     response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
@@ -112,15 +121,16 @@ def main():
                              files={'csv': open(OBSERVATION_UNITS_FPATH)})
     process_task_response(response, headers)
 
-    # Adding again fails
-    response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                             headers=headers,
-                             files={'csv': open(OBSERVATION_UNITS_FPATH)})
-    try:
-        process_task_response(response, headers)
-        raise ValueError()
-    except RuntimeError:
-        pass
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+                                 headers=headers,
+                                 files={'file': open(OBSERVATION_UNITS_FPATH)})
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
     # adding traits
     response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',
@@ -140,20 +150,30 @@ def main():
                              files={'csv': open(OBSERVATION_VARIABLES_FPATH)})
     process_task_response(response, headers)
 
-    # Adding again fails
-    response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                             headers=headers,
-                             files={'csv': open(OBSERVATION_UNITS_FPATH)})
-    try:
-        process_task_response(response, headers)
-        raise ValueError()
-    except RuntimeError:
-        pass
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+                                 headers=headers,
+                                 files={'csv': open(OBSERVATION_UNITS_FPATH)})
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
     # adding Observations
     response = requests.post(SERVER_URL + 'api/observations/bulk/',
                              headers=headers,
-                             files={'csv': open(OBSERVATIONS_FPATH)})
+                             files={'file': open(OBSERVATIONS_FPATH)})
+    process_task_response(response, headers)
+
+    # adding Observations: traits in columns
+    response = requests.post(SERVER_URL + 'api/observations/bulk/',
+                             headers=headers,
+                             files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
+                             data={'traits_in_columns': True,
+                                   'create_units_foreach': 'observation'})
+
     process_task_response(response, headers)
 
 

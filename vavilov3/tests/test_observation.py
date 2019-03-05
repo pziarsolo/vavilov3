@@ -405,3 +405,36 @@ class ObservationUnitPermissionsViewTest(BaseTest):
 
         response = self.client.put(detail_url, data={})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ObservationBulkViewTest(BaseTest):
+
+    def setUp(self):
+        self.initialize()
+        initialize_db()
+        institutes_fpath = join(TEST_DATA_DIR, 'institutes.json')
+        load_institutes_from_file(institutes_fpath)
+        accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
+        load_accessions_from_file(accessions_fpath)
+        studies_fpath = join(TEST_DATA_DIR, 'studies.json')
+        load_studies_from_file(studies_fpath)
+        fpath = join(TEST_DATA_DIR, 'observation_units.json')
+        load_observation_unit_from_file(fpath)
+
+        scale_fpath = join(TEST_DATA_DIR, 'scales.json')
+        load_scales_from_file(scale_fpath)
+
+        trait_fpath = join(TEST_DATA_DIR, 'traits.json')
+        load_traits_from_file(trait_fpath)
+
+        fpath = join(TEST_DATA_DIR, 'observation_variables.json')
+        load_observation_variables_from_file(fpath)
+
+    def xtest_bulk(self):
+        self.add_admin_credentials()
+        fpath = join(TEST_DATA_DIR, 'observations_in_columns.xlsx')
+        response = self.client.post(reverse('observation-bulk'),
+                                    data={'file': open(fpath, mode='rb'),
+                                          'traits_in_columns': True,
+                                          'create_unit_for_each': 'observation'})
+        print(response.json())

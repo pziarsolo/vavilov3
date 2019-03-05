@@ -88,8 +88,10 @@ class VavilovListSerializer(serializers.ListSerializer):
             async_result = create_plants_task.delay(validated_data,
                                                     user.username)
         elif self.data_type == 'observation':
+            conf = self.context['view'].conf
             async_result = create_observations_task.delay(validated_data,
-                                                          user.username)
+                                                          user.username,
+                                                          conf)
         elif self.data_type == 'trait':
             async_result = create_trait_task.delay(validated_data, user.username)
         elif self.data_type == 'scale':

@@ -11,7 +11,9 @@ from vavilov3.raw_stat_sql_commands import (
 
 
 class User(AbstractUser):
-    pass
+
+    class Meta:
+        db_table = "vavilov_user"
 
 
 class UserTasks(models.Model):
@@ -20,6 +22,7 @@ class UserTasks(models.Model):
     task_id = models.CharField(max_length=100)
 
     class Meta:
+
         db_table = 'vavilov_user_task'
 
 
@@ -454,6 +457,12 @@ class ScaleCategory(models.Model):
     rank = models.IntegerField(null=True)
     description = models.CharField(max_length=255)
 
+    class Meta:
+        db_table = 'vavilov_scale_category'
+        unique_together = (('scale', 'value'),
+                           ('scale', 'rank'),
+                           ('scale', 'description'))
+
 
 class Trait(models.Model):
     trait_id = models.AutoField(primary_key=True, editable=False)
@@ -464,6 +473,7 @@ class Trait(models.Model):
 
     class Meta:
         db_table = 'vavilov_trait'
+        unique_together = ('ontology', 'ontology_id')
 
 
 class ObservationVariable(models.Model):
@@ -485,7 +495,7 @@ class ObservationUnit(models.Model):
     name = models.CharField(max_length=255, unique=True, db_index=True)
     accession = models.ForeignKey(Accession, on_delete=models.CASCADE)
     level = models.CharField(max_length=255, db_index=True)
-    replicate = models.CharField(max_length=255)
+    replicate = models.CharField(max_length=255, null=True)
     study = models.ForeignKey(Study, on_delete=models.CASCADE)
 
     class Meta:
@@ -515,7 +525,7 @@ class Observation(models.Model):
     observation_unit = models.ForeignKey(ObservationUnit,
                                          on_delete=models.CASCADE)
     value = models.CharField(max_length=255)
-    observer = models.CharField(max_length=255)
+    observer = models.CharField(max_length=255, null=True)
     creation_time = models.DateTimeField(null=True)
 
     class Meta:
