@@ -10,14 +10,14 @@
         {
             "observation_variable": "Plant Growth type:categorical",
             "observation_unit": "Plant 1",
-            "value": "Big",
+            "value": "1",
             "observer": "observer1",
             "creation_time": "1911-12-01 18:23:00"
         },
         {
             "observation_variable": "Plant size:m",
             "observation_unit": "Plant 2",
-            "value": "1,2",
+            "value": "1.2",
             "observer": "observer1",
             "creation_time": "1911-12-01 18:23:00"
         }

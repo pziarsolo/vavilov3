@@ -21,6 +21,7 @@ from vavilov3.conf.settings import DATETIME_FORMAT
 from vavilov3.models import (ObservationUnit, ObservationVariable, Observation,
                              Study, Accession)
 from vavilov3.permissions import is_user_admin
+from vavilov3.data_io import ORDINAL, NOMINAL, NUMERICAL
 
 
 class ObservationValidationError(Exception):
@@ -239,14 +240,15 @@ def _get_or_create_observation_unit(struct, create_observation_unit):
             study = Study.objects.get(name=struct.study)
         except Study.DoesNotExist:
             msg = 'Not able to get or create an observation unit with the given conf'
-            raise ValueError(msg)
+            msg += ' {} study not found'
+            raise ValueError(msg.format(struct.study))
         try:
-            institute, germplasm_number = struct.accession.split(':')
-            accession = Accession.objects.get(germplasm_number=germplasm_number,
-                                              institute__code=institute)
+            accession = Accession.objects.get(germplasm_number=struct.accession[GERMPLASM_NUMBER],
+                                              institute__code=struct.accession[INSTITUTE_CODE])
         except Accession.DoesNotExist:
-            msg = 'Not able to get or create an observation unit with the given conf'
-            raise ValueError(msg)
+            msg = 'Not able to get or create an observation unit with the given conf '
+            msg += '{} accession not found'
+            raise ValueError(msg.format(struct.accession[GERMPLASM_NUMBER]))
 
         random_name = uuid.uuid4()
         observation_unit = ObservationUnit.objects.create(study=study,
@@ -281,35 +283,84 @@ def create_observation_in_db(api_data, user, conf=None):
         msg = msg.format(struct.observation_variable)
         raise ValueError(msg)
 
-    observation_unit = _get_or_create_observation_unit(struct, create_observation_unit)
-    study_belongs_to_user = bool(user.groups.filter(name=observation_unit.study.group.name).count())
-
-    if not study_belongs_to_user and not is_user_admin(user):
-        msg = 'Can not add observation unit to a study you dont own: {}'
-        msg = msg.format(observation_unit.study.group.name)
-        raise ValueError(msg)
     if struct.creation_time:
         timezone = pytz.timezone(TIME_ZONE)
         creation_time = timezone.localize(datetime.strptime(struct.creation_time,
                                                             DATETIME_FORMAT))
     else:
         creation_time = None
+    try:
+        values = validate_value(str(struct.value), observation_variable)
+    except ValueError as error:
+        if struct.observation_unit:
+            error_row_id = struct.observation_unit
+        elif struct.accession and struct.study:
+            error_row_id = '{} - {}'.format(struct.accession[GERMPLASM_NUMBER],
+                                            struct.study)
+        else:
+            error_row_id = 'Unknown'
+        msg = '{}: {}'.format(error_row_id, error)
+        raise ValidationError(msg)
 
     with transaction.atomic():
-        try:
-            observation = Observation.objects.create(
-                observation_variable=observation_variable,
-                observation_unit=observation_unit,
-                value=struct.value,
-                observer=struct.observer,
-                creation_time=creation_time)
-        except IntegrityError as error:
-            if 'duplicate key value' in str(error):
-                msg = 'This observation already exists in db'
-                raise ValueError(msg)
-            raise ValueError(str(error))
+        observations = []
+        for value in values:
+            observation_unit = _get_or_create_observation_unit(struct, create_observation_unit)
+            study_belongs_to_user = bool(user.groups.filter(name=observation_unit.study.group.name).count())
 
-    return observation
+            if not study_belongs_to_user and not is_user_admin(user):
+                msg = 'Can not add observation unit to a study you dont own: {}'
+                msg = msg.format(observation_unit.study.group.name)
+                raise ValueError(msg)
+
+            try:
+                observation = Observation.objects.create(
+                    observation_variable=observation_variable,
+                    observation_unit=observation_unit,
+                    value=value,
+                    observer=struct.observer,
+                    creation_time=creation_time)
+            except IntegrityError as error:
+                if 'duplicate key value' in str(error):
+                    msg = 'This observation already exists in db'
+                    raise ValueError(msg)
+                raise ValueError(str(error))
+            observations.append(observation)
+
+    # only when creating by bulk we would have more than one value.
+    # In this cases the values are not returned. In most cases we can return
+    # just the oly one observation
+
+    if len(observations) == 1:
+        return observations[0]
+
+    return observations
+
+
+def validate_value(value, observation_variable):
+    scale = observation_variable.scale
+    observation_variable
+    values = []
+    data_type = scale.data_type.name
+    if ';' in value and data_type in (ORDINAL, NOMINAL):
+        values = value.split(';')
+    else:
+        values = [value]
+
+    for value in values:
+        if data_type == NUMERICAL:
+            float_value = float(value)
+            if scale.min and float_value < scale.min:
+                msg = 'Numericl value is less than minim: {} < {}'
+                raise ValueError(msg.format(value, scale.min))
+            elif scale.max and float_value > scale.max:
+                msg = 'Numericl value is bigger than maxim: {} > {}'
+                raise ValueError(msg.format(value, scale.max))
+        else:
+            valid_values = [valid['value'] for valid in scale.valid_values]
+            if value not in valid_values:
+                raise ValueError('{} not in valid_values'.format(value))
+    return values
 
 
 def update_observation_in_db(validated_data, instance, user):

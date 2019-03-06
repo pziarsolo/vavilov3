@@ -23,6 +23,7 @@ from vavilov3.conf.settings import OBSERVATION_CSV_FIELDS
 from vavilov3.views import format_error_message
 from vavilov3.serializers.shared import serialize_entity_from_csv
 from vavilov3.excel import excel_dict_reader
+from vavilov3.entities.tags import GERMPLASM_NUMBER, INSTITUTE_CODE
 
 
 class PaginatedObservationCSVRenderer(renderers.CSVRenderer):
@@ -93,10 +94,17 @@ def parse_traits_in_columns_excel(fhand):
     rows = excel_dict_reader(fhand)
     for row in rows:
         accession = row.pop('Accession', None)
+        institute_code, germplasm_number = accession.value.split(':')
         study = row.pop('Study', None)
         for key, cell in row.items():
-            yield {'accession': accession.value, 'study': study.value,
-                   'observation_variable': key, 'value': cell.value}
+            str_value = str(cell.value)
+            if cell.ctype == 2 and cell.value == int(cell.value):
+                str_value = str_value.split('.')[0]
+
+            yield {'accession': {GERMPLASM_NUMBER: germplasm_number,
+                                 INSTITUTE_CODE: institute_code},
+                   'study': study.value,
+                   'observation_variable': key, 'value': str_value}
 
 
 def serialize_observations_from_request(request):

@@ -12,7 +12,10 @@ OLD_COUNTRIES = {'CSHH': 'Czechoslovakia',
                  'SUHH': 'Union of Soviet Socialist Republics',
                  'ANHH': 'Netherlands Antilles'}
 
-SCALE_DATA_TYPES = ['Numerical', 'Nominal', 'Ordinal']
+NUMERICAL = 'Numerical'
+NOMINAL = 'Nominal'
+ORDINAL = 'Ordinal'
+SCALE_DATA_TYPES = [NUMERICAL, NOMINAL, ORDINAL]
 
 
 def initialize_db(users_fhand=None):

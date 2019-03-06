@@ -16,6 +16,8 @@ from vavilov3.tests.data_io import (assert_error_is_equal,
                                     load_observation_variables_from_file,
                                     load_scales_from_file, load_traits_from_file)
 from vavilov3.data_io import initialize_db
+from vavilov3.entities.observation import TRAITS_IN_COLUMNS, \
+    CREATE_OBSERVATION_UNITS
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
 
@@ -80,7 +82,7 @@ class ObservationViewTest(BaseTest):
         api_data = {
             'observation_variable': 'Plant size:cm',
             'observation_unit': 'Plant 1',
-            'value': '121',
+            'value': '99',
             'observer': 'observer1',
             'creation_time': '1911-12-03 00:23:00',
         }
@@ -92,7 +94,7 @@ class ObservationViewTest(BaseTest):
         # bad data
         bad_api_data = {
             'observation_variable': 'Plant size:cm',
-            'value': '121',
+            'value': '99',
             'observer': 'observer1',
             'creation_time': '1911-12-03 00:23:00'}
         response = self.client.post(list_url, data=bad_api_data, format='json')
@@ -108,6 +110,19 @@ class ObservationViewTest(BaseTest):
                              kwargs={"observation_id": created_obj_id})
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # not valid value
+        api_data = {
+            'observation_variable': 'Plant size:cm',
+            'observation_unit': 'Plant 1',
+            'value': '121',
+            'observer': 'observer1',
+            'creation_time': '1911-12-03 00:23:00',
+        }
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(),
+                         ['Plant 1: Numericl value is bigger than maxim: 121 > 100.0'])
 
     def test_update(self):
         self.add_admin_credentials()
@@ -258,7 +273,7 @@ class ObservationUnitPermissionsViewTest(BaseTest):
         api_data = {
             "observation_variable": "Plant size:m",
             "observation_unit": "Plant 3",
-            "value": "1,2",
+            "value": "1.2",
             "observer": "observer1",
             "creation_time": "1911-12-01 19:23:00"}
 
@@ -435,6 +450,6 @@ class ObservationBulkViewTest(BaseTest):
         fpath = join(TEST_DATA_DIR, 'observations_in_columns.xlsx')
         response = self.client.post(reverse('observation-bulk'),
                                     data={'file': open(fpath, mode='rb'),
-                                          'traits_in_columns': True,
-                                          'create_unit_for_each': 'observation'})
+                                          TRAITS_IN_COLUMNS: True,
+                                          CREATE_OBSERVATION_UNITS: 'foreach_observation'})
         print(response.json())
