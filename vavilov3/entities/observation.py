@@ -16,7 +16,7 @@ from vavilov3.entities.tags import (OBSERVATION_VARIABLE, OBSERVATION_UNIT,
                                     OBSERVATION_CREATION_TIME, OBSERVER, VALUE,
                                     INSTITUTE_CODE, GERMPLASM_NUMBER,
                                     OBSERVATION_STUDY, ACCESSION,
-                                    OBSERVATION_ID)
+                                    OBSERVATION_ID, VALUE_BEAUTY)
 from vavilov3.conf.settings import DATETIME_FORMAT
 from vavilov3.models import (ObservationUnit, ObservationVariable, Observation,
                              Study, Accession)
@@ -33,7 +33,7 @@ CREATE_OBSERVATION_UNITS = 'create_observation_units'
 
 OBSERVATION_ALLOWED_FIELDS = [OBSERVATION_ID, OBSERVATION_VARIABLE, OBSERVATION_UNIT,
                               OBSERVATION_CREATION_TIME, OBSERVER, VALUE,
-                              OBSERVATION_STUDY, ACCESSION]
+                              OBSERVATION_STUDY, ACCESSION, VALUE_BEAUTY]
 
 
 def validate_observation_data(data, conf=None):
@@ -131,6 +131,15 @@ class ObservationStruct():
             self._data[VALUE] = value
 
     @property
+    def beauty_value(self) -> str:
+        return self._data.get(VALUE_BEAUTY, None)
+
+    @beauty_value.setter
+    def beauty_value(self, beauty_value: str):
+        if beauty_value:
+            self._data[VALUE_BEAUTY] = beauty_value
+
+    @property
     def accession(self) -> str:
         return self._data.get(ACCESSION, None)
 
@@ -182,6 +191,9 @@ class ObservationStruct():
             self.accession = {INSTITUTE_CODE: instance.observation_unit.accession.institute.code,
                               GERMPLASM_NUMBER: instance.observation_unit.accession.germplasm_number}
 
+        if instance.beauty_value and fields and VALUE_BEAUTY in fields:
+            self.beauty_value = instance.beauty_value
+
     def to_list_representation(self, fields):
         items = []
         for field in fields:
@@ -214,6 +226,8 @@ _OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'observer', val)},
     {'csv_field_name': 'VALUE', 'getter': lambda x: x.value,
      'setter': lambda obj, val: setattr(obj, 'value', val)},
+    {'csv_field_name': 'VALUE_BEAUTY', 'getter': lambda x: x.beauty_value,
+     'setter': lambda obj, val: setattr(obj, 'beauty_value', val)},
     {'csv_field_name': 'STUDY', 'getter': lambda x: x.study,
      'setter': lambda obj, val: setattr(obj, 'study', val)},
     {'csv_field_name': 'ACCESSION',

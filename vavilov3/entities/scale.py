@@ -8,7 +8,8 @@ from rest_framework.exceptions import ValidationError
 
 from vavilov3.entities.tags import (SCALE_NAME, SCALE_DESCRIPTION,
                                     SCALE_DATA_TYPE, SCALE_DECIMAL_PLACES,
-                                    SCALE_MIN, SCALE_MAX, SCALE_VALID_VALUES)
+                                    SCALE_MIN, SCALE_MAX, SCALE_VALID_VALUES,
+                                    ORDINAL, NOMINAL)
 from vavilov3.views import format_error_message
 from vavilov3.models import ScaleDataType, Scale, ScaleCategory
 
@@ -221,7 +222,7 @@ def create_scale_in_db(api_data, user):
         except IntegrityError:
             msg = 'This scale already exists in db: {}'.format(struct.name)
             raise ValueError(format_error_message(msg))
-    if struct.data_type in ('Cardinal', 'Ordinal', 'Nominal'):
+    if struct.data_type in (ORDINAL, NOMINAL):
         for index, category in enumerate(struct.valid_values):
             value = category['value']
             description = category['description']

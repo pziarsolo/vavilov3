@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 from vavilov3.entities.metadata import Metadata
 from vavilov3.entities.tags import (
     STUDY_NAME, STUDY_DESCRIPTION, STUDY_ACTIVE, START_DATE, END_DATE,
-    LOCATION, CONTACT, PROJECT_NAME)
+    LOCATION, CONTACT, PROJECT_NAME, SEASON, INSTITUTION)
 from vavilov3.views import format_error_message
 from vavilov3.models import Group, Study, Project
 from vavilov3.permissions import is_user_admin
@@ -21,7 +21,8 @@ class StudyValidationError(Exception):
 
 
 STUDY_ALLOWED_FIELDS = [STUDY_NAME, STUDY_DESCRIPTION, STUDY_ACTIVE, START_DATE,
-                        END_DATE, LOCATION, CONTACT, PROJECT_NAME]
+                        END_DATE, LOCATION, CONTACT, PROJECT_NAME, SEASON,
+                        INSTITUTION]
 
 
 def validate_study_data(data):
@@ -29,8 +30,6 @@ def validate_study_data(data):
         raise StudyValidationError('{} mandatory'.format(STUDY_NAME))
     if STUDY_DESCRIPTION not in data:
         raise StudyValidationError('{} mandatory'.format(STUDY_DESCRIPTION))
-    if STUDY_ACTIVE not in data:
-        raise StudyValidationError('{} mandatory'.format(STUDY_ACTIVE))
 
     not_allowed_fields = set(data.keys()).difference(STUDY_ALLOWED_FIELDS)
 
@@ -156,6 +155,24 @@ class StudyStruct():
         if project_name:
             self._data[PROJECT_NAME] = project_name
 
+    @property
+    def season(self):
+        return self._data.get(SEASON, None)
+
+    @season.setter
+    def season(self, season):
+        if season:
+            self._data[SEASON] = season
+
+    @property
+    def institution(self):
+        return self._data.get(INSTITUTION, None)
+
+    @institution.setter
+    def institution(self, institution):
+        if institution:
+            self._data[INSTITUTION] = institution
+
     def _populate_with_instance(self, instance, fields):
         self.metadata.group = instance.group.name
         self.metadata.is_public = instance.is_public
@@ -169,8 +186,7 @@ class StudyStruct():
             self.name = instance.name
         if fields is None or STUDY_DESCRIPTION in fields:
             self.description = instance.description
-        if (instance.is_active is not None and
-                (fields is None or STUDY_ACTIVE in fields)):
+        if instance.is_active is not None and fields is not None and STUDY_ACTIVE in fields:
             self.is_active = instance.is_active
         if fields is None or START_DATE in fields:
             self.start_date = instance.data.get(START_DATE, None)
@@ -182,6 +198,10 @@ class StudyStruct():
             self.contact = instance.data.get(CONTACT, None)
         if fields is None or PROJECT_NAME in fields:
             self.project_name = instance.data.get(PROJECT_NAME, None)
+        if fields is None or SEASON in fields:
+            self.season = instance.data.get(SEASON, None)
+        if fields is None or INSTITUTION in fields:
+            self.institution = instance.data.get(INSTITUTION, None)
 
     def to_list_representation(self, fields):
         items = []
@@ -219,6 +239,10 @@ _STUDY_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'contact', val)},
     {'csv_field_name': 'PROJECT_NAME', 'getter': lambda x: x.project_name,
      'setter': lambda obj, val: setattr(obj, 'project_name', val)},
+    {'csv_field_name': 'SEASON', 'getter': lambda x: x.season,
+     'setter': lambda obj, val: setattr(obj, 'season', val)},
+    {'csv_field_name': 'INSTITUTION', 'getter': lambda x: x.institution,
+     'setter': lambda obj, val: setattr(obj, 'institution', val)},
 
 ]
 STUDY_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _STUDY_CSV_FIELD_CONFS])

@@ -10,7 +10,12 @@ from rest_framework import status
 from vavilov3.tests import BaseTest
 from vavilov3.tests.data_io import (load_accessions_from_file,
                                     load_institutes_from_file,
-                                    assert_error_is_equal)
+                                    assert_error_is_equal,
+                                    load_studies_from_file,
+                                    load_observation_unit_from_file,
+                                    load_scales_from_file, load_traits_from_file,
+                                    load_observation_variables_from_file,
+                                    load_observations_from_file)
 from vavilov3.data_io import initialize_db
 from vavilov3.views import DETAIL
 
@@ -430,3 +435,73 @@ class AccessionCsvTests(BaseTest):
 
         for piece in (a, b, c):
             self.assertIn(piece, content)
+
+
+class AccessionFilterByObservationsViewTest(BaseTest):
+
+    def setUp(self):
+        self.initialize()
+        initialize_db()
+        institutes_fpath = join(TEST_DATA_DIR, 'institutes.json')
+        load_institutes_from_file(institutes_fpath)
+        accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
+        load_accessions_from_file(accessions_fpath)
+        studies_fpath = join(TEST_DATA_DIR, 'studies.json')
+        load_studies_from_file(studies_fpath)
+        fpath = join(TEST_DATA_DIR, 'observation_units.json')
+        load_observation_unit_from_file(fpath)
+
+        scale_fpath = join(TEST_DATA_DIR, 'scales.json')
+        load_scales_from_file(scale_fpath)
+
+        trait_fpath = join(TEST_DATA_DIR, 'traits.json')
+        load_traits_from_file(trait_fpath)
+
+        fpath = join(TEST_DATA_DIR, 'observation_variables.json')
+        load_observation_variables_from_file(fpath)
+
+        fpath = join(TEST_DATA_DIR, 'observations.json')
+        load_observations_from_file(fpath, obs_group='OBS1', user=self.crf_user)
+
+    def test_filter(self):
+        self.add_admin_credentials()
+        list_url = reverse('accession-list')
+
+        response = self.client.get(list_url,
+                                   data={'Plant size:cm__gt': '4'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(list_url,
+                                   data={'Plant size:cm__gt': '4',
+                                         'Plant size:cm__lt': '18'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(list_url,
+                                   data={'Plant size:cm__gt': '4',
+                                         'Plant size:cm__lt': '7'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 0)
+
+        response = self.client.get(list_url,
+                                   data={'Plant size:cm': '12'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(list_url,
+                                   data={'Plant size:cm': '12',
+                                         'Plant Growth type:categorical': '1'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(list_url,
+                                   data={'Plant size:cm__gt': '11',
+                                         'Plant Growth type:categorical': '1'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(list_url,
+                                   data={'Plant Growth type:categorical': '1'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)

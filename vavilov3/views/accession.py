@@ -8,19 +8,22 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
+from django_filters.rest_framework.backends import DjangoFilterBackend
+
 from vavilov3.models import Accession
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
                                    GroupObjectPublicPermMixin)
-from vavilov3.serializers.accession import (
-    AccessionSerializer)
+from vavilov3.serializers.accession import AccessionSerializer
 from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
-from vavilov3.entities.accession import AccessionStruct, \
-    AccessionValidationError, serialize_accessions_from_csv
+from vavilov3.entities.accession import (AccessionStruct,
+                                         AccessionValidationError,
+                                         serialize_accessions_from_csv)
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
 from vavilov3.views import format_error_message
+from vavilov3.filters.accession_observation_filter_backend import AccessionByObservationFilterBackend
 
 
 class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
@@ -41,6 +44,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     queryset = Accession.objects.all()
     serializer_class = AccessionSerializer
     filter_class = AccessionFilter
+    filter_backends = (AccessionByObservationFilterBackend, DjangoFilterBackend)
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionCSVRenderer]
@@ -48,7 +52,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     @action(methods=['post'], detail=False)
     def bulk(self, request):
         action = request.method
-#         prev_time = time()
+        # prev_time = time()
         data = request.data
         if 'multipart/form-data' in request.content_type:
             try:
@@ -66,15 +70,14 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                 raise ValueError(format_error_message(error))
         else:
             data = request.data
-#         prev_time = calc_duration('csv to json', prev_time)
+        # prev_time = calc_duration('csv to json', prev_time)
 
         if action == 'POST':
-
             serializer = self.get_serializer(data=data, many=True)
-#             prev_time = calc_duration('get_serializer', prev_time)
+            # prev_time = calc_duration('get_serializer', prev_time)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
 
-#             prev_time = calc_duration('perform_create', prev_time)
+            # prev_time = calc_duration('perform_create', prev_time)
             return Response({'task_id': serializer.instance.id},
                             status=status.HTTP_200_OK, headers={})

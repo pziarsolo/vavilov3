@@ -36,6 +36,6 @@ DATETIME_FORMAT = getattr(settings, 'VAVILOV3_DATETIME_FORMAT',
 
 DEF_OBSERVATION_CSV_FIELDS = ['OBSERVATION_ID', 'STUDY', 'ACCESSION',
                               'OBSERVATION_VARIABLE', 'OBSERVATION_UNIT',
-                              'CREATION_TIME', 'OBSERVER']
+                              'VALUE', 'CREATION_TIME', 'OBSERVER']
 OBSERVATION_CSV_FIELDS = getattr(settings, 'VAVILOV3_OBSERVATION_CSV_FIELDS',
                                  DEF_OBSERVATION_CSV_FIELDS)

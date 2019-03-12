@@ -6,15 +6,13 @@ from django.contrib.auth import get_user_model
 from vavilov3.models import Group, Country, Rank, ScaleDataType
 from vavilov3.conf.settings import (ADMIN_GROUP,
                                     ALLOWED_TAXONOMIC_RANKS)
+from vavilov3.entities.tags import ORDINAL, NOMINAL, NUMERICAL
 
 OLD_COUNTRIES = {'CSHH': 'Czechoslovakia',
                  'YUCS': 'Yugoslavia',
                  'SUHH': 'Union of Soviet Socialist Republics',
                  'ANHH': 'Netherlands Antilles'}
 
-NUMERICAL = 'Numerical'
-NOMINAL = 'Nominal'
-ORDINAL = 'Ordinal'
 SCALE_DATA_TYPES = [NUMERICAL, NOMINAL, ORDINAL]
 
 

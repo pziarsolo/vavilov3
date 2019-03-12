@@ -29,6 +29,8 @@ END_DATE = 'end_date'
 LOCATION = 'location'
 CONTACT = 'contacts'
 PROJECT_NAME = 'project_name'
+SEASON = 'season'
+INSTITUTION = 'institution'
 
 # Observation Variable
 OBSERVATION_VARIABLE_NAME = 'name'
@@ -63,6 +65,7 @@ OBSERVATION_CREATION_TIME = 'creation_time'
 OBSERVER = 'observer'
 VALUE = 'value'
 OBSERVATION_STUDY = 'study'
+VALUE_BEAUTY = 'value_beauty'
 
 # scale
 SCALE_NAME = 'name'
@@ -83,3 +86,4 @@ NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')
 
 ORDINAL = 'Ordinal'
 NUMERICAL = 'Numerical'
+NOMINAL = 'Nominal'

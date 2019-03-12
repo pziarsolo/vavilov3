@@ -8,6 +8,7 @@ from django.contrib.postgres.fields.jsonb import JSONField
 
 from vavilov3.raw_stat_sql_commands import (
     get_institute_stats_raw_sql, get_country_stats_raw_sql)
+from vavilov3.entities.tags import NOMINAL, ORDINAL
 
 
 class User(AbstractUser):
@@ -413,7 +414,7 @@ class Study(models.Model):
     study_id = models.AutoField(primary_key=True, editable=False)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     is_public = models.BooleanField()
-    is_active = models.BooleanField()
+    is_active = models.BooleanField(null=True)
     name = models.CharField(max_length=255, db_index=True, unique=True)
     description = models.CharField(max_length=255)
     project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
@@ -532,3 +533,12 @@ class Observation(models.Model):
         db_table = 'vavilov_observation'
         unique_together = ('observation_variable', 'observation_unit', 'value',
                            'observer', 'creation_time')
+
+    @property
+    def beauty_value(self):
+        if self.observation_variable.scale.data_type.name in (NOMINAL, ORDINAL):
+            cat = ScaleCategory.objects.get(scale=self.observation_variable.scale,
+                                            value=self.value)
+
+            return '{} ({})'.format(self.value, cat.description)
+        return self.value
