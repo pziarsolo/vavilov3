@@ -26,6 +26,9 @@ ADMINPASS = 'pass'
 RUN_FAILLING_REQUESTS = True
 RUN_FAILLING_REQUESTS = False
 
+TRAITS_IN_COLUMNS = 'traits_in_columns'
+CREATE_OBSERVATION_UNITS = 'create_observation_units'
+
 
 def main():
     print('It needs django server with fresh db and celery running')
@@ -171,8 +174,8 @@ def main():
     response = requests.post(SERVER_URL + 'api/observations/bulk/',
                              headers=headers,
                              files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
-                             data={'traits_in_columns': True,
-                                   'create_units_foreach': 'observation'})
+                             data={TRAITS_IN_COLUMNS: True,
+                                   CREATE_OBSERVATION_UNITS: 'foreach_observation'})
 
     process_task_response(response, headers)
 
