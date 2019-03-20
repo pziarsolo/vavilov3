@@ -9,8 +9,8 @@ class StudyFilter(TermFilterMixin, filters.FilterSet):
     is_public = filters.BooleanFilter()
     group = filters.CharFilter(field_name='group__name', lookup_expr='exact')
     name = filters.CharFilter(field_name='name', lookup_expr='iexact')
-    name_contains = filters.CharFilter(field_name='name',
-                                       lookup_expr='icontains')
+    name_icontains = filters.CharFilter(field_name='name',
+                                        lookup_expr='icontains')
     is_active = filters.BooleanFilter()
     contact = filters.CharFilter(field_name='contacts', lookup_expr='iexact')
     location = filters.CharFilter(field_name='location', lookup_expr='iexact')

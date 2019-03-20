@@ -48,6 +48,8 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
 
     study = filters.CharFilter(label='study', field_name='observationunit__study__name',
                                lookup_expr='iexact', distinct=True)
+    study_icontains = filters.CharFilter(label='study', field_name='observationunit__study__name',
+                                         lookup_expr='icontains', distinct=True)
 
     class Meta:
         model = Accession
