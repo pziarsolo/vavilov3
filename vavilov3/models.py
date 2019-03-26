@@ -13,7 +13,6 @@ from vavilov3.raw_stat_sql_commands import (get_institute_stats_raw_sql,
                                             get_country_stats_raw_sql)
 from vavilov3.entities.tags import NOMINAL, ORDINAL
 from vavilov3.conf.settings import PHENO_IMAGE_DIR
-from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
