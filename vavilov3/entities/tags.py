@@ -66,6 +66,11 @@ OBSERVER = 'observer'
 VALUE = 'value'
 OBSERVATION_STUDY = 'study'
 VALUE_BEAUTY = 'value_beauty'
+IMAGE = 'image'
+IMAGE_FPATH = 'image_path'
+IMAGE_MEDIUM = 'image_medium'
+IMAGE_SMALL = 'image_small'
+OBSERVATION_IMAGE_UID = 'observation_image_uid'
 
 # scale
 SCALE_NAME = 'name'

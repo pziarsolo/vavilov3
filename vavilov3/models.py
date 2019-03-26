@@ -1,14 +1,20 @@
+import io
 from operator import itemgetter
+from os.path import join, splitext, split
 
 from numpy import histogram
+from PIL import Image
 
 from django.db import models, connection
 from django.contrib.auth.models import Group as DjangoGroup, AbstractUser
 from django.contrib.postgres.fields.jsonb import JSONField
 
-from vavilov3.raw_stat_sql_commands import (
-    get_institute_stats_raw_sql, get_country_stats_raw_sql)
+from vavilov3.raw_stat_sql_commands import (get_institute_stats_raw_sql,
+                                            get_country_stats_raw_sql)
 from vavilov3.entities.tags import NOMINAL, ORDINAL
+from vavilov3.conf.settings import PHENO_IMAGE_DIR
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class User(AbstractUser):
@@ -542,3 +548,100 @@ class Observation(models.Model):
 
             return '{} ({})'.format(self.value, cat.description)
         return self.value
+
+
+def _get_upload_path(instance, filename, prefix=None):
+    study = instance.observation_unit.study.name
+    accession = '{}-{}'.format(instance.observation_unit.accession.institute.code,
+                               instance.observation_unit.accession.germplasm_number)
+
+    suffix = splitext(filename)[1]
+    filename = '{}_'.format(prefix) if prefix else ''
+    filename += '{}_{}_{}{}'.format(study, accession,
+                                    instance.observation_image_uid, suffix)
+    return join(PHENO_IMAGE_DIR, accession, study, filename)
+
+
+def get_image_upload_path(instance, filename):
+    return _get_upload_path(instance, filename)
+
+
+def get_small_image_upload_path(instance, filename):
+    return _get_upload_path(instance, filename, 'small')
+
+
+def get_medium_image_upload_path(instance, filename):
+    return _get_upload_path(instance, filename, 'medium')
+
+
+class ObservationImage(models.Model):
+    observation_image_id = models.AutoField(primary_key=True, editable=False)
+    observation_image_uid = models.TextField(unique=True)
+    observation_unit = models.ForeignKey(ObservationUnit,
+                                         on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=get_image_upload_path, max_length=1000)
+    image_medium = models.ImageField(upload_to=get_medium_image_upload_path,
+                                     null=True, blank=True, max_length=1000)
+    image_small = models.ImageField(upload_to=get_small_image_upload_path,
+                                    null=True, blank=True, max_length=1000)
+    observer = models.CharField(max_length=255, null=True)
+    creation_time = models.DateTimeField(null=True)
+
+    class Meta:
+        db_table = 'vavilov_observation_images'
+
+    def _create_thumbnail(self, size=(128, 128), kind='small'):
+        """
+        Create a thumbnail from a saved image
+        Adapted from this gist: https://gist.github.com/valberg/2429288
+        """
+
+        if not self.image:
+            return
+
+        im = Image.open(self.image)
+        pil_format = im.format
+
+        if pil_format == 'JPEG':
+            pil_type = 'jpeg'
+            extension = 'jpg'
+            django_type = 'image/jpg'
+
+        if pil_format == 'PNG':
+            pil_type = 'png'
+            extension = 'png'
+            django_type = 'image/png'
+
+        try:
+            self.image.seek(0)
+            image = Image.open(io.BytesIO(self.image.read()))
+            image.thumbnail(size, Image.ANTIALIAS)
+            temp_handle = io.BytesIO()
+            image.save(temp_handle, pil_type)
+            temp_handle.seek(0)
+
+            suf = SimpleUploadedFile(split(self.image.name)[-1],
+                                     temp_handle.read(), content_type=django_type)
+            field = self.image_small if kind == 'small' else self.image_medium
+            field.save(
+                '{}_{}.{}'.format(splitext(suf.name)[0], kind, extension),
+                suf,
+                save=False)
+        except IOError as error:
+            print("Cannot create {} for {}: {}".format(kind, self.image.name,
+                                                       error))
+
+    def save(self, *args, **kwargs):
+        self._create_thumbnail(kind='small')
+        self._create_thumbnail((600, 400), kind='medium')
+
+        super(ObservationImage, self).save(*args, **kwargs)
+
+    @property
+    def accession(self):
+        return '{}-{}'.format(self.observation_unit.accession.institute.code,
+                              self.observation_unit.accession.germplasm_number)
+
+    @property
+    def study(self):
+        return self.observation_unit.study.name

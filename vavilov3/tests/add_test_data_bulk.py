@@ -18,6 +18,7 @@ OBSERVATION_UNITS_FPATH = join(DATA_DIR, 'observation_units.csv')
 OBSERVATION_VARIABLES_FPATH = join(DATA_DIR, 'observation_variables.csv')
 OBSERVATIONS_FPATH = join(DATA_DIR, 'observations.csv')
 OBSERVATIONS_IN_COLUMNS_FPATH = join(DATA_DIR, 'observations_in_columns.xlsx')
+OBSERVATION_IMAGES_FPATH = join(DATA_DIR, 'images.zip')
 TRAITS_FPATH = join(DATA_DIR, 'to.obo')
 SCALE_FPATH = join(DATA_DIR, 'scales.csv')
 ADMINUSER = 'admin'
@@ -176,6 +177,14 @@ def main():
                              files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
                              data={TRAITS_IN_COLUMNS: True,
                                    CREATE_OBSERVATION_UNITS: 'foreach_observation'})
+
+    process_task_response(response, headers)
+
+    # Images
+    response = requests.post(SERVER_URL + 'api/observation_images/bulk/',
+                             headers=headers,
+                             files={'file': open(OBSERVATION_IMAGES_FPATH, mode='rb')},
+                             data={CREATE_OBSERVATION_UNITS: 'foreach_observation'})
 
     process_task_response(response, headers)
 

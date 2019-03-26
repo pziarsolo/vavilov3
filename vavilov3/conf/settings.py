@@ -1,3 +1,4 @@
+from os.path import join
 from django.conf import settings
 
 ADMIN_GROUP = getattr(settings, 'VAVILOV3_ADMIN_GROUP', 'admin')
@@ -25,7 +26,7 @@ DEF_INSTITUTE_CSV_FIELDS = ['INSTCODE', 'FULL_NAME', 'TYPE']
 INSTITUTE_CSV_FIELDS = getattr(settings, 'VAVILOV3_INSTITUTE_CSV_FIELDS',
                                DEF_INSTITUTE_CSV_FIELDS)
 
-DEF_STUDY_CSV_FIELDS = ['NAME', 'DESCRIPTION', 'ACTIVE', 'START_DATE',
+DEF_STUDY_CSV_FIELDS = ['NAME', 'DESCRIPTION', 'START_DATE',
                         'END_DATE', 'LOCATION', 'CONTACT', 'PROJECT_NAME']
 STUDY_CSV_FIELDS = getattr(settings, 'VAVILOV3_STUDY_CSV_FIELDS',
                            DEF_STUDY_CSV_FIELDS)
@@ -39,3 +40,6 @@ DEF_OBSERVATION_CSV_FIELDS = ['OBSERVATION_ID', 'STUDY', 'ACCESSION',
                               'VALUE', 'CREATION_TIME', 'OBSERVER']
 OBSERVATION_CSV_FIELDS = getattr(settings, 'VAVILOV3_OBSERVATION_CSV_FIELDS',
                                  DEF_OBSERVATION_CSV_FIELDS)
+
+PHENO_IMAGE_DIR = getattr(settings, 'VAVILOV3_PHENO_IMAGE_DIR',
+                          'phenotype_images')

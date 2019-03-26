@@ -102,15 +102,15 @@ class StudyStruct():
 
     @property
     def is_active(self):
-        return self._data[STUDY_ACTIVE]
+        return self._data.get(STUDY_ACTIVE, None)
 
     @is_active.setter
-    def is_active(self, is_active: str):
+    def is_active(self, is_active):
         self._data[STUDY_ACTIVE] = is_active
 
     @property
     def start_date(self) -> date:
-        return self._data[START_DATE]
+        return self._data.get(START_DATE, None)
 
     @start_date.setter
     def start_date(self, start_date: str):
@@ -120,7 +120,7 @@ class StudyStruct():
 
     @property
     def end_date(self) -> date:
-        return self._data[END_DATE]
+        return self._data.get(END_DATE, None)
 
     @end_date.setter
     def end_date(self, end_date: str):
@@ -227,8 +227,8 @@ _STUDY_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'name', val)},
     {'csv_field_name': 'DESCRIPTION', 'getter': lambda x: x.description,
      'setter': lambda obj, val: setattr(obj, 'description', val)},
-    {'csv_field_name': 'ACTIVE', 'getter': lambda x: x.is_active,
-     'setter': lambda obj, val: setattr(obj, 'is_active', True if val.lower() == 'yes' else False)},
+#     {'csv_field_name': 'ACTIVE', 'getter': lambda x: x.is_active,
+#      'setter': lambda obj, val: setattr(obj, 'is_active', True if val.lower() == 'yes' else False)},
     {'csv_field_name': 'START_DATE', 'getter': lambda x: x.start_date,
      'setter': lambda obj, val: setattr(obj, 'start_date', val)},
     {'csv_field_name': 'END_DATE', 'getter': lambda x: x.end_date,

@@ -197,7 +197,7 @@ class ObservationStruct():
     def to_list_representation(self, fields):
         items = []
         for field in fields:
-            getter = OBSERVATION_VARIABLE_CSV_FIELD_CONFS.get(field)['getter']
+            getter = OBSERVATION_CSV_FIELD_CONFS.get(field)['getter']
             items.append(getter(self))
         return items
 
@@ -206,14 +206,14 @@ class ObservationStruct():
         for field, value in row.items():
             if not value:
                 continue
-            field_conf = OBSERVATION_VARIABLE_CSV_FIELD_CONFS.get(field)
+            field_conf = OBSERVATION_CSV_FIELD_CONFS.get(field)
 
             if field_conf:
                 setter = field_conf['setter']
                 setter(self, value)
 
 
-_OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
+_OBSERVATION_CSV_FIELD_CONFS = [
     {'csv_field_name': 'OBSERVATION_ID', 'getter': lambda x: x.observation_id,
      'setter': lambda obj, val: setattr(obj, 'observation_id', val)},
     {'csv_field_name': 'OBSERVATION_VARIABLE', 'getter': lambda x: x.observation_variable,
@@ -235,7 +235,7 @@ _OBSERVATION_VARIABLE_CSV_FIELD_CONFS = [
                                         x.accession[GERMPLASM_NUMBER]),
      'setter': lambda obj, val: setattr(obj, 'accession', val)},
 ]
-OBSERVATION_VARIABLE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _OBSERVATION_VARIABLE_CSV_FIELD_CONFS])
+OBSERVATION_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _OBSERVATION_CSV_FIELD_CONFS])
 
 
 def _get_or_create_observation_unit(struct, create_observation_unit):

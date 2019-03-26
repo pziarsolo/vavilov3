@@ -18,6 +18,7 @@ from vavilov3.entities.observation import create_observation_in_db
 import functools
 from vavilov3.entities.trait import create_trait_in_db
 from vavilov3.entities.scale import create_scale_in_db
+from vavilov3.entities.observation_image import create_observation_image_in_db
 
 User = get_user_model()
 
@@ -101,6 +102,13 @@ def create_plants_task(validated_data, username):
 def create_observations_task(validated_data, username, conf=None):
     return _create_items_task(validated_data, username,
                               create_observation_in_db, 'observations', conf)
+
+
+@shared_task
+def create_observation_images_task(validated_data, username, conf=None):
+    return _create_items_task(validated_data, username,
+                              create_observation_image_in_db,
+                              'observation_images', conf)
 
 
 @shared_task

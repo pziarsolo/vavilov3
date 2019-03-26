@@ -30,7 +30,7 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.json()
         expected = {'data': {'name': 'study1', 'description': 'description1',
-                             'active': False, 'start_date': '2017/01/17',
+                             'start_date': '2017/01/17',
                              'end_date': '2017/12/01', 'location': 'Valencia',
                              'contacts': 'Alguien'},
                     'metadata': {'group': 'admin', 'is_public': True}}
@@ -61,15 +61,13 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['data']['name'], 'study1')
         self.assertEqual(response.json()['data']['description'], 'description1')
-        self.assertEqual(response.json()['data']['active'], False)
         self.assertEqual(len(response.json()['data'].keys()), 3)
 
     def test_create_delete(self):
         self.add_admin_credentials()
         list_url = reverse('study-list')
         api_data = {'data': {'name': 'study3',
-                             'description': 'description3',
-                             'active': True},
+                             'description': 'description3'},
                     'metadata': {'group': 'admin', 'is_public': True}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -79,8 +77,7 @@ class StudyViewTest(BaseTest):
             ['can not set group or is public while creating the study'])
 
         api_data = {'data': {'name': 'study8',
-                             'description': 'description3',
-                             'active': True},
+                             'description': 'description3'},
                     'metadata': {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -92,12 +89,12 @@ class StudyViewTest(BaseTest):
                     'metadata': {}}
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        assert_error_is_equal(response.json(), ['active mandatory'])
+
+        assert_error_is_equal(response.json(), ['This study already exists in db: study8'])
 
         with transaction.atomic():
             api_data = {'data': {'name': 'study3',
-                                 'description': 'description3',
-                                 'active': True},
+                                 'description': 'description3'},
                         'metadata': {'group': 'admin', 'is_public': True}}
 
             response = self.client.post(list_url, data=api_data, format='json')
@@ -112,8 +109,7 @@ class StudyViewTest(BaseTest):
 
         # acive false
         api_data = {'data': {'name': 'study9',
-                             'description': 'description3',
-                             'active': False},
+                             'description': 'description3'},
                     'metadata': {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -124,16 +120,13 @@ class StudyViewTest(BaseTest):
         self.add_admin_credentials()
         detail_url = reverse('study-detail', kwargs={'name': 'study1'})
         api_data = {'data': {'name': 'study1',
-                             'description': 'description1',
-                             'active': True},
-                    'metadata': {'group': 'admin', 'is_public': True}}
+                             'description': 'description1'},
+                    'metadata': {'group': 'admin', 'is_public': False}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), api_data)
-
         api_data = {'data': {'name': 'study1',
-                             'description': 'description1',
-                             'active': True},
+                             'description': 'description1'},
                     'metadata': {'group': 'userGroup', 'is_public': True}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -141,8 +134,7 @@ class StudyViewTest(BaseTest):
 
         # Fail changing group if not exists
         api_data = {'data': {'name': 'study1',
-                             'description': 'description1',
-                             'active': True},
+                             'description': 'description1'},
                     'metadata': {'group': 'rGroup', 'is_public': True}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -339,10 +331,9 @@ class StudyCsvViewTest(BaseTest):
         response = self.client.get(list_url, data={'format': 'csv'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = response.content
-
-        a = b'NAME,DESCRIPTION,ACTIVE,START_DATE,END_DATE,LOCATION,CONTACT,PROJECT_NAME\r\n'
-        b = b'study1,description1,False,2017-01-17,2017-12-01,Valencia,Alguien,\r\n'
-        c = b'study3,description3,True,2017-01-17,2017-12-01,Valencia,Alguien,\r\n'
+        a = b'NAME,DESCRIPTION,START_DATE,END_DATE,LOCATION,CONTACT,PROJECT_NAME\r\n'
+        b = b'study1,description1,2017-01-17,2017-12-01,Valencia,Alguien,\r\n'
+        c = b'study3,description3,2017-01-17,2017-12-01,Valencia,Alguien,\r\n'
 
         for piece in (a, b, c):
             self.assertIn(piece, content)

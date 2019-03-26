@@ -17,7 +17,8 @@ from vavilov3.tasks import (create_accessions_task, add_task_to_user,
                             create_plants_task,
                             create_observation_variables_task,
                             create_studies_task, create_observations_task,
-                            create_trait_task, wait_func, create_scale_task)
+                            create_trait_task, wait_func, create_scale_task,
+                            create_observation_images_task)
 
 
 class DynamicFieldsSerializer(serializers.Serializer):
@@ -92,6 +93,11 @@ class VavilovListSerializer(serializers.ListSerializer):
             async_result = create_observations_task.delay(validated_data,
                                                           user.username,
                                                           conf)
+        elif self.data_type == 'observation_image':
+            conf = self.context['view'].conf
+            async_result = create_observation_images_task.delay(validated_data,
+                                                                user.username,
+                                                                conf)
         elif self.data_type == 'trait':
             async_result = create_trait_task.delay(validated_data, user.username)
         elif self.data_type == 'scale':
