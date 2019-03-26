@@ -15,6 +15,7 @@ from vavilov3.serializers.observation_image import ObservationImageSerializer
 from vavilov3.filters.observation_image import ObservationImageFilter
 from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
 from vavilov3.utils import extract_files_from_zip
+import tempfile
 
 
 class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
@@ -49,7 +50,10 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
     def bulk(self, request):
         action = request.method
 #         prev_time = time()
-        data, conf = serialize_observation_images_from_request(request)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            extract_dir = tmp_dir
+
+        data, conf = serialize_observation_images_from_request(request, extract_dir)
         self.conf = conf
         if action == 'POST':
             serializer = self.get_serializer(data=data, many=True)
@@ -72,17 +76,18 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
         self._conf = conf
 
 
-def serialize_observation_images_from_request(request):
+def serialize_observation_images_from_request(request, tmp_extract_dir):
     conf = None
     if 'multipart/form-data' in request.content_type:
         create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
         zip_file = request.FILES['file'].file
         try:
-            data = list(extract_files_from_zip(zip_file))
+            data = list(extract_files_from_zip(zip_file, extract_dir=tmp_extract_dir))
         except ValueError as error:
             raise ValidationError(error)
 
-        conf = {CREATE_OBSERVATION_UNITS: create_observation_units}
+        conf = {CREATE_OBSERVATION_UNITS: create_observation_units,
+                'extraction_dir': tmp_extract_dir}
     else:
         raise ValidationError('Request must be a multipart/form-data request with at least a zip file')
     return data, conf

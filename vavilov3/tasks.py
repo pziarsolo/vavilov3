@@ -1,4 +1,6 @@
 from __future__ import absolute_import, unicode_literals
+import shutil
+import functools
 from celery import shared_task
 
 from django.db import transaction
@@ -15,7 +17,6 @@ from vavilov3.entities.observation_variable import create_observation_variable_i
 from vavilov3.entities.observation_unit import create_observation_unit_in_db
 from vavilov3.entities.plant import create_plant_in_db
 from vavilov3.entities.observation import create_observation_in_db
-import functools
 from vavilov3.entities.trait import create_trait_in_db
 from vavilov3.entities.scale import create_scale_in_db
 from vavilov3.entities.observation_image import create_observation_image_in_db
@@ -106,9 +107,12 @@ def create_observations_task(validated_data, username, conf=None):
 
 @shared_task
 def create_observation_images_task(validated_data, username, conf=None):
-    return _create_items_task(validated_data, username,
-                              create_observation_image_in_db,
-                              'observation_images', conf)
+    try:
+        return _create_items_task(validated_data, username,
+                                  create_observation_image_in_db,
+                                  'observation_images', conf)
+    finally:
+        shutil.rmtree(conf['extraction_dir'])
 
 
 @shared_task
