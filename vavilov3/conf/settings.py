@@ -43,3 +43,8 @@ OBSERVATION_CSV_FIELDS = getattr(settings, 'VAVILOV3_OBSERVATION_CSV_FIELDS',
 
 PHENO_IMAGE_DIR = getattr(settings, 'VAVILOV3_PHENO_IMAGE_DIR',
                           'phenotype_images')
+
+LONG_PROCESS_TIMEOUT = getattr(settings, 'VAVILOV3_LONG_PROCESS_TIMEOUT',
+                               14400)
+SHORT_PROCESS_TIMEOUT = getattr(settings, 'VAVILOV3_LONG_PROCESS_TIMEOUT',
+                                1800)

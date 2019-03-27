@@ -20,6 +20,8 @@ from vavilov3.entities.observation import create_observation_in_db
 from vavilov3.entities.trait import create_trait_in_db
 from vavilov3.entities.scale import create_scale_in_db
 from vavilov3.entities.observation_image import create_observation_image_in_db
+from vavilov3.conf.settings import (LONG_PROCESS_TIMEOUT,
+                                    SHORT_PROCESS_TIMEOUT)
 
 User = get_user_model()
 
@@ -62,50 +64,58 @@ def _create_items_task(validated_data, username, func, item_type, conf=None):
     return {DETAIL: '{} {} added'.format(len(validated_data), item_type)}
 
 
-@shared_task
+@shared_task(time_limit=LONG_PROCESS_TIMEOUT,
+             soft_time_limit=LONG_PROCESS_TIMEOUT)
 def create_accessions_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_accession_in_db, 'accessions')
 
 
-@shared_task
+@shared_task(time_limit=LONG_PROCESS_TIMEOUT,
+             soft_time_limit=LONG_PROCESS_TIMEOUT)
 def create_accessionsets_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_accessionset_in_db, 'accessionsets')
 
 
-@shared_task
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def create_studies_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_study_in_db, 'studies')
 
 
-@shared_task
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def create_observation_variables_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_observation_variable_in_db, 'observation_variables')
 
 
-@shared_task
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def create_observation_units_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_observation_unit_in_db,
                               'observation_units')
 
 
-@shared_task
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def create_plants_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_plant_in_db, 'plants')
 
 
-@shared_task
+@shared_task(time_limit=LONG_PROCESS_TIMEOUT,
+             soft_time_limit=LONG_PROCESS_TIMEOUT)
 def create_observations_task(validated_data, username, conf=None):
     return _create_items_task(validated_data, username,
                               create_observation_in_db, 'observations', conf)
 
 
-@shared_task
+@shared_task(time_limit=LONG_PROCESS_TIMEOUT,
+             soft_time_limit=LONG_PROCESS_TIMEOUT)
 def create_observation_images_task(validated_data, username, conf=None):
     try:
         return _create_items_task(validated_data, username,
@@ -115,7 +125,8 @@ def create_observation_images_task(validated_data, username, conf=None):
         shutil.rmtree(conf['extraction_dir'])
 
 
-@shared_task
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def create_trait_task(validated_data, username):
     return _create_items_task(validated_data, username,
                               create_trait_in_db, 'traits')
@@ -127,7 +138,8 @@ def create_scale_task(validated_data, username):
                               create_scale_in_db, 'scales')
 
 
-@shared_task
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def create_institutes_task(validated_data):
     errors = []
     with transaction.atomic():

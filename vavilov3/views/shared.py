@@ -36,8 +36,11 @@ class BulkOperationsMixin(object):
             except KeyError:
                 msg = 'could not found csv file'
                 raise ValidationError(format_error_message(msg))
-
-            data = serialize_entity_from_csv(fhand, self.Struct)
+            try:
+                data = serialize_entity_from_csv(fhand, self.Struct)
+            except ValueError as error:
+                msg = 'Could not read file: {}'.format(error)
+                raise ValidationError(format_error_message(msg))
         else:
             data = request.data
 

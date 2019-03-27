@@ -70,7 +70,12 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
     def bulk(self, request):
         action = request.method
 #         prev_time = time()
-        data, conf = serialize_observations_from_request(request)
+        try:
+            data, conf = serialize_observations_from_request(request)
+        except ValueError as error:
+            msg = 'Could not read file: {}'.format(error)
+            raise ValidationError(format_error_message(msg))
+
         self.conf = conf
         if action == 'POST':
             serializer = self.get_serializer(data=data, many=True)

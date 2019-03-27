@@ -200,8 +200,12 @@ class VavilovSerializer(DynamicFieldsSerializer):
 
 
 def serialize_entity_from_csv(fhand, Struct):
-    reader = csv.DictReader(fhand, delimiter=',')
-    fields = reader.fieldnames
+    try:
+        reader = csv.DictReader(fhand, delimiter=',')
+        fields = reader.fieldnames
+    except UnicodeDecodeError:
+        raise ValueError('This is not a csv file')
+
     data = []
     for row in reader:
         row = OrderedDict(((field, row[field]) for field in fields))
