@@ -33,7 +33,6 @@ class TaskViewSet(viewsets.ViewSet):
         except IndexError:
             return Response(format_error_message('Task does not exists'),
                             status=status.HTTP_404_NOT_FOUND)
-
         try:
             task = TaskResultGetter(task_id)
         except TaskDoesNotExistError:
@@ -54,14 +53,17 @@ class TaskViewSet(viewsets.ViewSet):
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request):
-        active_tasks_by_ids = get_active_tasks()
+        try:
+            active_tasks_by_ids = get_active_tasks()
+        except ValueError:
+            active_tasks_by_ids = {}
         task_ids = []
+
         task_ids.extend(active_tasks_by_ids.keys())
         for task_result in TaskResult.objects.all():
             task_ids.append(task_result.task_id)
 
         task_ids = self.filter_by_permission(task_ids, user=request.user)
-
         tasks = []
         for task_id in task_ids:
             try:

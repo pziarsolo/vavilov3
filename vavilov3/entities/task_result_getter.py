@@ -12,26 +12,57 @@ class TaskDoesNotExistError(Exception):
     pass
 
 
-def get_active_tasks():
+POLLING_STEP = 0.2
+TIMEOUT_LIMIT = 1
+
+
+def task_in_active_tasks(active_tasks, task_id):
+    for tasks in active_tasks.values():
+        for task in tasks:
+            if task_id == task['id']:
+                return True
+    return False
+
+
+def get_active_tasks(task_id=None):
     app = app_or_default()
     inspect = app.control.inspect()
     active_tasks_by_id = {}
+    active_tasks = None
+    time_counter = 0
+    while True:
+        try:
+            active_tasks = inspect.active()
+        except ConnectionResetError:
+            pass
+        time.sleep(POLLING_STEP)
+        time_counter += POLLING_STEP
+        if time_counter > TIMEOUT_LIMIT:
+            raise ValueError('Can not get active tasks')
+        if (active_tasks is not None):
+            if (task_id is None and len(active_tasks.values()) > 0):
+                break
+            elif (task_id is not None and task_in_active_tasks(active_tasks, task_id)):
+                break
 
-    try:
-        active_tasks = inspect.active()
-    except ConnectionResetError:
-        time.sleep(0.2)
-        active_tasks = inspect.active()
+    active_tasks_by_queue = None
+    time_counter = 0
+    while not active_tasks_by_queue:
+        try:
+            active_tasks_by_queue = active_tasks.values()
+        except AttributeError:
+            pass
 
-    try:
-        active_tasks_by_queue = active_tasks.values()
-    except AttributeError:
-        time.sleep(0.2)
-        active_tasks_by_queue = active_tasks.values()
+        time.sleep(POLLING_STEP)
+        time_counter += POLLING_STEP
+#         print(time_counter)
+        if time_counter > TIMEOUT_LIMIT:
+            raise ValueError('Can not get active tasks')
 
     for tasks_in_queue in active_tasks_by_queue:
         for task in tasks_in_queue:
             active_tasks_by_id[task['id']] = task
+
     return active_tasks_by_id
 
 
@@ -47,7 +78,10 @@ class TaskResultGetter():
 
         active_task = None
         if self._db_result is None:
-            active_tasks_by_id = get_active_tasks()
+            try:
+                active_tasks_by_id = get_active_tasks(task_id)
+            except ValueError:
+                active_tasks_by_id = {}
             try:
                 active_task = active_tasks_by_id[task_id]
             except KeyError:
@@ -66,6 +100,7 @@ class TaskResultGetter():
 
         if self._active_task is None and db_result is None:
             raise TaskDoesNotExistError()
+
         elif self._active_task and not db_result:
             self.status = 'PENDING'
             self.task_name = self._active_task['name']
@@ -115,6 +150,8 @@ class TaskResultGetter():
             result = json.loads(self._data['result'])["exc_message"][0]
         elif self.status == 'SUCCESS':
             result = json.loads(self._data['result'])['detail']
+        elif self.status == 'REVOKED':
+            result = ''
 
         return result
 
@@ -156,8 +193,10 @@ class TaskResultGetter():
                 'date_done': self.date_done}
 
     def delete(self):
+        app = app_or_default()
         if self._active_task:
-            self._active_task.forget()
+            app.control.revoke(self._active_task['id'], terminate=True)
+#             self._active_task.forget()
         if self._db_result:
             self._db_result.delete()
         if self._user_task:
