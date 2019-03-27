@@ -16,6 +16,7 @@ from vavilov3.filters.observation_image import ObservationImageFilter
 from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
 from vavilov3.utils import extract_files_from_zip
 import tempfile
+from vavilov3.views import format_error_message
 
 
 class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
@@ -84,10 +85,11 @@ def serialize_observation_images_from_request(request, tmp_extract_dir):
         try:
             data = list(extract_files_from_zip(zip_file, extract_dir=tmp_extract_dir))
         except ValueError as error:
-            raise ValidationError(error)
+            raise ValidationError(format_error_message(error))
 
         conf = {CREATE_OBSERVATION_UNITS: create_observation_units,
                 'extraction_dir': tmp_extract_dir}
     else:
-        raise ValidationError('Request must be a multipart/form-data request with at least a zip file')
+        msg = 'Request must be a multipart/form-data request with at least a zip file'
+        raise ValidationError(format_error_message(msg))
     return data, conf

@@ -335,7 +335,7 @@ def create_observation_image_in_db(api_data, user, conf=None):
                 creation_time=creation_time)
         except IntegrityError as error:
             if 'duplicate key value' in str(error):
-                msg = 'This observation already exists in db'
+                msg = 'This image already exists in db: {}'.format(uid)
                 raise ValueError(msg)
             raise ValueError(str(error))
         observations.append(observation)

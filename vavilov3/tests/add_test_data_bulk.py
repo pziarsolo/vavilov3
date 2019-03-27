@@ -39,68 +39,68 @@ def main():
     token = response.json()['access']
     headers = {'Authorization': 'Bearer {}'.format(token)}
 
-    # instal institute
-    response = requests.post(SERVER_URL + 'api/institutes/bulk/',
-                             headers=headers,
-                             files={'csv': open(INSTITUTE_FPATH)})
-
-    process_task_response(response, headers)
-
-    # install accession
-    response = requests.post(SERVER_URL + 'api/accessions/bulk/',
-                             headers=headers,
-                             files={'csv': open(ACCESSIONS_FPATH)},
-                             data={'data_source_code': 'CRF',
-                                   'data_source_kind': 'project'})
-    process_task_response(response, headers)
-
-    if RUN_FAILLING_REQUESTS:
-        # Adding again fails
-        response = requests.post(SERVER_URL + 'api/accessions/bulk/',
-                                 headers=headers,
-                                 files={'csv': open(ACCESSIONS_FPATH)},
-                                 data={'data_source_code': 'CRF',
-                                       'data_source_kind': 'project'})
-        try:
-            process_task_response(response, headers)
-            raise ValueError()
-        except RuntimeError:
-            pass
-
-    # install accessionset
-    response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
-                             headers=headers,
-                             files={'csv': open(ACCESSIONSETS_FPATH)})
-    process_task_response(response, headers)
-
-    if RUN_FAILLING_REQUESTS:
-        # Adding again fails
-        response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
-                                 headers=headers,
-                                 files={'csv': open(ACCESSIONSETS_FPATH)})
-
-        try:
-            process_task_response(response, headers)
-            raise ValueError()
-        except RuntimeError:
-            pass
-
-    # adding studies
-    response = requests.post(SERVER_URL + 'api/studies/bulk/',
-                             headers=headers,
-                             files={'csv': open(STUDIES_FPATH)})
-    process_task_response(response, headers)
-
-    if RUN_FAILLING_REQUESTS:
-        # Adding again fails
-        response = requests.post(SERVER_URL + 'api/studies/bulk/',
-                                 headers=headers,
-                                 files={'csv': open(STUDIES_FPATH)})
-        try:
-            process_task_response(response, headers)
-            raise ValueError()
-        except RuntimeError:
-            pass
+#     # instal institute
+#     response = requests.post(SERVER_URL + 'api/institutes/bulk/',
+#                              headers=headers,
+#                              files={'csv': open(INSTITUTE_FPATH)})
+#
+#     process_task_response(response, headers)
+#
+#     # install accession
+#     response = requests.post(SERVER_URL + 'api/accessions/bulk/',
+#                              headers=headers,
+#                              files={'csv': open(ACCESSIONS_FPATH)},
+#                              data={'data_source_code': 'CRF',
+#                                    'data_source_kind': 'project'})
+#     process_task_response(response, headers)
+#
+#     if RUN_FAILLING_REQUESTS:
+#         # Adding again fails
+#         response = requests.post(SERVER_URL + 'api/accessions/bulk/',
+#                                  headers=headers,
+#                                  files={'csv': open(ACCESSIONS_FPATH)},
+#                                  data={'data_source_code': 'CRF',
+#                                        'data_source_kind': 'project'})
+#         try:
+#             process_task_response(response, headers)
+#             raise ValueError()
+#         except RuntimeError:
+#             pass
+#
+#     # install accessionset
+#     response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
+#                              headers=headers,
+#                              files={'csv': open(ACCESSIONSETS_FPATH)})
+#     process_task_response(response, headers)
+#
+#     if RUN_FAILLING_REQUESTS:
+#         # Adding again fails
+#         response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
+#                                  headers=headers,
+#                                  files={'csv': open(ACCESSIONSETS_FPATH)})
+#
+#         try:
+#             process_task_response(response, headers)
+#             raise ValueError()
+#         except RuntimeError:
+#             pass
+#
+#     # adding studies
+#     response = requests.post(SERVER_URL + 'api/studies/bulk/',
+#                              headers=headers,
+#                              files={'csv': open(STUDIES_FPATH)})
+#     process_task_response(response, headers)
+#
+#     if RUN_FAILLING_REQUESTS:
+#         # Adding again fails
+#         response = requests.post(SERVER_URL + 'api/studies/bulk/',
+#                                  headers=headers,
+#                                  files={'csv': open(STUDIES_FPATH)})
+#         try:
+#             process_task_response(response, headers)
+#             raise ValueError()
+#         except RuntimeError:
+#             pass
 
     # adding plants
     response = requests.post(SERVER_URL + 'api/plants/bulk/',
@@ -119,7 +119,7 @@ def main():
         except RuntimeError:
             pass
 
-    # adding studies
+    # adding observation units
     response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
                              headers=headers,
                              files={'csv': open(OBSERVATION_UNITS_FPATH)})
@@ -136,11 +136,11 @@ def main():
         except RuntimeError:
             pass
 
-    # adding traits
-    response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',
-                             headers=headers,
-                             files={'obo': open(TRAITS_FPATH)})
-    process_task_response(response, headers)
+#     # adding traits
+#     response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',
+#                              headers=headers,
+#                              files={'obo': open(TRAITS_FPATH)})
+#     process_task_response(response, headers)
 
     # adding scales
     response = requests.post(SERVER_URL + 'api/scales/bulk/',
@@ -153,7 +153,7 @@ def main():
                              headers=headers,
                              files={'csv': open(OBSERVATION_VARIABLES_FPATH)})
     process_task_response(response, headers)
-
+    return
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
         response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
