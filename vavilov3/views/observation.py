@@ -45,6 +45,7 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
     pagination_class = StandardResultsSetPagination
     Struct = ObservationStruct
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedObservationCSVRenderer]
+    ordering_field = ('value',)
 
     def filter_queryset(self, queryset):
         # It filters by the study permissions. And the observations belong
