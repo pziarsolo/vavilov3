@@ -22,6 +22,7 @@ from vavilov3.models import (Group, Accession, Institute, DataSource,
 from vavilov3.entities.passport import PassportValidationError
 from vavilov3.permissions import is_user_admin
 from vavilov3.views import format_error_message
+from vavilov3.excel import excel_dict_reader
 
 
 class AccessionValidationError(Exception):
@@ -419,6 +420,18 @@ def serialize_accessions_from_csv(fhand, data_source_code, data_source_kind):
     data = []
     for row in reader:
         row = OrderedDict(((field, row[field]) for field in fields))
+        accession_struct = AccessionStruct()
+        accession_struct.populate_from_csvrow(row)
+        accession_struct.passports[0].data_source = data_source_code
+        accession_struct.passports[0].data_source_kind = data_source_kind
+        accession_struct.passports[0].retrieval_date = datetime.now().strftime('%Y-%m-%d')
+        data.append(accession_struct.get_api_document())
+    return data
+
+
+def serialize_accessions_from_excel(fhand, data_source_code, data_source_kind):
+    data = []
+    for row in excel_dict_reader(fhand, values_as_text=True):
         accession_struct = AccessionStruct()
         accession_struct.populate_from_csvrow(row)
         accession_struct.passports[0].data_source = data_source_code

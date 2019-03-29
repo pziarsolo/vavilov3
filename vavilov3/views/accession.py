@@ -20,7 +20,8 @@ from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.entities.accession import (AccessionStruct,
                                          AccessionValidationError,
-                                         serialize_accessions_from_csv)
+                                         serialize_accessions_from_csv,
+    serialize_accessions_from_excel)
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
 from vavilov3.views import format_error_message
 from vavilov3.filters.accession_observation_filter_backend import AccessionByObservationFilterBackend
@@ -56,16 +57,15 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
         data = request.data
         if 'multipart/form-data' in request.content_type:
             try:
-                fhand = TextIOWrapper(request.FILES['csv'].file,
-                                      encoding='utf-8')
+                fhand = request.FILES['file'].file
                 data_source_code = request.data['data_source_code']
                 data_source_kind = request.data['data_source_kind']
             except KeyError:
                 msg = 'could not found csv file or data_store info'
                 raise ValidationError(msg)
             try:
-                data = serialize_accessions_from_csv(fhand, data_source_code,
-                                                     data_source_kind)
+                data = serialize_accessions_from_excel(fhand, data_source_code,
+                                                       data_source_kind)
             except AccessionValidationError as error:
                 raise ValueError(format_error_message(error))
         else:

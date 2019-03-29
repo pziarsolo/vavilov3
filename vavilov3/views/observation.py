@@ -21,7 +21,8 @@ from vavilov3.entities.observation import (ObservationStruct, TRAITS_IN_COLUMNS,
 from vavilov3.filters.observation import ObservationFilter
 from vavilov3.conf.settings import OBSERVATION_CSV_FIELDS
 from vavilov3.views import format_error_message
-from vavilov3.serializers.shared import serialize_entity_from_csv
+from vavilov3.serializers.shared import serialize_entity_from_csv, \
+    serialize_entity_from_excel
 from vavilov3.excel import excel_dict_reader
 from vavilov3.entities.tags import GERMPLASM_NUMBER, INSTITUTE_CODE
 
@@ -126,13 +127,12 @@ def serialize_observations_from_request(request):
 
         else:
             try:
-                fhand = TextIOWrapper(request.FILES['file'].file,
-                                      encoding='utf-8')
+                fhand = request.FILES['file'].file
             except KeyError:
                 msg = 'could not found the file'
                 raise ValidationError(format_error_message(msg))
 
-            data = serialize_entity_from_csv(fhand, ObservationStruct)
+            data = serialize_entity_from_excel(fhand, ObservationStruct)
 
     else:
         data = request.data

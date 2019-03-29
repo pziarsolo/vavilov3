@@ -1,5 +1,4 @@
 from time import time
-from io import TextIOWrapper
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
@@ -12,7 +11,7 @@ from vavilov3.permissions import (filter_queryset_by_user_group_public_permissio
                                   filter_queryset_by_study_permissions,
                                   filter_queryset_by_obs_unit_in_study_permissions)
 from vavilov3.views import format_error_message
-from vavilov3.serializers.shared import serialize_entity_from_csv
+from vavilov3.serializers.shared import serialize_entity_from_excel
 
 
 def calc_duration(action, prev_time):
@@ -31,13 +30,12 @@ class BulkOperationsMixin(object):
         data = request.data
         if 'multipart/form-data' in request.content_type:
             try:
-                fhand = TextIOWrapper(request.FILES['csv'].file,
-                                      encoding='utf-8')
+                fhand = request.FILES['file'].file
             except KeyError:
-                msg = 'could not found csv file'
+                msg = 'could not found the file'
                 raise ValidationError(format_error_message(msg))
             try:
-                data = serialize_entity_from_csv(fhand, self.Struct)
+                data = serialize_entity_from_excel(fhand, self.Struct)
             except ValueError as error:
                 msg = 'Could not read file: {}'.format(error)
                 raise ValidationError(format_error_message(msg))

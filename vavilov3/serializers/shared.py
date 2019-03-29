@@ -19,6 +19,7 @@ from vavilov3.tasks import (create_accessions_task, add_task_to_user,
                             create_studies_task, create_observations_task,
                             create_trait_task, wait_func, create_scale_task,
                             create_observation_images_task)
+from vavilov3.excel import excel_dict_reader
 
 
 class DynamicFieldsSerializer(serializers.Serializer):
@@ -212,4 +213,13 @@ def serialize_entity_from_csv(fhand, Struct):
         study_struct = Struct()
         study_struct.populate_from_csvrow(row)
         data.append(study_struct.get_api_document())
+    return data
+
+
+def serialize_entity_from_excel(fhand, Struct):
+    data = []
+    for row in excel_dict_reader(fhand, values_as_text=True):
+        struct = Struct()
+        struct.populate_from_csvrow(row)
+        data.append(struct.get_api_document())
     return data

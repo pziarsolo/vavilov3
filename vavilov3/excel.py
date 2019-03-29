@@ -1,7 +1,7 @@
 import xlrd
 
 
-def excel_dict_reader(fhand, sheet_name=None):
+def excel_dict_reader(fhand, sheet_name=None, values_as_text=False):
     if isinstance(fhand, str):
         book = xlrd.open_workbook(filename=fhand)
     else:
@@ -19,5 +19,14 @@ def excel_dict_reader(fhand, sheet_name=None):
         if first:
             first = False
             continue
-        rowcells = [cell for cell in row]
+        if values_as_text:
+            rowcells = []
+            for cell in row:
+                str_value = str(cell.value)
+                if cell.ctype == 2 and cell.value == int(cell.value):
+                    str_value = str_value.split('.')[0]
+                rowcells.append(str_value)
+        else:
+            rowcells = [cell for cell in row]
+
         yield dict(zip(header, rowcells))
