@@ -7,7 +7,7 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
                                     load_accessionsets_from_file)
 from rest_framework.reverse import reverse
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class TaxaStatsTest(BaseTest):

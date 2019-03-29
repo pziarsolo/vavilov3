@@ -9,7 +9,7 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
                                     load_accessionsets_from_file)
 from vavilov3.data_io import initialize_db
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class CountryViewTest(BaseTest):
@@ -24,11 +24,11 @@ class CountryViewTest(BaseTest):
 
     def test_view_readonly(self):
         list_url = reverse('country-list')
-        response = self.client.get(list_url)
+        response = self.client.get(list_url, data={'ordering': 'code'})
         result = response.json()
         self.assertEqual(len(result), 100)
-        self.assertEqual(result[0]['code'], 'AFG')
-        self.assertEqual(result[0]['name'], 'Afghanistan')
+        self.assertEqual(result[0]['code'], 'ABW')
+        self.assertEqual(result[0]['name'], 'Aruba')
 
         detail_url = reverse('country-detail', kwargs={'code': 'ESP'})
         result = self.client.get(detail_url)
@@ -39,10 +39,11 @@ class CountryViewTest(BaseTest):
     def test_view_readonly_filter_fields(self):
         list_url = reverse('country-list')
         response = self.client.get(list_url, data={'fields': 'code',
-                                                   'limit': 300})
+                                                   'limit': 300,
+                                                   'ordering': 'code'})
         result = response.json()
         self.assertEqual(len(result), 254)
-        self.assertEqual(result[0]['code'], 'AFG')
+        self.assertEqual(result[0]['code'], 'ABW')
         self.assertTrue('name' not in result[0])
 
         detail_url = reverse('country-detail', kwargs={'code': 'ESP'})

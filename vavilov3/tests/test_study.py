@@ -11,7 +11,7 @@ from vavilov3.tests.data_io import (load_studies_from_file,
                                     assert_error_is_equal)
 from copy import deepcopy
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class StudyViewTest(BaseTest):

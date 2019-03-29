@@ -15,7 +15,7 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
 from vavilov3.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
                                     ACCESSIONS)
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class AccessionSetViewTest(BaseTest):

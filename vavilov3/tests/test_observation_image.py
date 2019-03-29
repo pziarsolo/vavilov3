@@ -19,6 +19,7 @@ from vavilov3.conf.settings import PHENO_IMAGE_DIR
 from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+JSONS_DATA_DIR = join(TEST_DATA_DIR, 'jsons')
 
 
 class ObservationImageViewTest(BaseTest):
@@ -26,13 +27,13 @@ class ObservationImageViewTest(BaseTest):
     def setUp(self):
         self.initialize()
         initialize_db()
-        institutes_fpath = join(TEST_DATA_DIR, 'institutes.json')
+        institutes_fpath = join(JSONS_DATA_DIR, 'institutes.json')
         load_institutes_from_file(institutes_fpath)
-        accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
+        accessions_fpath = join(JSONS_DATA_DIR, 'accessions.json')
         load_accessions_from_file(accessions_fpath)
-        studies_fpath = join(TEST_DATA_DIR, 'studies.json')
+        studies_fpath = join(JSONS_DATA_DIR, 'studies.json')
         load_studies_from_file(studies_fpath)
-        fpath = join(TEST_DATA_DIR, 'observation_units.json')
+        fpath = join(JSONS_DATA_DIR, 'observation_units.json')
         load_observation_unit_from_file(fpath)
 
     def _upload_photos(self):

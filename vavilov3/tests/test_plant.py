@@ -15,7 +15,7 @@ from vavilov3.tests.data_io import (assert_error_is_equal,
                                     load_observation_unit_from_file)
 from vavilov3.data_io import initialize_db
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class PlantViewTest(BaseTest):

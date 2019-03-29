@@ -9,18 +9,19 @@ from rest_framework import status
 
 SERVER_URL = 'http://localhost:8000/'
 DATA_DIR = join(dirname(__file__), 'data')
-INSTITUTE_FPATH = join(DATA_DIR, 'institutes.xlsx')
-ACCESSIONS_FPATH = join(DATA_DIR, 'accessions.xlsx')
-ACCESSIONSETS_FPATH = join(DATA_DIR, 'accessionsets.xlsx')
-STUDIES_FPATH = join(DATA_DIR, 'studies.xlsx')
-PLANTS_FPATH = join(DATA_DIR, 'plants.xlsx')
-OBSERVATION_UNITS_FPATH = join(DATA_DIR, 'observation_units.xlsx')
-OBSERVATION_VARIABLES_FPATH = join(DATA_DIR, 'observation_variables.xlsx')
-OBSERVATIONS_FPATH = join(DATA_DIR, 'observations.xlsx')
-OBSERVATIONS_IN_COLUMNS_FPATH = join(DATA_DIR, 'observations_in_columns.xlsx')
+EXCEL_DIRS = join(DATA_DIR, 'excels')
+INSTITUTE_FPATH = join(EXCEL_DIRS, 'institutes.xlsx')
+ACCESSIONS_FPATH = join(EXCEL_DIRS, 'accessions.xlsx')
+ACCESSIONSETS_FPATH = join(EXCEL_DIRS, 'accessionsets.xlsx')
+STUDIES_FPATH = join(EXCEL_DIRS, 'studies.xlsx')
+PLANTS_FPATH = join(EXCEL_DIRS, 'plants.xlsx')
+OBSERVATION_UNITS_FPATH = join(EXCEL_DIRS, 'observation_units.xlsx')
+OBSERVATION_VARIABLES_FPATH = join(EXCEL_DIRS, 'observation_variables.xlsx')
+OBSERVATIONS_FPATH = join(EXCEL_DIRS, 'observations.xlsx')
+OBSERVATIONS_IN_COLUMNS_FPATH = join(EXCEL_DIRS, 'observations_in_columns.xlsx')
 OBSERVATION_IMAGES_FPATH = join(DATA_DIR, 'images.zip')
 TRAITS_FPATH = join(DATA_DIR, 'to.obo')
-SCALE_FPATH = join(DATA_DIR, 'scales.xlsx')
+SCALE_FPATH = join(EXCEL_DIRS, 'scales.xlsx')
 ADMINUSER = 'admin'
 ADMINPASS = 'pass'
 

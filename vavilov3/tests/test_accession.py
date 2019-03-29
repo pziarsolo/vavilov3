@@ -21,7 +21,7 @@ from vavilov3.views import DETAIL
 
 from vavilov3.entities.tags import DATA_SOURCE
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class AccessionViewTest(BaseTest):

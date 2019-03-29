@@ -19,7 +19,7 @@ from vavilov3.data_io import initialize_db
 from vavilov3.entities.observation import TRAITS_IN_COLUMNS, \
     CREATE_OBSERVATION_UNITS
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class ObservationViewTest(BaseTest):

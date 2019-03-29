@@ -11,7 +11,7 @@ from vavilov3.tests.data_io import assert_error_is_equal, load_traits_from_file,
 from vavilov3.data_io import initialize_db
 from vavilov3.entities.trait import parse_obo, transform_to_trait_entity_format
 
-TEST_DATA_DIR = abspath(join(dirname(__file__), 'data'))
+TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
 
 class TraitViewTest(BaseTest):
@@ -154,11 +154,11 @@ class TraitOboViewTest(BaseTest):
         initialize_db()
 
     def test_obo_serializer(self):
-        obo_fpath = join(TEST_DATA_DIR, 'to.obo')
+        obo_fpath = join(TEST_DATA_DIR, '..', 'to.obo')
         ontology = parse_obo(open(obo_fpath))
         traits = transform_to_trait_entity_format(ontology)
         assert len(traits) == 1528
 
     def test_load_to(self):
-        obo_fpath = join(TEST_DATA_DIR, 'to.obo')
+        obo_fpath = join(TEST_DATA_DIR, '..', 'to.obo')
         load_traits_from_obo_file(obo_fpath)
