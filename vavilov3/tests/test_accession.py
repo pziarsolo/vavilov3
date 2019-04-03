@@ -505,3 +505,55 @@ class AccessionFilterByObservationsViewTest(BaseTest):
                                    data={'Plant Growth type:categorical': '1'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
+
+
+class AccessionBulkTooglePublic(BaseTest):
+
+    def setUp(self):
+        self.initialize()
+        initialize_db()
+        institutes_fpath = join(TEST_DATA_DIR, 'institutes.json')
+        load_institutes_from_file(institutes_fpath)
+        accessions_fpath = join(TEST_DATA_DIR, 'accessions.json')
+        load_accessions_from_file(accessions_fpath)
+
+    def test_basic_toogle(self):
+        self.add_admin_credentials()
+        toggle_url = reverse('accession-toggle-public')
+        list_url = reverse('accession-list')
+        search_params = {'institute_code': 'ESP026'}
+
+        response = self.client.get(list_url, data=search_params)
+        self.assertFalse(response.json()[0]['metadata']['is_public'])
+
+        data = {'search_params': search_params, 'public': True}
+
+        response = self.client.post(toggle_url, data=data, format='json')
+        self.assertEqual(response.json(), {'detail': ['1 accessions made public']})
+
+        response = self.client.get(list_url, data=search_params)
+        self.assertTrue(response.json()[0]['metadata']['is_public'])
+
+        self.add_user_credentials()
+        response = self.client.post(toggle_url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.remove_credentials()
+        response = self.client.post(toggle_url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_bad_requests(self):
+        self.add_admin_credentials()
+        toggle_url = reverse('accession-toggle-public')
+
+        data = {'public': True}
+
+        response = self.client.post(toggle_url, data=data, format='json')
+        self.assertEqual(response.json()['detail'],
+                         ['public and search_params keys are mandatory to toogle publc state'])
+
+        data = {'search_params': {}}
+
+        response = self.client.post(toggle_url, data=data, format='json')
+        self.assertEqual(response.json()['detail'],
+                         ['public and search_params keys are mandatory to toogle publc state'])

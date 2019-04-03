@@ -143,7 +143,9 @@ class InstituteStatsTest(BaseTest):
 
     def tests_stats(self):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
-        response = self.client.get(detail_url)
+        fields = 'instituteCode,name,num_accessions,num_accessionsets,'
+        fields += 'stats_by_country,stats_by_taxa,pdcis'
+        response = self.client.get(detail_url, data={'fields': fields})
         result = {'instituteCode': 'ESP004',
                   'name': 'CRF genebank',
                   'num_accessions': 2,

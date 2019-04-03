@@ -14,14 +14,14 @@ from vavilov3.models import Accession
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
-                                   GroupObjectPublicPermMixin)
+                                   GroupObjectPublicPermMixin,
+    TooglePublicMixim)
 from vavilov3.serializers.accession import AccessionSerializer
 from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.entities.accession import (AccessionStruct,
                                          AccessionValidationError,
-                                         serialize_accessions_from_csv,
-    serialize_accessions_from_excel)
+                                         serialize_accessions_from_excel)
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
 from vavilov3.views import format_error_message
 from vavilov3.filters.accession_observation_filter_backend import AccessionByObservationFilterBackend
@@ -37,7 +37,8 @@ class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
 
 
 class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
-                       DynamicFieldsViewMixin, viewsets.ModelViewSet):
+                       DynamicFieldsViewMixin, TooglePublicMixim,
+                       viewsets.ModelViewSet):
     lookup_fields = ('institute_code', 'germplasm_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<germplasm_number'
     lookup_value_regex = '[^/]+'

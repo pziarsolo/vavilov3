@@ -21,8 +21,7 @@ from vavilov3.entities.observation import (ObservationStruct, TRAITS_IN_COLUMNS,
 from vavilov3.filters.observation import ObservationFilter
 from vavilov3.conf.settings import OBSERVATION_CSV_FIELDS
 from vavilov3.views import format_error_message
-from vavilov3.serializers.shared import serialize_entity_from_csv, \
-    serialize_entity_from_excel
+from vavilov3.serializers.shared import serialize_entity_from_excel
 from vavilov3.excel import excel_dict_reader
 from vavilov3.entities.tags import GERMPLASM_NUMBER, INSTITUTE_CODE
 
@@ -46,7 +45,10 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
     pagination_class = StandardResultsSetPagination
     Struct = ObservationStruct
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedObservationCSVRenderer]
-    ordering_field = ('value',)
+    ordering_fields = ('value', 'observation_variable__name',
+                       'observation_unit__accession__germplasm_number',
+                       'observation_unit__study__name', 'creation_time',
+                       'observation_unit__name', 'observation_id')
 
     def filter_queryset(self, queryset):
         # It filters by the study permissions. And the observations belong

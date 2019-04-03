@@ -88,7 +88,7 @@ class CountryStatsTest(BaseTest):
 
     def test_stats(self):
         detail_url = reverse('country-detail', kwargs={'code': 'PER'})
-        response = self.client.get(detail_url)
+        response = self.client.get(detail_url, data={'fields': 'stats_by_taxa,stats_by_institute'})
         result = response.json()
         self.assertEqual(result['stats_by_taxa']['species'],
                          {'Solanum lycopersicum':

@@ -30,10 +30,15 @@ class ObservationFilter(TermFilterMixin, filters.FilterSet):
                                lookup_expr='iexact')
     study_contains = filters.CharFilter(field_name='observation_unit__study__name',
                                         lookup_expr='icontains')
+    studies = filters.CharFilter(label='studies', method='studies_filter')
+
     observation_variable = filters.CharFilter(field_name='observation_variable__name',
                                               lookup_expr='iexact')
+    observation_variables = filters.CharFilter(field_name='observation_variable__name',
+                                               lookup_expr='in')
     observation_variable_contains = filters.CharFilter(field_name='observation_variable__name',
                                                        lookup_expr='icontains')
+
     observation_unit = filters.CharFilter(field_name='observation_unit__name',
                                           lookup_expr='iexact')
     observation_unit_contains = filters.CharFilter(field_name='observation_unit__name',
@@ -81,3 +86,6 @@ class ObservationFilter(TermFilterMixin, filters.FilterSet):
         if observation_variable.scale.data_type.name not in ('Numerical',):
             msg = "Used observation_variable's data type is not numeric"
             raise ValidationError(format_error_message(msg))
+
+    def studies_filter(self, queryset, _, value):
+        return queryset.filter(observation_unit__study__name__in=value.split(','))

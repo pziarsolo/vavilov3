@@ -52,7 +52,7 @@ class UserGroupObjectPublicPermission(permissions.BasePermission):
                   view.basename == 'accessionset' and
                   not is_user_admin(request.user)):
                 return False
-        elif view.action == 'partial_update' and not is_user_admin(request.user):
+        elif view.action in ('partial_update', 'toggle_public') and not is_user_admin(request.user):
             return False
         return True
 
@@ -66,7 +66,7 @@ class UserGroupObjectPublicPermission(permissions.BasePermission):
                 return True
         # partial updates only change metadata and it only can be changed by
         # admins
-        elif action in ['partial_update'] and is_user_admin(request.user):
+        elif action in ['partial_update', 'toggle_public'] and is_user_admin(request.user):
             return True
         elif action in ['update', 'destroy']:
             if (is_user_admin(request.user) or

@@ -6,7 +6,7 @@ from vavilov3.views.shared import (GroupObjectPublicPermMixin,
                                    DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
-                                   BulkOperationsMixin)
+                                   BulkOperationsMixin, TooglePublicMixim)
 from vavilov3.models import AccessionSet
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.serializers.accessionset import AccessionSetSerializer
@@ -26,8 +26,7 @@ class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
 
 class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                           BulkOperationsMixin, DynamicFieldsViewMixin,
-                          viewsets.ModelViewSet):
-                        # viewsets.ModelViewSet):
+                          TooglePublicMixim, viewsets.ModelViewSet):
     lookup_fields = ('institute_code', 'accessionset_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<accessionset_number'
     lookup_value_regex = '[^/]+'

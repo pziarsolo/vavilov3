@@ -59,6 +59,27 @@ class GroupObjectPublicPermMixin(object):
                                                                 self.request.user)
 
 
+class TooglePublicMixim:
+
+    @action(methods=['post'], detail=False)
+    def toggle_public(self, request):
+        try:
+            is_public = request.data['public']
+            search_params = request.data['search_params']
+        except KeyError:
+            msg = 'public and search_params keys are mandatory to toogle publc state'
+            raise ValidationError(format_error_message(msg))
+        queryset = self.filter_queryset(self.get_queryset())
+        filterset = self.filter_class(search_params, queryset)
+
+        filterset.qs.update(is_public=is_public)
+
+        msg = "{} {} made {}".format(filterset.qs.count(),
+                                     self.serializer_class.data_type,
+                                     'public' if is_public else 'private')
+        return Response(format_error_message(msg), status=status.HTTP_200_OK)
+
+
 class ByObjectStudyPermMixin(object):
 
     def filter_queryset(self, queryset):

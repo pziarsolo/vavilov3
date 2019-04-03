@@ -17,7 +17,7 @@ from vavilov3.tasks import (create_accessions_task, add_task_to_user,
                             create_plants_task,
                             create_observation_variables_task,
                             create_studies_task, create_observations_task,
-                            create_trait_task, wait_func, create_scale_task,
+                            create_trait_task, create_scale_task,
                             create_observation_images_task)
 from vavilov3.excel import excel_dict_reader
 
