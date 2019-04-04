@@ -23,6 +23,7 @@ from vavilov3.entities.passport import PassportValidationError
 from vavilov3.permissions import is_user_admin
 from vavilov3.views import format_error_message
 from vavilov3.excel import excel_dict_reader
+from _decimal import InvalidOperation
 
 
 class AccessionValidationError(Exception):
@@ -296,7 +297,15 @@ def create_accession_in_db(api_data, user, is_public=None):
             raise ValueError(msg)
 
         for passport_struct in accession_struct.passports:
-            _create_passport_in_db(passport_struct, accession)
+            try:
+                _create_passport_in_db(passport_struct, accession)
+            except InvalidOperation:
+                msg = '{}:{} longitude or latitude data is wrong- {} {}'
+                msg = msg.format(institute.code,
+                                 accession_struct.germplasm_number,
+                                 passport_struct.longitude,
+                                 passport_struct.latitude)
+                raise ValueError(msg)
 
     return accession
 
