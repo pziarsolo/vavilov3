@@ -15,7 +15,7 @@ from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
                                    GroupObjectPublicPermMixin,
-    TooglePublicMixim)
+                                   TooglePublicMixim)
 from vavilov3.serializers.accession import AccessionSerializer
 from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
@@ -25,9 +25,11 @@ from vavilov3.entities.accession import (AccessionStruct,
 from vavilov3.conf.settings import ACCESSION_CSV_FIELDS
 from vavilov3.views import format_error_message
 from vavilov3.filters.accession_observation_filter_backend import AccessionByObservationFilterBackend
+from django.http.response import StreamingHttpResponse
 
 
-class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
+# class PaginatedAccessionCSVRenderer(renderers.CSVRenderer):
+class PaginatedAccessionCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
         yield ACCESSION_CSV_FIELDS
@@ -82,3 +84,16 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
             # prev_time = calc_duration('perform_create', prev_time)
             return Response({'task_id': serializer.instance.id},
                             status=status.HTTP_200_OK, headers={})
+
+    def list(self, request, *args, **kwargs):
+        csv = True if 'PaginatedAccessionCSVRenderer' in str(request.accepted_renderer) else False
+        if csv:
+            queryset = self.filter_queryset(self.get_queryset())
+            if queryset.count() > 10000:
+                serializer = self.get_serializer(queryset, many=True)
+
+                return StreamingHttpResponse(
+                    streaming_content=request.accepted_renderer.render(serializer.data),
+                    content_type="text/csv")
+
+        return viewsets.ModelViewSet.list(self, request, *args, **kwargs)

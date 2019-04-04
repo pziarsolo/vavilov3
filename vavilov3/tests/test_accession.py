@@ -529,7 +529,7 @@ class AccessionBulkTooglePublic(BaseTest):
         data = {'search_params': search_params, 'public': True}
 
         response = self.client.post(toggle_url, data=data, format='json')
-        self.assertEqual(response.json(), {'detail': ['1 accessions made public']})
+        self.assertEqual(response.json(), {'detail': ['1 accession made public']})
 
         response = self.client.get(list_url, data=search_params)
         self.assertTrue(response.json()[0]['metadata']['is_public'])

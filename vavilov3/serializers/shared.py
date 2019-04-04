@@ -1,7 +1,7 @@
 import csv
 from collections import OrderedDict
 
-from django.db import transaction
+from django.db import transaction, models
 from django.utils.datastructures import MultiValueDictKeyError
 
 from rest_framework.fields import empty
@@ -20,6 +20,8 @@ from vavilov3.tasks import (create_accessions_task, add_task_to_user,
                             create_trait_task, create_scale_task,
                             create_observation_images_task)
 from vavilov3.excel import excel_dict_reader
+from rest_framework.utils.serializer_helpers import ReturnList
+from rest_framework.serializers import BaseSerializer
 
 
 class DynamicFieldsSerializer(serializers.Serializer):
@@ -129,6 +131,44 @@ class VavilovListSerializer(serializers.ListSerializer):
                 raise ValidationError(format_error_message(errors))
             else:
                 return instances
+
+    def to_representation(self, data):
+        """
+        List of object instances -> List of dicts of primitive datatypes.
+        """
+        # Dealing with nested relationships, data can be a Manager,
+        # so, first get a queryset from the Manager if needed
+
+        iterable = data.all() if isinstance(data, models.Manager) else data
+
+        for item in iterable:
+            yield self.child.to_representation(item)
+
+    @property
+    def data(self):
+        if hasattr(self, 'initial_data') and not hasattr(self, '_validated_data'):
+            msg = (
+                'When a serializer is passed a `data` keyword argument you '
+                'must call `.is_valid()` before attempting to access the '
+                'serialized `.data` representation.\n'
+                'You should either call `.is_valid()` first, '
+                'or access `.initial_data` instead.'
+            )
+            raise AssertionError(msg)
+
+        if not hasattr(self, '_data'):
+            if self.instance is not None and not getattr(self, '_errors', None):
+                self._data = self.to_representation(self.instance)
+            elif hasattr(self, '_validated_data') and not getattr(self, '_errors', None):
+                self._data = self.to_representation(self.validated_data)
+            else:
+                self._data = self.get_initial()
+
+        if isinstance(self._data, list):
+            self._data = ReturnList(self._data, serializer=self)
+        else:
+            pass
+        return self._data
 
     def update_item_in_db(self, payload, instance, user):
         raise NotImplemented()
