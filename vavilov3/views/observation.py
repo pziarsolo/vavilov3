@@ -1,5 +1,3 @@
-from io import TextIOWrapper
-
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 
@@ -12,7 +10,8 @@ from rest_framework.exceptions import ValidationError
 
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
-                                   BulkOperationsMixin)
+                                   BulkOperationsMixin,
+                                   OptionalStreamedListCsvMixin)
 from vavilov3.models import Observation
 from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation import ObservationSerializer
@@ -26,7 +25,7 @@ from vavilov3.excel import excel_dict_reader
 from vavilov3.entities.tags import GERMPLASM_NUMBER, INSTITUTE_CODE
 
 
-class PaginatedObservationCSVRenderer(renderers.CSVRenderer):
+class PaginatedObservationCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
         yield OBSERVATION_CSV_FIELDS
@@ -36,7 +35,7 @@ class PaginatedObservationCSVRenderer(renderers.CSVRenderer):
 
 
 class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
-                         BulkOperationsMixin):
+                         BulkOperationsMixin, OptionalStreamedListCsvMixin):
     lookup_field = 'observation_id'
     serializer_class = ObservationSerializer
     queryset = Observation.objects.all()

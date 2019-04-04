@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
 from vavilov3.permissions import (filter_queryset_by_user_group_public_permissions,
@@ -12,6 +12,7 @@ from vavilov3.permissions import (filter_queryset_by_user_group_public_permissio
                                   filter_queryset_by_obs_unit_in_study_permissions)
 from vavilov3.views import format_error_message
 from vavilov3.serializers.shared import serialize_entity_from_excel
+from django.http.response import StreamingHttpResponse
 
 
 def calc_duration(action, prev_time):
@@ -160,3 +161,18 @@ class MultipleFieldLookupMixin(object):
         # May raise a permission denied
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class OptionalStreamedListCsvMixin():
+
+    def list(self, request, *args, **kwargs):
+        if request.accepted_media_type == 'text/csv':
+            queryset = self.filter_queryset(self.get_queryset())
+            if queryset.count() > 10000:
+                serializer = self.get_serializer(queryset, many=True)
+
+                return StreamingHttpResponse(
+                    streaming_content=request.accepted_renderer.render(serializer.data),
+                    content_type="text/csv")
+
+        return viewsets.ModelViewSet.list(self, request, *args, **kwargs)

@@ -6,16 +6,18 @@ from vavilov3.views.shared import (GroupObjectPublicPermMixin,
                                    DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
-                                   BulkOperationsMixin, TooglePublicMixim)
+                                   BulkOperationsMixin, TooglePublicMixim,
+    OptionalStreamedListCsvMixin)
 from vavilov3.models import AccessionSet
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.serializers.accessionset import AccessionSetSerializer
 from vavilov3.filters.accessionset import AccessionSetFilter
 from vavilov3.conf.settings import ACCESSIONSET_CSV_FIELDS
 from vavilov3.entities.accessionset import AccessionSetStruct
+from django.http.response import StreamingHttpResponse
 
 
-class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
+class AccessionSetCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
         yield ACCESSIONSET_CSV_FIELDS
@@ -26,7 +28,8 @@ class PaginatedAccessionSetCSVRenderer(renderers.CSVRenderer):
 
 class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                           BulkOperationsMixin, DynamicFieldsViewMixin,
-                          TooglePublicMixim, viewsets.ModelViewSet):
+                          TooglePublicMixim, viewsets.ModelViewSet,
+                          OptionalStreamedListCsvMixin):
     lookup_fields = ('institute_code', 'accessionset_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<accessionset_number'
     lookup_value_regex = '[^/]+'
@@ -36,5 +39,5 @@ class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     filter_class = AccessionSetFilter
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedAccessionSetCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [AccessionSetCSVRenderer]
     Struct = AccessionSetStruct
