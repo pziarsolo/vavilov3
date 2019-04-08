@@ -24,9 +24,11 @@ class StudyFilter(TermFilterMixin, filters.FilterSet):
                                            field_name='data__location',
                                            lookup_expr='icontains')
     institute = filters.CharFilter(label='institute', lookup_expr='iexact',
-                                   field_name='observationunit__accession__institute__code')
+                                   field_name='observationunit__accession__institute__code',
+                                   distinct=True)
     germplasm_number = filters.CharFilter(label='germplasm_number', lookup_expr='iexact',
-                                          field_name='observationunit__accession__germplasm_number')
+                                          field_name='observationunit__accession__germplasm_number',
+                                          distinct=True)
 
     class Meta:
         model = Study
