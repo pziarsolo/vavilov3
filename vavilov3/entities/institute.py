@@ -5,16 +5,34 @@ from django.db.utils import IntegrityError
 
 from vavilov3.models import Institute
 from vavilov3.entities.tags import (INSTITUTE_CODE, INSTITUTE_NAME,
-                                    INSTITUTE_TYPE)
+                                    INSTITUTE_TYPE, INSTITUTE_ADDRESS,
+                                    INSTITUTE_ZIPCODE, INSTITUTE_EMAIL,
+                                    INSTITUTE_CITY, INSTITUTE_URL,
+                                    INSTITUTE_MANAGER, INSTITUTE_PHONE,
+    DATA_SOURCE)
 
 
 class InstituteValidationError(Exception):
     pass
 
 
+INSTITUTE_ALLOWED_FIELDS = (INSTITUTE_CODE, INSTITUTE_NAME, INSTITUTE_TYPE,
+                            INSTITUTE_ADDRESS, INSTITUTE_ZIPCODE, INSTITUTE_EMAIL,
+                            INSTITUTE_CITY, INSTITUTE_URL, INSTITUTE_MANAGER,
+                            INSTITUTE_PHONE,
+                            'num_accessions', 'num_accessionsets',
+                            'stats_by_country', 'stats_by_taxa', 'pdcis')
+
+
 def validate_institute_data(payload):
     if INSTITUTE_CODE not in payload:
         raise InstituteValidationError('{} mandatory'.format(INSTITUTE_CODE))
+
+    not_allowed_fields = set(payload.keys()).difference(INSTITUTE_ALLOWED_FIELDS)
+
+    if not_allowed_fields:
+        msg = 'Not allowed fields: {}'.format(', '.join(not_allowed_fields))
+        raise InstituteValidationError(msg)
 
 
 class InstituteStruct():
@@ -64,11 +82,84 @@ class InstituteStruct():
     def institute_type(self, type_):
         self._data[INSTITUTE_TYPE] = type_
 
+    @property
+    def address(self):
+        return self._data.get(INSTITUTE_ADDRESS, None)
+
+    @address.setter
+    def address(self, address):
+        self._data[INSTITUTE_ADDRESS] = address
+
+    @property
+    def zipcode(self):
+        return self._data.get(INSTITUTE_ZIPCODE, None)
+
+    @zipcode.setter
+    def zipcode(self, zipcode):
+        self._data[INSTITUTE_ZIPCODE] = zipcode
+
+    @property
+    def email(self):
+        return self._data.get(INSTITUTE_EMAIL, None)
+
+    @email.setter
+    def email(self, email):
+        self._data[INSTITUTE_EMAIL] = email
+
+    @property
+    def phone(self):
+        return self._data.get(INSTITUTE_PHONE, None)
+
+    @phone.setter
+    def phone(self, phone):
+        self._data[INSTITUTE_PHONE] = phone
+
+    @property
+    def city(self):
+        return self._data.get(INSTITUTE_CITY, None)
+
+    @city.setter
+    def city(self, city):
+        self._data[INSTITUTE_CITY] = city
+
+    @property
+    def url(self):
+        return self._data.get(INSTITUTE_URL, None)
+
+    @url.setter
+    def url(self, url):
+        self._data[INSTITUTE_URL] = url
+
+    @property
+    def manager(self):
+        return self._data.get(INSTITUTE_MANAGER, None)
+
+    @manager.setter
+    def manager(self, manager):
+        self._data[INSTITUTE_MANAGER] = manager
+
     def _populate_with_instance(self, instance, fields):
-        if fields is None or 'instituteCode' in fields:
+        if fields is None or INSTITUTE_CODE in fields:
             self.institute_code = instance.code
-        if fields is None or 'name' in fields:
+        if fields is None or INSTITUTE_NAME in fields:
             self.institute_name = instance.name
+        if fields is None or INSTITUTE_TYPE in fields:
+            self.institute_type = instance.data.get(INSTITUTE_TYPE, None)
+        if fields is None or INSTITUTE_ADDRESS in fields:
+            self.address = instance.data.get(INSTITUTE_ADDRESS, None)
+        if fields is None or INSTITUTE_ZIPCODE in fields:
+            self.zipcode = instance.data.get(INSTITUTE_ZIPCODE, None)
+        if fields is None or INSTITUTE_EMAIL in fields:
+            self.email = instance.data.get(INSTITUTE_EMAIL, None)
+        if fields is None or INSTITUTE_PHONE in fields:
+            self.phone = instance.data.get(INSTITUTE_PHONE, None)
+        if fields is None or INSTITUTE_CITY in fields:
+            self.city = instance.data.get(INSTITUTE_CITY, None)
+        if fields is None or INSTITUTE_URL in fields:
+            self.url = instance.data.get(INSTITUTE_URL, None)
+        if fields is None or INSTITUTE_MANAGER in fields:
+            self.manager = instance.data.get(INSTITUTE_MANAGER, None)
+
         if fields is None or 'num_accessions' in fields:
             self._data['num_accessions'] = instance.num_accessions
         if fields is None or 'num_accessionsets' in fields:
@@ -93,7 +184,7 @@ class InstituteStruct():
 
     def to_list_representation(self, fields):
         items = []
-        for field in fields[:5]:
+        for field in fields:
             getter = INSTITUTE_CSV_FIELD_CONFS.get(field)['getter']
             items.append(getter(self))
         return items
@@ -106,6 +197,20 @@ _INSTITUTE_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'institute_name', val)},
     {'csv_field_name': 'TYPE', 'getter': lambda x: x.institute_type,
      'setter': lambda obj, val: setattr(obj, 'institute_type', val)},
+    {'csv_field_name': 'STREET_POB', 'getter': lambda x: x.address,
+     'setter': lambda obj, val: setattr(obj, 'address', val)},
+    {'csv_field_name': 'CITY_STATE', 'getter': lambda x: x.city,
+     'setter': lambda obj, val: setattr(obj, 'city', val)},
+    {'csv_field_name': 'ZIP_CODE', 'getter': lambda x: x.zipcode,
+     'setter': lambda obj, val: setattr(obj, 'zipcode', val)},
+    {'csv_field_name': 'PHONE', 'getter': lambda x: x.phone,
+     'setter': lambda obj, val: setattr(obj, 'phone', val)},
+    {'csv_field_name': 'EMAIL', 'getter': lambda x: x.email,
+     'setter': lambda obj, val: setattr(obj, 'email', val)},
+    {'csv_field_name': 'URL', 'getter': lambda x: x.url,
+     'setter': lambda obj, val: setattr(obj, 'url', val)},
+    {'csv_field_name': 'MANAGER', 'getter': lambda x: x.manager,
+     'setter': lambda obj, val: setattr(obj, 'manager', val)},
 
 ]
 INSTITUTE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f)

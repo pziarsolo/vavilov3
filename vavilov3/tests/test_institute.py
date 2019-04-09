@@ -60,6 +60,7 @@ class InstituteViewTest(BaseTest):
         doc.pop('stats_by_taxa', None)
         doc.pop('stats_by_country', None)
         doc.pop('pdcis', None)
+
         self.assertEqual(doc, input_doc)
 
     def test_create_delete(self):
@@ -78,7 +79,11 @@ class InstituteViewTest(BaseTest):
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.docs_are_equal(response.json(), api_data)
+        created_api_data = {'instituteCode': 'ESP005', 'name': 'test genebank',
+                            'address': None, 'city': None, 'email': None,
+                            'manager': None, 'phone': None, 'type': None,
+                            'url': None, 'zipcode': None}
+        self.docs_are_equal(response.json(), created_api_data)
 
         # Sending corrupt data should fail and return proper error
         api_data = {'name': 'test genebank'}
@@ -101,6 +106,19 @@ class InstituteViewTest(BaseTest):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+        # create with all fields
+        self.add_admin_credentials()
+        api_data = {'instituteCode': 'ESP005', 'name': 'test genebank',
+                    'address': "rere", 'city': "csdsds", 'email': "email@aasa.es",
+                    'manager': "manager", 'phone': "1231231231",
+                    'type': "Gobernamental", 'url': 'http://test',
+                    'zipcode': '1121231'}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.docs_are_equal(response.json(), api_data)
+
     def test_update(self):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
         api_data = {'instituteCode': 'ESP004',
@@ -109,11 +127,15 @@ class InstituteViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.add_admin_credentials()
-        api_data = {'instituteCode': 'ESP004',
-                    'name': 'test genebank22'}
+        api_data = {'instituteCode': 'ESP004', 'name': 'test genebank'}
         response = self.client.put(detail_url, data=api_data, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.docs_are_equal(response.json(), api_data)
+        returned_api_data = {'instituteCode': 'ESP004', 'name': 'test genebank',
+                             'address': None, 'city': None, 'email': None,
+                             'manager': None, 'phone': None, 'type': None,
+                             'url': None, 'zipcode': None}
+        self.docs_are_equal(response.json(), returned_api_data)
 
     def test_filter(self):
         list_url = reverse('institute-list')
