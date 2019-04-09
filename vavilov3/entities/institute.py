@@ -8,8 +8,7 @@ from vavilov3.entities.tags import (INSTITUTE_CODE, INSTITUTE_NAME,
                                     INSTITUTE_TYPE, INSTITUTE_ADDRESS,
                                     INSTITUTE_ZIPCODE, INSTITUTE_EMAIL,
                                     INSTITUTE_CITY, INSTITUTE_URL,
-                                    INSTITUTE_MANAGER, INSTITUTE_PHONE,
-    DATA_SOURCE)
+                                    INSTITUTE_MANAGER, INSTITUTE_PHONE)
 
 
 class InstituteValidationError(Exception):
