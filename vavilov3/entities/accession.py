@@ -324,13 +324,13 @@ def _create_passport_in_db(passport_struct, accession):
         except IntegrityError:
             msg = '{} already in database, it must be defined with a different'
             msg += 'kind'
-            raise ValidationError(msg.format(data_source))
+            raise ValidationError(format_error_message(msg.format(data_source)))
     country = passport_struct.location.country
     if country:
         try:
             country = Country.objects.get(code=country)
         except(BaseException, Country.DoesNotExist):
-            raise ValidationError('{} country not in db')
+            raise ValidationError(format_error_message('{} country not in db'))
 
     biological_status = passport_struct.bio_status
     collection_source = passport_struct.collection_source
@@ -410,17 +410,17 @@ def update_accession_in_db(validated_data, instance, user):
         msg = 'Provided group does not exist in db: {}'
         msg = msg.format(accession_struct.metadata.group)
         raise ValidationError(format_error_message(msg))
+    with transaction.atomic():
+        instance.is_available = accession_struct.is_available
+        instance.conservation_status = accession_struct.conservation_status
+        instance.group = group
+        instance.is_public = accession_struct.metadata.is_public
+        instance.passports.all().delete()
+        for passport_struct in accession_struct.passports:
+            _create_passport_in_db(passport_struct, instance)
 
-    instance.is_available = accession_struct.is_available
-    instance.conservation_status = accession_struct.conservation_status
-    instance.group = group
-    instance.is_public = accession_struct.metadata.is_public
-    instance.passports.all().delete()
-    for passport_struct in accession_struct.passports:
-        _create_passport_in_db(passport_struct, instance)
-
-    instance.save()
-    return instance
+        instance.save()
+        return instance
 
 
 def serialize_accessions_from_csv(fhand, data_source_code, data_source_kind):
