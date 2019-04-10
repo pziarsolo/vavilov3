@@ -8,12 +8,13 @@ from PIL import Image
 from django.db import models, connection
 from django.contrib.auth.models import Group as DjangoGroup, AbstractUser
 from django.contrib.postgres.fields.jsonb import JSONField
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf.global_settings import MEDIA_ROOT
 
 from vavilov3.raw_stat_sql_commands import (get_institute_stats_raw_sql,
                                             get_country_stats_raw_sql)
 from vavilov3.entities.tags import NOMINAL, ORDINAL
 from vavilov3.conf.settings import PHENO_IMAGE_DIR
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class User(AbstractUser):
@@ -558,7 +559,7 @@ def _get_upload_path(instance, filename, prefix=None):
     filename = '{}_'.format(prefix) if prefix else ''
     filename += '{}_{}_{}{}'.format(study, accession,
                                     instance.observation_image_uid, suffix)
-    return join(PHENO_IMAGE_DIR, accession, study, filename)
+    return join(MEDIA_ROOT, PHENO_IMAGE_DIR, accession, study, filename)
 
 
 def get_image_upload_path(instance, filename):

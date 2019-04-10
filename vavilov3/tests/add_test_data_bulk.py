@@ -181,7 +181,7 @@ def main():
                                    CREATE_OBSERVATION_UNITS: 'foreach_observation'})
 
     process_task_response(response, headers)
-
+    return
     # Images
     response = requests.post(SERVER_URL + 'api/observation_images/bulk/',
                              headers=headers,

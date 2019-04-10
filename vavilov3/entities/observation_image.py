@@ -317,7 +317,6 @@ def create_observation_image_in_db(api_data, user, conf=None):
         creation_time = None
 
     with transaction.atomic():
-        observations = []
         observation_unit = _get_or_create_observation_unit(struct, create_observation_unit)
         study_belongs_to_user = bool(user.groups.filter(name=observation_unit.study.group.name).count())
 
@@ -338,16 +337,12 @@ def create_observation_image_in_db(api_data, user, conf=None):
                 msg = 'This image already exists in db: {}'.format(uid)
                 raise ValueError(msg)
             raise ValueError(str(error))
-        observations.append(observation)
+        except PermissionError as error:
+            raise ValueError(str(error))
+        except Exception as error:
+            raise ValueError(str(error))
 
-    # only when creating by bulk we would have more than one value.
-    # In this cases the values are not returned. In most cases we can return
-    # just the oly one observation
-
-    if len(observations) == 1:
-        return observations[0]
-
-    return observations
+    return observation
 
 # def update_observation_in_db(validated_data, instance, user):
 #     struct = ObservationStruct(api_data=validated_data)
