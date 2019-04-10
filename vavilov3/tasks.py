@@ -1,6 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 import shutil
 import functools
+import os
+
 from celery import shared_task
 
 from django.db import transaction
@@ -152,6 +154,12 @@ def create_institutes_task(validated_data):
             raise ValidationError(errors)
 
     return {DETAIL: '{} institutes added'.format(len(validated_data))}
+
+
+@shared_task
+def create_tmp_dir(extracted_dir):
+    os.mkdir(extracted_dir)
+    os.chmod(extracted_dir, 777)
 
 
 def add_task_to_user(user, async_result):

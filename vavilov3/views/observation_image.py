@@ -17,6 +17,7 @@ from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
 from vavilov3.utils import extract_files_from_zip
 import tempfile
 from vavilov3.views import format_error_message
+from vavilov3.tasks import create_tmp_dir
 
 
 class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
@@ -54,6 +55,8 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
         with tempfile.TemporaryDirectory() as tmp_dir:
             extract_dir = tmp_dir
 
+        create_tmp_dir.apply(extract_dir)
+
         data, conf = serialize_observation_images_from_request(request, extract_dir)
         self.conf = conf
         if action == 'POST':
@@ -82,7 +85,6 @@ def serialize_observation_images_from_request(request, tmp_extract_dir):
     if 'multipart/form-data' in request.content_type:
         create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
         zip_file = request.FILES['file'].file
-        print(zip_file)
         try:
             data = list(extract_files_from_zip(zip_file, extract_dir=tmp_extract_dir))
         except ValueError as error:
