@@ -4,14 +4,9 @@ from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
 
 
 def extract_files_from_zip(fhand, extract_dir=None):
-    try:
-        fpath = fhand.name
-    except AttributeError:
+    if not is_zipfile(fhand):
         raise ValueError('File must be a zipfile')
-
-    if not is_zipfile(fpath):
-        raise ValueError('File must be a zipfile')
-    zip_file = ZipFile(fpath)
+    zip_file = ZipFile(fhand)
     for member in zip_file.filelist:
         try:
             # this.method exists strting in python 3.6

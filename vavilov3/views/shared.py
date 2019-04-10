@@ -1,5 +1,7 @@
 from time import time
 
+from django.http.response import StreamingHttpResponse
+
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -12,7 +14,6 @@ from vavilov3.permissions import (filter_queryset_by_user_group_public_permissio
                                   filter_queryset_by_obs_unit_in_study_permissions)
 from vavilov3.views import format_error_message
 from vavilov3.serializers.shared import serialize_entity_from_excel
-from django.http.response import StreamingHttpResponse
 
 
 def calc_duration(action, prev_time):

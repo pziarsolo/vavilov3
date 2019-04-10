@@ -82,6 +82,7 @@ def serialize_observation_images_from_request(request, tmp_extract_dir):
     if 'multipart/form-data' in request.content_type:
         create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
         zip_file = request.FILES['file'].file
+        print(zip_file)
         try:
             data = list(extract_files_from_zip(zip_file, extract_dir=tmp_extract_dir))
         except ValueError as error:

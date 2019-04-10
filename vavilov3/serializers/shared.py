@@ -7,6 +7,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework.fields import empty
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.utils.serializer_helpers import ReturnList
 
 from vavilov3.views import format_error_message
 from vavilov3.entities.metadata import (validate_metadata_data,
@@ -20,8 +21,6 @@ from vavilov3.tasks import (create_accessions_task, add_task_to_user,
                             create_trait_task, create_scale_task,
                             create_observation_images_task)
 from vavilov3.excel import excel_dict_reader
-from rest_framework.utils.serializer_helpers import ReturnList
-from rest_framework.serializers import BaseSerializer
 
 
 class DynamicFieldsSerializer(serializers.Serializer):

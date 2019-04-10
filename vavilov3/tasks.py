@@ -7,7 +7,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
-from vavilov3.views import DETAIL
+from vavilov3.views import DETAIL, format_error_message
 from vavilov3.models import UserTasks
 from vavilov3.entities.accession import create_accession_in_db
 from vavilov3.entities.institute import create_institute_in_db
@@ -60,7 +60,7 @@ def _create_items_task(validated_data, username, func, item_type, conf=None):
                     errors.append(str(error))
 
         if errors:
-            raise ValidationError(errors)
+            raise ValidationError(format_error_message(errors))
     return {DETAIL: '{} {} added'.format(len(validated_data), item_type)}
 
 
