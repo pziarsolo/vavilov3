@@ -13,7 +13,13 @@ def extract_files_from_zip(fhand, extract_dir=None):
         raise ValueError('File must be a zipfile')
     zip_file = ZipFile(fpath)
     for member in zip_file.filelist:
-        if member.is_dir():
+        try:
+            # this.method exists strting in python 3.6
+            is_dir = member.is_dir()
+        except AttributeError:
+            is_dir = member.filename.endswith('/')
+
+        if is_dir:
             continue
         directory_tree = member.filename.split('/')
         try:
