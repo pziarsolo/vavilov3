@@ -20,7 +20,6 @@ from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
 from vavilov3.tasks import extract_files_from_zip
 from vavilov3.views import format_error_message
 
-
 logger = logging.getLogger('vavilov.prod')
 
 
@@ -67,20 +66,20 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
                 for chunk in fhand.chunks():
                     destination.write(chunk)
                 destination.flush()
+
                 subprocess.run(['chmod', '777', destination.name])
-                logger.debug('2')
                 task = extract_files_from_zip.apply_async(args=[destination.name,
                                                                 extract_dir])
-                logger.debug('3')
-                logger.debug(task)
-                data = task.wait()
-                logger.debug('4')
+                try:
+                    data = task.wait()
+                except ValueError as error:
+                    raise ValidationError(format_error_message(str(error)))
 
         else:
             msg = 'Request must be a multipart/form-data request '
             msg += 'with at least a zip file'
             raise ValidationError(format_error_message(msg))
-        logger.debug('4')
+
         self.conf = {CREATE_OBSERVATION_UNITS: create_observation_units,
                      'extraction_dir': extract_dir}
 

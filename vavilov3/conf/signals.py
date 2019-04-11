@@ -34,7 +34,6 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     Deletes file from filesystem
     when corresponding `ObservationImage` object is deleted.
     """
-    logger.debug('file delete')
     if instance.image:
         path = instance.image.path
         if isfile(path):

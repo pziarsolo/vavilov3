@@ -7,7 +7,6 @@ import logging
 
 from zipfile import is_zipfile, ZipFile
 
-
 from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
 from celery import shared_task
 
@@ -30,6 +29,7 @@ from vavilov3.entities.scale import create_scale_in_db
 from vavilov3.entities.observation_image import create_observation_image_in_db
 from vavilov3.conf.settings import (LONG_PROCESS_TIMEOUT,
                                     SHORT_PROCESS_TIMEOUT)
+from vavilov3.utils import observation_image_cleanup
 
 User = get_user_model()
 logger = logging.getLogger('vavilov.prod')
@@ -130,8 +130,10 @@ def create_observation_images_task(validated_data, username, conf=None):
         return _create_items_task(validated_data, username,
                                   create_observation_image_in_db,
                                   'observation_images', conf)
+    except ValidationError:
+        observation_image_cleanup(delete=True)
+        raise
     finally:
-        pass
         shutil.rmtree(conf['extraction_dir'])
 
 
@@ -177,6 +179,8 @@ def add_task_to_user(user, async_result):
 @shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
              soft_time_limit=SHORT_PROCESS_TIMEOUT)
 def extract_files_from_zip(fpath, extract_dir=None):
+    if not is_zipfile(fpath):
+        raise ValueError('File must be a zip file')
     if extract_dir is not None:
         os.mkdir(extract_dir)
 
