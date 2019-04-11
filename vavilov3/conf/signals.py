@@ -1,5 +1,6 @@
 from os import remove
 from os.path import isfile
+import logging
 
 from django.db.models.signals import post_delete, pre_save, m2m_changed
 from django.dispatch.dispatcher import receiver
@@ -10,6 +11,7 @@ from vavilov3.models import ObservationImage
 from vavilov3.conf.settings import ADMIN_GROUP
 
 User = get_user_model()
+logger = logging.getLogger('vavilov.prod')
 
 
 @receiver(m2m_changed, sender=User.groups.through)
@@ -32,6 +34,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     Deletes file from filesystem
     when corresponding `ObservationImage` object is deleted.
     """
+    logger.debug('file delete')
     if instance.image:
         path = instance.image.path
         if isfile(path):

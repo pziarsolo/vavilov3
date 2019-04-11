@@ -326,6 +326,13 @@ def create_observation_image_in_db(api_data, user, conf=None):
             raise ValueError(msg)
 
         try:
+            ObservationImage.objects.get(observation_image_uid=uid)	
+            msg = 'This image already exists in db: {}'.format(uid)
+            raise ValueError(msg)
+        except ObservationImage.DoesNotExist:
+            pass
+
+        try:
             observation = ObservationImage.objects.create(
                 observation_image_uid=uid,
                 observation_unit=observation_unit,

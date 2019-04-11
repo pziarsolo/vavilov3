@@ -1,3 +1,6 @@
+import logging
+import tempfile
+import subprocess
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 
@@ -14,10 +17,11 @@ from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation_image import ObservationImageSerializer
 from vavilov3.filters.observation_image import ObservationImageFilter
 from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
-from vavilov3.utils import extract_files_from_zip
-import tempfile
+from vavilov3.tasks import extract_files_from_zip
 from vavilov3.views import format_error_message
-from vavilov3.tasks import create_tmp_dir
+
+
+logger = logging.getLogger('vavilov.prod')
 
 
 class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
@@ -55,10 +59,31 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
         with tempfile.TemporaryDirectory() as tmp_dir:
             extract_dir = tmp_dir
 
-        create_tmp_dir.apply(extract_dir)
+        if 'multipart/form-data' in request.content_type:
+            create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
+            fhand = request.FILES['file']
+            logger.debug('1')
+            with tempfile.NamedTemporaryFile(mode='wb', suffix='.zip') as destination:
+                for chunk in fhand.chunks():
+                    destination.write(chunk)
+                destination.flush()
+                subprocess.run(['chmod', '777', destination.name])
+                logger.debug('2')
+                task = extract_files_from_zip.apply_async(args=[destination.name,
+                                                                extract_dir])
+                logger.debug('3')
+                logger.debug(task)
+                data = task.wait()
+                logger.debug('4')
 
-        data, conf = serialize_observation_images_from_request(request, extract_dir)
-        self.conf = conf
+        else:
+            msg = 'Request must be a multipart/form-data request '
+            msg += 'with at least a zip file'
+            raise ValidationError(format_error_message(msg))
+        logger.debug('4')
+        self.conf = {CREATE_OBSERVATION_UNITS: create_observation_units,
+                     'extraction_dir': extract_dir}
+
         if action == 'POST':
             serializer = self.get_serializer(data=data, many=True)
             serializer.is_valid(raise_exception=True)
@@ -85,8 +110,14 @@ def serialize_observation_images_from_request(request, tmp_extract_dir):
     if 'multipart/form-data' in request.content_type:
         create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
         zip_file = request.FILES['file'].file
+        logger.debug(type(request.FILES['file']))
+        logger.debug(request.FILES['file'].name)
+        logger.debug(dir(request.FILES['file']))
+        logger.debug(type(zip_file))
+        logger.debug(dir(zip_file))
         try:
-            data = list(extract_files_from_zip(zip_file, extract_dir=tmp_extract_dir))
+            data = list(extract_files_from_zip(zip_file, extract_dir=tmp_extract_dir,
+                                               make_group_writable=True))
         except ValueError as error:
             raise ValidationError(format_error_message(error))
 

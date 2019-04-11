@@ -2,7 +2,13 @@ from __future__ import absolute_import, unicode_literals
 import shutil
 import functools
 import os
+import subprocess
+import logging
 
+from zipfile import is_zipfile, ZipFile
+
+
+from vavilov3.entities.tags import INSTITUTE_CODE, GERMPLASM_NUMBER
 from celery import shared_task
 
 from django.db import transaction
@@ -26,6 +32,7 @@ from vavilov3.conf.settings import (LONG_PROCESS_TIMEOUT,
                                     SHORT_PROCESS_TIMEOUT)
 
 User = get_user_model()
+logger = logging.getLogger('vavilov.prod')
 
 
 def add_user_to_task(user):
@@ -124,6 +131,7 @@ def create_observation_images_task(validated_data, username, conf=None):
                                   create_observation_image_in_db,
                                   'observation_images', conf)
     finally:
+        pass
         shutil.rmtree(conf['extraction_dir'])
 
 
@@ -159,11 +167,44 @@ def create_institutes_task(validated_data):
 @shared_task
 def create_tmp_dir(extracted_dir):
     os.mkdir(extracted_dir)
-    os.chmod(extracted_dir, 777)
+    subprocess.run(['chmod', '2777', extracted_dir])
 
 
 def add_task_to_user(user, async_result):
     UserTasks.objects.create(user=user, task_id=async_result.task_id)
+
+
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
+def extract_files_from_zip(fpath, extract_dir=None):
+    if extract_dir is not None:
+        os.mkdir(extract_dir)
+
+    zip_file = ZipFile(fpath)
+    valid_data = []
+    for member in zip_file.filelist:
+        try:
+            # this.method exists strting in python 3.6
+            is_dir = member.is_dir()
+        except AttributeError:
+            is_dir = member.filename.endswith('/')
+
+        if is_dir:
+            continue
+        directory_tree = member.filename.split('/')
+        try:
+            study = directory_tree[-2]
+            accession = directory_tree[-3]
+            institute_code, germplasm_number = accession.split(':', 1)
+        except (IndexError, ValueError):
+            raise ValueError("The zip file's Directory tree is wrong!")
+
+        image_path = zip_file.extract(member, path=extract_dir)
+
+        valid_data.append({'study': study, INSTITUTE_CODE: institute_code,
+                           GERMPLASM_NUMBER: germplasm_number,
+                           'image_path': image_path})
+    return valid_data
 
 
 @shared_task
