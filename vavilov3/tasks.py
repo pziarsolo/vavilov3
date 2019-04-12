@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 from vavilov3.views import DETAIL, format_error_message
-from vavilov3.models import UserTasks
+from vavilov3.models import UserTasks, ObservationImage
 from vavilov3.entities.accession import create_accession_in_db
 from vavilov3.entities.institute import create_institute_in_db
 from vavilov3.entities.accessionset import create_accessionset_in_db
@@ -212,6 +212,15 @@ def extract_files_from_zip(fpath, extract_dir=None):
                            GERMPLASM_NUMBER: germplasm_number,
                            'image_path': image_path})
     return valid_data
+
+
+@shared_task(time_limit=SHORT_PROCESS_TIMEOUT,
+             soft_time_limit=SHORT_PROCESS_TIMEOUT)
+def delete_image(uid):
+    try:
+        ObservationImage.objects.get(observation_image_uid=uid).delete()
+    except ObservationImage.DoesNotExist:
+        raise ValidationError('Could not find image')
 
 
 @shared_task

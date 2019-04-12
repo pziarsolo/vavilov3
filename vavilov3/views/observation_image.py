@@ -17,7 +17,7 @@ from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation_image import ObservationImageSerializer
 from vavilov3.filters.observation_image import ObservationImageFilter
 from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
-from vavilov3.tasks import extract_files_from_zip
+from vavilov3.tasks import extract_files_from_zip, delete_image
 from vavilov3.views import format_error_message
 
 logger = logging.getLogger('vavilov.prod')
@@ -92,6 +92,10 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
 
 #
     _conf = None
+
+    def perform_destroy(self, instance):
+        task = delete_image.apply_async(args=[instance.observation_image_uid])
+        _ = task.wait()
 
     @property
     def conf(self):
