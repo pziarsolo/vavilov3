@@ -131,7 +131,10 @@ def create_observation_images_task(validated_data, username, conf=None):
                                   create_observation_image_in_db,
                                   'observation_images', conf)
     except ValidationError:
-        observation_image_cleanup(delete=True)
+        try:
+            observation_image_cleanup(delete=True)
+        except Exception as error:
+            raise ValidationError(error)
         raise
     finally:
         shutil.rmtree(conf['extraction_dir'])

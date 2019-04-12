@@ -66,7 +66,7 @@ def validate_observation_image_data(data, conf=None):
 
 class ObservationImageStruct():
 
-    def __init__(self, api_data=None, instance=None, fields=None, conf=None):
+    def __init__(self, api_data=None, instance=None, fields=None):
         if api_data and instance:
             raise ValueError('Can not initialize with data and instance')
 
@@ -327,7 +327,8 @@ def create_observation_image_in_db(api_data, user, conf=None):
 
         try:
             ObservationImage.objects.get(observation_image_uid=uid)
-            msg = 'This image already exists in db: {}'.format(uid)
+            msg = 'This image already exists in db: study {}, accession {}, uid, {}'
+            msg += msg.forma(struct.study, struct.accession, uid)
             raise ValueError(msg)
         except ObservationImage.DoesNotExist:
             pass
