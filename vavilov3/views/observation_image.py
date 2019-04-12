@@ -17,7 +17,8 @@ from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation_image import ObservationImageSerializer
 from vavilov3.filters.observation_image import ObservationImageFilter
 from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
-from vavilov3.tasks import extract_files_from_zip, delete_image
+from vavilov3.tasks import extract_files_from_zip, delete_image, \
+    add_task_to_user
 from vavilov3.views import format_error_message
 
 logger = logging.getLogger('vavilov.prod')
@@ -72,6 +73,7 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
                                                                 extract_dir])
                 try:
                     data = task.wait()
+                    add_task_to_user(self.request.user, task)
                 except ValueError as error:
                     raise ValidationError(format_error_message(str(error)))
 
@@ -96,6 +98,7 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
     def perform_destroy(self, instance):
         task = delete_image.apply_async(args=[instance.observation_image_uid])
         _ = task.wait()
+        add_task_to_user(self.request.user, task)
 
     @property
     def conf(self):

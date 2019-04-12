@@ -150,7 +150,7 @@ class TaskResultGetter():
             result = json.loads(self._data['result'])["exc_message"][0]
         elif self.status == 'SUCCESS':
             result = json.loads(self._data['result'])
-            if 'detail' in result:
+            if result is not None and 'detail' in result:
                 return result['detail']
             return "Internal Job successful"
         elif self.status == 'REVOKED':
