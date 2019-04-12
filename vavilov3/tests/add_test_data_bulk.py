@@ -121,22 +121,22 @@ def main():
         except RuntimeError:
             pass
 
-    # adding observation units
-    response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                             headers=headers,
-                             files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
-    process_task_response(response, headers)
-
-    if RUN_FAILLING_REQUESTS:
-        # Adding again fails
-        response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                                 headers=headers,
-                                 files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
-        try:
-            process_task_response(response, headers)
-            raise ValueError()
-        except RuntimeError:
-            pass
+#     # adding observation units
+#     response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+#                              headers=headers,
+#                              files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
+#     process_task_response(response, headers)
+#
+#     if RUN_FAILLING_REQUESTS:
+#         # Adding again fails
+#         response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+#                                  headers=headers,
+#                                  files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
+#         try:
+#             process_task_response(response, headers)
+#             raise ValueError()
+#         except RuntimeError:
+#             pass
 
 #     # adding traits
     response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',
@@ -156,32 +156,32 @@ def main():
                              files={'file': open(OBSERVATION_VARIABLES_FPATH, mode='rb')})
     process_task_response(response, headers)
 
-    if RUN_FAILLING_REQUESTS:
-        # Adding again fails
-        response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                                 headers=headers,
-                                 files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
-        try:
-            process_task_response(response, headers)
-            raise ValueError()
-        except RuntimeError:
-            pass
+#     if RUN_FAILLING_REQUESTS:
+#         # Adding again fails
+#         response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+#                                  headers=headers,
+#                                  files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
+#         try:
+#             process_task_response(response, headers)
+#             raise ValueError()
+#         except RuntimeError:
+#             pass
 
-    # adding Observations
-    response = requests.post(SERVER_URL + 'api/observations/bulk/',
-                             headers=headers,
-                             files={'file': open(OBSERVATIONS_FPATH, mode='rb')})
-    process_task_response(response, headers)
+#     # adding Observations
+#     response = requests.post(SERVER_URL + 'api/observations/bulk/',
+#                              headers=headers,
+#                              files={'file': open(OBSERVATIONS_FPATH, mode='rb')})
+#     process_task_response(response, headers)
+#
+#     # adding Observations: traits in columns
+#     response = requests.post(SERVER_URL + 'api/observations/bulk/',
+#                              headers=headers,
+#                              files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
+#                              data={TRAITS_IN_COLUMNS: True,
+#                                    CREATE_OBSERVATION_UNITS: 'foreach_observation'})
+#
+#     process_task_response(response, headers)
 
-    # adding Observations: traits in columns
-    response = requests.post(SERVER_URL + 'api/observations/bulk/',
-                             headers=headers,
-                             files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
-                             data={TRAITS_IN_COLUMNS: True,
-                                   CREATE_OBSERVATION_UNITS: 'foreach_observation'})
-
-    process_task_response(response, headers)
-    
     # Images
     response = requests.post(SERVER_URL + 'api/observation_images/bulk/',
                              headers=headers,

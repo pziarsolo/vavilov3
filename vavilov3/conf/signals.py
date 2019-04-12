@@ -7,7 +7,7 @@ from django.dispatch.dispatcher import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from vavilov3.models import ObservationImage
+from vavilov3.models import ObservationImage, Observation
 from vavilov3.conf.settings import ADMIN_GROUP
 
 User = get_user_model()
@@ -74,3 +74,33 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
         for path in paths:
             if isfile(path):
                 remove(path)
+
+
+@receiver(post_delete, sender=ObservationImage)
+def delete_observation_unit_if_orphan_on_delete_image(sender, instance,
+                                                      **kwargs):
+    """
+        Delete observation Units of observationImage if there are no more
+        references
+    """
+    observation_unit = instance.observation_unit
+    _remove_orphan_observation_unit(observation_unit)
+
+
+@receiver(post_delete, sender=Observation)
+def delete_observation_unit_if_orphan_on_delete_observation(sender, instance,
+                                                            **kwargs):
+    """
+        Delete observation Units of observationImage if there are no more
+        references
+    """
+    observation_unit = instance.observation_unit
+    _remove_orphan_observation_unit(observation_unit)
+
+
+def _remove_orphan_observation_unit(observation_unit):
+    obs = Observation.objects.filter(observation_unit_id=observation_unit.observation_unit_id).count()
+    obs_images = ObservationImage.objects.filter(observation_unit_id=observation_unit.observation_unit_id).count()
+
+    if not obs and not obs_images:
+        observation_unit.delete()
