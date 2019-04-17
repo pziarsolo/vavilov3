@@ -328,7 +328,7 @@ def create_observation_image_in_db(api_data, user, conf=None):
         try:
             ObservationImage.objects.get(observation_image_uid=uid)
             msg = 'This image already exists in db: study {}, accession {}, uid, {}'
-            msg += msg.forma(struct.study, struct.accession, uid)
+            msg += msg.format(struct.study, struct.accession, uid)
             raise ValueError(msg)
         except ObservationImage.DoesNotExist:
             pass
