@@ -196,9 +196,9 @@ class AccessionStruct():
         if fields is None or (PASSPORTS in fields or 'latitude' in fields or 'longitude' in fields):
             passports = []
             passport_fields = []
-            if 'latitude' in fields:
+            if fields and 'latitude' in fields:
                 passport_fields.append('latitude')
-            if 'longitude' in fields:
+            if fields and 'longitude' in fields:
                 passport_fields.append('longitude')
 
             if not passport_fields:
