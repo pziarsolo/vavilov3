@@ -170,9 +170,9 @@ class AccessionStruct():
         self.metadata.group = instance.group.name
         self.metadata.is_public = instance.is_public
         accepted_fields = [INSTITUTE_CODE, GERMPLASM_NUMBER, IS_AVAILABLE,
-                           CONSTATUS, PASSPORTS, 'genera', 'countries']
-        if (fields is not None and
-                len(set(fields).intersection(accepted_fields)) == 0):
+                           CONSTATUS, PASSPORTS, 'genera', 'countries',
+                           'longitude', 'latitude']
+        if fields is not None and not set(fields).issubset(accepted_fields):
             msg = format_error_message('Passed fields are not allowed')
             raise ValidationError(msg)
 
@@ -193,11 +193,20 @@ class AccessionStruct():
         if instance.countries and fields and 'countries' in fields:
             self.countries = instance.countries
 
-        if fields is None or PASSPORTS in fields:
+        if fields is None or (PASSPORTS in fields or 'latitude' in fields or 'longitude' in fields):
             passports = []
+            passport_fields = []
+            if 'latitude' in fields:
+                passport_fields.append('latitude')
+            if 'longitude' in fields:
+                passport_fields.append('longitude')
+
+            if not passport_fields:
+                passport_fields = None
+
             for passport_instance in instance.passports.all():
                 passport_struct = PassportStruct(instance=passport_instance,
-                                                 fields=fields)
+                                                 fields=passport_fields)
                 passports.append(passport_struct)
             self.passports = passports
 

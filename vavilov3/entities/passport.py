@@ -25,14 +25,25 @@ class PassportStruct(Passport):
 
         if instance:
             api_data = self._deserialize_instance(instance, fields)
+        super().__init__(api_data, validate=False)
 
-        super().__init__(api_data)
-
-    @staticmethod
-    def _deserialize_instance(instance, fields):
-        return instance.data
-#         self.metadata.group = instance.group.name
-#         self.metadata.is_public = instance.is_public
+    def _deserialize_instance(self, instance, fields=None):
+        if fields is None:
+            return instance.data
+        data = {}
+        if 'latitude' in fields:
+            latitude = instance.data.get('collectionSite', {}).get('latitude', None)
+            if latitude is not None:
+                if 'collectionSite' not in data:
+                    data['collectionSite'] = {}
+                data['collectionSite']['latitude'] = latitude
+        if 'longitude' in fields:
+            longitude = instance.data.get('collectionSite', {}).get('longitude', None)
+            if longitude is not None:
+                if 'collectionSite' not in data:
+                    data['collectionSite'] = {}
+                data['collectionSite']['longitude'] = longitude
+        return data
 
 #         if fields is None or 'passport_institute' in fields:
 #             self.institute_code = instance.institute.code
