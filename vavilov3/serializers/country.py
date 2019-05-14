@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from vavilov3.models import Country
+from rest_framework.exceptions import ValidationError
+from vavilov3.views import format_error_message
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -15,6 +17,8 @@ class CountrySerializer(serializers.ModelSerializer):
 
         if fields is not None:
             # Drop any fields that are not specified in the `fields` argument.
+            if not set(fields).issubset(self.fields):
+                raise ValidationError(format_error_message('Passed fields are not allowed'))
             allowed = set(fields)
             existing = set(self.fields)
             for field_name in existing - allowed:

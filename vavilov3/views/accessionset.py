@@ -7,14 +7,14 @@ from vavilov3.views.shared import (GroupObjectPublicPermMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
                                    BulkOperationsMixin, TooglePublicMixim,
-    OptionalStreamedListCsvMixin)
+                                   OptionalStreamedListCsvMixin,
+                                   ListModelMixinWithErrorCheck)
 from vavilov3.models import AccessionSet
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.serializers.accessionset import AccessionSetSerializer
 from vavilov3.filters.accessionset import AccessionSetFilter
 from vavilov3.conf.settings import ACCESSIONSET_CSV_FIELDS
 from vavilov3.entities.accessionset import AccessionSetStruct
-from django.http.response import StreamingHttpResponse
 
 
 class AccessionSetCSVRenderer(renderers.CSVStreamingRenderer):
@@ -28,6 +28,7 @@ class AccessionSetCSVRenderer(renderers.CSVStreamingRenderer):
 
 class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                           BulkOperationsMixin, DynamicFieldsViewMixin,
+                          ListModelMixinWithErrorCheck,
                           TooglePublicMixim, viewsets.ModelViewSet,
                           OptionalStreamedListCsvMixin):
     lookup_fields = ('institute_code', 'accessionset_number')

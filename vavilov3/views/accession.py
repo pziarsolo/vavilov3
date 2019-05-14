@@ -13,7 +13,8 @@ from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    MultipleFieldLookupMixin,
                                    GroupObjectPublicPermMixin,
                                    TooglePublicMixim,
-                                   OptionalStreamedListCsvMixin)
+                                   OptionalStreamedListCsvMixin,
+                                   ListModelMixinWithErrorCheck)
 from vavilov3.serializers.accession import AccessionSerializer
 from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
@@ -37,7 +38,9 @@ class AccessionCSVRenderer(renderers.CSVStreamingRenderer):
 
 class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                        DynamicFieldsViewMixin, TooglePublicMixim,
-                       viewsets.ModelViewSet, OptionalStreamedListCsvMixin):
+                       ListModelMixinWithErrorCheck,
+                       viewsets.ModelViewSet,
+                       OptionalStreamedListCsvMixin):
     lookup_fields = ('institute_code', 'germplasm_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<germplasm_number'
     lookup_value_regex = '[^/]+'
@@ -81,3 +84,4 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
             # prev_time = calc_duration('perform_create', prev_time)
             return Response({'task_id': serializer.instance.id},
                             status=status.HTTP_200_OK, headers={})
+

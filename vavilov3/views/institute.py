@@ -5,14 +5,17 @@ from rest_framework import viewsets
 from vavilov3.models import Institute
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
-                                   BulkOperationsMixin)
+                                   BulkOperationsMixin,
+                                   ListModelMixinWithErrorCheck)
 from vavilov3.serializers.institute import InstituteSerializer
 from vavilov3.filters.institute import InstituteFilter
 from vavilov3.permissions import IsAdminOrReadOnly
 from vavilov3.entities.institute import InstituteStruct
 
 
-class InstituteViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
+class InstituteViewSet(DynamicFieldsViewMixin,
+                       ListModelMixinWithErrorCheck,
+                       viewsets.ModelViewSet,
                        BulkOperationsMixin):
     lookup_field = 'code'
     queryset = Institute.objects

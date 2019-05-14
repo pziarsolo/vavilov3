@@ -176,4 +176,30 @@ class OptionalStreamedListCsvMixin():
                     streaming_content=request.accepted_renderer.render(serializer.data),
                     content_type="text/csv")
 
-        return viewsets.ModelViewSet.list(self, request, *args, **kwargs)
+        return super().list(self, request, *args, **kwargs)
+
+
+class ListModelMixinWithErrorCheck():
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            try:
+                data = list(serializer.data)
+            except ValidationError as error:
+                errors = [e for e in error.detail['detail']]
+                return Response(format_error_message(errors),
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            return self.get_paginated_response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        try:
+            data = list(serializer.data)
+        except ValidationError as error:
+            errors = [e for e in error.detail['detail']]
+            return Response(format_error_message(errors),
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data)

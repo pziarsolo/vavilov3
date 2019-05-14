@@ -139,7 +139,6 @@ class VavilovListSerializer(serializers.ListSerializer):
         # so, first get a queryset from the Manager if needed
 
         iterable = data.all() if isinstance(data, models.Manager) else data
-
         for item in iterable:
             yield self.child.to_representation(item)
 
@@ -181,6 +180,7 @@ class VavilovSerializer(DynamicFieldsSerializer):
     def to_representation(self, instance):
         struct = self.Meta.Struct(instance=instance,
                                   fields=self.selected_fields)
+
         return struct.get_api_document()
 
     def run_validation(self, data=empty):

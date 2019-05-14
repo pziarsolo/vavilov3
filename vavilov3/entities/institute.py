@@ -9,6 +9,8 @@ from vavilov3.entities.tags import (INSTITUTE_CODE, INSTITUTE_NAME,
                                     INSTITUTE_ZIPCODE, INSTITUTE_EMAIL,
                                     INSTITUTE_CITY, INSTITUTE_URL,
                                     INSTITUTE_MANAGER, INSTITUTE_PHONE)
+from vavilov3.views import format_error_message
+from rest_framework.exceptions import ValidationError
 
 
 class InstituteValidationError(Exception):
@@ -138,6 +140,9 @@ class InstituteStruct():
         self._data[INSTITUTE_MANAGER] = manager
 
     def _populate_with_instance(self, instance, fields):
+        if fields is not None and not set(fields).issubset(INSTITUTE_ALLOWED_FIELDS):
+            msg = format_error_message('Passed fields are not allowed')
+            raise ValidationError(msg)
         if fields is None or INSTITUTE_CODE in fields:
             self.institute_code = instance.code
         if fields is None or INSTITUTE_NAME in fields:

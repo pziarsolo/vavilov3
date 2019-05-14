@@ -80,6 +80,13 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(len(response.json()['data'].keys()), 3)
         self.assertEqual(response.json()['data']['genera'], ['Solanum'])
 
+        list_url = reverse('accession-list')
+        response = self.client.get(list_url,
+                                   data={'fields': 'instituteCode,passp'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(),
+                              ['Passed fields are not allowed'])
+
     def test_create_delete(self):
         self.add_admin_credentials()
         list_url = reverse('accession-list')
