@@ -5,10 +5,12 @@ from vavilov3.filters.shared import TermFilterMixin
 
 
 class ObservationVariableFilter(TermFilterMixin, filters.FilterSet):
-    term = filters.CharFilter(label='term', method='term_filter')
-    group = filters.CharFilter(field_name='group__name', lookup_expr='exact')
+    term = filters.CharFilter(label='term', method='term_filter',
+                              distinct=True)
+    group = filters.CharFilter(field_name='group__name', lookup_expr='exact',
+                               distinct=True)
     study = filters.CharFilter(field_name='observation__observation_unit__study__name',
-                               lookup_expr='iexact')
+                               lookup_expr='iexact', distinct=True)
 
     class Meta:
         model = ObservationVariable

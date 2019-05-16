@@ -314,7 +314,7 @@ def create_observation_in_db(api_data, user, conf=None):
         else:
             error_row_id = 'Unknown'
         msg = '{}: {}'.format(error_row_id, error)
-        raise ValidationError(msg)
+        raise ValueError(msg)
 
     with transaction.atomic():
         observations = []

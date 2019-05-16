@@ -98,20 +98,34 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
         self._conf = conf
 
 
+def _cell_to_str(cell):
+    str_value = str(cell.value)
+    if cell.ctype == 2 and cell.value == int(cell.value):
+        str_value = str_value.split('.')[0]
+    return str_value
+
+
 def parse_traits_in_columns_excel(fhand):
     rows = excel_dict_reader(fhand)
     for row in rows:
-        accession = row.pop('Accession', None)
+        try:
+            accession = row.pop('ACCESSION')
+        except KeyError:
+            raise ValueError('ACCESSION column is mandatory')
         institute_code, germplasm_number = accession.value.split(':')
-        study = row.pop('Study', None)
-        for key, cell in row.items():
-            str_value = str(cell.value)
-            if cell.ctype == 2 and cell.value == int(cell.value):
-                str_value = str_value.split('.')[0]
+        try:
+            study_cell = row.pop('STUDY')
+        except KeyError:
+            raise ValueError('STUDY column is mandatory')
 
+        study = _cell_to_str(study_cell)
+        for key, cell in row.items():
+            str_value = _cell_to_str(cell)
+            if str_value == '' or str_value is None:
+                continue
             yield {'accession': {GERMPLASM_NUMBER: germplasm_number,
                                  INSTITUTE_CODE: institute_code},
-                   'study': study.value,
+                   'study': study,
                    'observation_variable': key, 'value': str_value}
 
 
@@ -123,6 +137,7 @@ def serialize_observations_from_request(request):
         if traits_in_columns:
             fhand = request.FILES['file'].file
             data = list(parse_traits_in_columns_excel(fhand))
+
             conf = {TRAITS_IN_COLUMNS: traits_in_columns,
                     CREATE_OBSERVATION_UNITS: create_observation_units}
 
@@ -131,7 +146,7 @@ def serialize_observations_from_request(request):
                 fhand = request.FILES['file'].file
             except KeyError:
                 msg = 'could not found the file'
-                raise ValidationError(format_error_message(msg))
+                raise ValueError(msg)
 
             data = serialize_entity_from_excel(fhand, ObservationStruct)
 
