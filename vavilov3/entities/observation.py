@@ -159,8 +159,7 @@ class ObservationStruct():
 
     def _populate_with_instance(self, instance, fields):
         accepted_fields = OBSERVATION_ALLOWED_FIELDS
-        if (fields is not None and
-                len(set(fields).intersection(accepted_fields)) == 0):
+        if (fields is not None and not set(fields).intersection(accepted_fields)):
             msg = format_error_message('Passed fields are not allowed')
             raise ValidationError(msg)
 
@@ -353,7 +352,7 @@ def create_observation_in_db(api_data, user, conf=None):
 
 def validate_value(value, observation_variable):
     scale = observation_variable.scale
-    observation_variable
+    obs_var_name = observation_variable.name
     values = []
     data_type = scale.data_type.name
     if ';' in value and data_type in (ORDINAL, NOMINAL):
@@ -365,15 +364,16 @@ def validate_value(value, observation_variable):
         if data_type == NUMERICAL:
             float_value = float(value)
             if scale.min and float_value < scale.min:
-                msg = 'Numericl value is less than minim: {} < {}'
-                raise ValueError(msg.format(value, scale.min))
+                msg = '{}: Numeric value is less than minim: {} < {}'
+                raise ValueError(msg.format(obs_var_name, value, scale.min))
             elif scale.max and float_value > scale.max:
-                msg = 'Numericl value is bigger than maxim: {} > {}'
-                raise ValueError(msg.format(value, scale.max))
+                msg = '{}: Numeric value is bigger than maxim: {} > {}'
+                raise ValueError(msg.format(obs_var_name, value, scale.max))
         else:
             valid_values = [valid['value'] for valid in scale.valid_values]
             if value not in valid_values:
-                raise ValueError('{} not in valid_values'.format(value))
+                raise ValueError('{}: {} not in valid_values'.format(obs_var_name,
+                                                                     value))
     return values
 
 
