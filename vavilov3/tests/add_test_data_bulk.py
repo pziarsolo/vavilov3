@@ -167,20 +167,20 @@ def main():
 #         except RuntimeError:
 #             pass
 
-#     # adding Observations
-#     response = requests.post(SERVER_URL + 'api/observations/bulk/',
-#                              headers=headers,
-#                              files={'file': open(OBSERVATIONS_FPATH, mode='rb')})
-#     process_task_response(response, headers)
-#
-#     # adding Observations: traits in columns
-#     response = requests.post(SERVER_URL + 'api/observations/bulk/',
-#                              headers=headers,
-#                              files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
-#                              data={TRAITS_IN_COLUMNS: True,
-#                                    CREATE_OBSERVATION_UNITS: 'foreach_observation'})
-#
-#     process_task_response(response, headers)
+    # adding Observations
+    response = requests.post(SERVER_URL + 'api/observations/bulk/',
+                             headers=headers,
+                             files={'file': open(OBSERVATIONS_FPATH, mode='rb')})
+    process_task_response(response, headers)
+
+    # adding Observations: traits in columns
+    response = requests.post(SERVER_URL + 'api/observations/bulk/',
+                             headers=headers,
+                             files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
+                             data={TRAITS_IN_COLUMNS: True,
+                                   CREATE_OBSERVATION_UNITS: 'foreach_observation'})
+
+    process_task_response(response, headers)
 
     # Images
     response = requests.post(SERVER_URL + 'api/observation_images/bulk/',

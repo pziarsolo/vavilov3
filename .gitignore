@@ -2,4 +2,5 @@
 *.pyc
 *__pycache__*
 .coverage
+.vscode
 vavilov3_web/media

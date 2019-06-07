@@ -436,9 +436,9 @@ class AccessionCsvTests(BaseTest):
         response = self.client.get(list_url, data={'format': 'csv'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = response.content
-        a = b'PUID,INSTCODE,ACCENUMB,CONSTATUS,IS_AVAILABLE,COLLNUMB'
-        b = b'ESP004,BGE0001,is_active,True,,,Solanum,lycopersicum,,var. cera'
-        c = b'YACUCHO;province:HUAMANGA;municipality:Socos;site:Santa Rosa '
+        aaa = b'PUID,INSTCODE,ACCENUMB,CONSTATUS,IS_AVAILABLE,COLLNUMB'
+        bbb = b'ESP004,BGE0001,is_active,True,,,Solanum,lycopersicum,,var. cera'
+        ccc = b'YACUCHO;province:HUAMANGA;municipality:Socos;site:Santa Rosa '
 
         for piece in (a, b, c):
             self.assertIn(piece, content)
