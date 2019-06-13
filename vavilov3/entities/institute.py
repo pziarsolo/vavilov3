@@ -235,7 +235,6 @@ def create_institute_in_db(api_data):
                 name=institute_struct.institute_name,
                 data=institute_struct.data)
         except IntegrityError as error:
-            print(error)
             msg = '{} already exist in db'
             msg = msg .format(institute_struct.institute_code)
             raise ValueError(msg)
