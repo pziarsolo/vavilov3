@@ -93,6 +93,8 @@ class CountryStatsTest(BaseTest):
         self.assertEqual(result['stats_by_taxa']['species'],
                          {'Solanum lycopersicum':
                           {'num_accessions': 3, 'num_accessionsets': 2}})
-        self.assertEqual(result['stats_by_institute'][0],
-                         {'instituteCode': 'ESP004', 'name': 'CRF genebank',
-                          'num_accessions': 1, 'num_accessionsets': 2})
+
+        for stat in result['stats_by_institute']:
+            if stat['instituteCode'] == 'ESP004':
+                self.assertEqual(stat, {'instituteCode': 'ESP004', 'name': 'CRF genebank',
+                                        'num_accessions': 1, 'num_accessionsets': 2})

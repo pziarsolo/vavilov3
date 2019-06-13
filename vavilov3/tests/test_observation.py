@@ -53,21 +53,21 @@ class ObservationViewTest(BaseTest):
         response = self.client.get(list_url)
         result = response.json()
         self.assertEqual(len(result), 2)
-        expected = ['observation_id', 'observation_variable',
-                    'observation_unit', 'value', 'observer', 'creation_time',
-                    'study', 'accession']
-        self.assertEqual(list(result[0].keys()), expected)
+        expected = set(['observation_id', 'observation_variable',
+                        'observation_unit', 'value', 'observer', 'creation_time',
+                        'study', 'accession'])
+        self.assertSetEqual(set(result[0].keys()), expected)
 
     def test_readonly_with_fields(self):
         edit_url = reverse('observation-list')
         response = self.client.get(edit_url, data={'fields': 'observation_variable'})
         first = response.json()[0]
-        self.assertEqual(list(first.keys()), ['observation_variable'])
+        self.assertSetEqual(set(first.keys()), set(['observation_variable']))
 
         response = self.client.get(edit_url, data={'fields': 'observation_variable,observation_unit'})
         first = response.json()[0]
-        self.assertEqual(list(first.keys()), ['observation_variable',
-                                              'observation_unit'])
+        self.assertSetEqual(set(first.keys()), set(['observation_variable',
+                                                    'observation_unit']))
 
         response = self.client.get(edit_url, data={'fields': 'observer,study,accession'})
         first = response.json()[0]

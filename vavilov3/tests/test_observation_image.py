@@ -111,7 +111,8 @@ class ObservationImageViewTest(BaseTest):
                 self.assertEqual(list(response.json()[0].keys()), ['image'])
 
                 response = self.client.get(list_url, data={'fields': 'observation_image_uid,image'})
-                self.assertEqual(list(response.json()[0].keys()), ['observation_image_uid', 'image'])
+                self.assertSetEqual(set(response.json()[0].keys()),
+                                    set(['observation_image_uid', 'image']))
 
                 response = self.client.get(list_url, data={'fields': 'accession,study,image'})
                 self.assertSetEqual(set(response.json()[0].keys()),
