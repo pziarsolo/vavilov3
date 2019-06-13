@@ -168,16 +168,12 @@ class InstituteStatsTest(BaseTest):
         fields = 'instituteCode,name,num_accessions,num_accessionsets,'
         fields += 'stats_by_country,stats_by_taxa,pdcis'
         response = self.client.get(detail_url, data={'fields': fields})
+
         result = {'instituteCode': 'ESP004',
                   'name': 'CRF genebank',
                   'num_accessions': 2,
                   'num_accessionsets': 2,
-                  'stats_by_country': [{'code': 'PER', 'name': 'Peru',
-                                        'num_accessions': 1,
-                                        'num_accessionsets': 2},
-                                       {'code': 'ESP', 'name': 'Spain',
-                                        'num_accessions': 1,
-                                        'num_accessionsets': 1}],
+
                   'stats_by_taxa': {'genus': {'Solanum': {'num_accessions': 2,
                                                           'num_accessionsets': 2}},
                                     'species':
@@ -188,6 +184,16 @@ class InstituteStatsTest(BaseTest):
                                         {'Solanum lycopersicum var. cerasiforme':
                                             {'num_accessions': 2,
                                              'num_accessionsets': 2}}}}
+        result_stats_by_country = [{'code': 'PER', 'name': 'Peru',
+                                    'num_accessions': 1,
+                                    'num_accessionsets': 2},
+                                   {'code': 'ESP', 'name': 'Spain',
+                                    'num_accessions': 1,
+                                    'num_accessionsets': 1}]
         response_json = response.json()
         del response_json['pdcis']
+        stats_by_country = response_json.pop('stats_by_country')
+        for stat_by_country in stats_by_country:
+            self.assertIn(stat_by_country, result_stats_by_country)
+
         self.assertEqual(response_json, result)
