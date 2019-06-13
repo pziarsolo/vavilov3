@@ -121,8 +121,9 @@ class ObservationViewTest(BaseTest):
         }
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(),
-                         ['Plant 1: Numericl value is bigger than maxim: 121 > 100.0'])
+        assert_error_is_equal(
+            response.json(),
+            ['Plant 1: Plant size:cm: Numeric value is bigger than maxim: 121 > 100.0'])
 
     def test_update(self):
         self.add_admin_credentials()

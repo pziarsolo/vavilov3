@@ -23,7 +23,7 @@ from vavilov3.entities.passport import PassportValidationError
 from vavilov3.permissions import is_user_admin
 from vavilov3.views import format_error_message
 from vavilov3.excel import excel_dict_reader
-from _decimal import InvalidOperation
+from decimal import InvalidOperation
 
 
 class AccessionValidationError(Exception):

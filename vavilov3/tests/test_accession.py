@@ -440,7 +440,7 @@ class AccessionCsvTests(BaseTest):
         bbb = b'ESP004,BGE0001,is_active,True,,,Solanum,lycopersicum,,var. cera'
         ccc = b'YACUCHO;province:HUAMANGA;municipality:Socos;site:Santa Rosa '
 
-        for piece in (a, b, c):
+        for piece in (aaa, bbb, ccc):
             self.assertIn(piece, content)
 
 
