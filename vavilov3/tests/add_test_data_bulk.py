@@ -121,22 +121,22 @@ def main():
         except RuntimeError:
             pass
 
-#     # adding observation units
-#     response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-#                              headers=headers,
-#                              files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
-#     process_task_response(response, headers)
-#
-#     if RUN_FAILLING_REQUESTS:
-#         # Adding again fails
-#         response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-#                                  headers=headers,
-#                                  files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
-#         try:
-#             process_task_response(response, headers)
-#             raise ValueError()
-#         except RuntimeError:
-#             pass
+    # adding observation units
+    response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+                             headers=headers,
+                             files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
+    process_task_response(response, headers)
+
+    if RUN_FAILLING_REQUESTS:
+        # Adding again fails
+        response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
+                                 headers=headers,
+                                 files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
+        try:
+            process_task_response(response, headers)
+            raise ValueError()
+        except RuntimeError:
+            pass
 
 #     # adding traits
     response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',

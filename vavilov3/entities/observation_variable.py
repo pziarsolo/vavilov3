@@ -140,7 +140,10 @@ class ObservationVariableStruct():
         if fields is None or OBSERVATION_VARIABLE_DESCRIPTION in fields:
             self.description = instance.description
         if fields is None or TRAIT in fields:
-            self.trait = instance.trait.name
+            try:
+                self.trait = instance.trait.name
+            except AttributeError:
+                self.trait = ''
         if fields is None or METHOD in fields:
             self.method = instance.method
 

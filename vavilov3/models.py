@@ -488,9 +488,9 @@ class ObservationVariable(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=255, db_index=True, unique=True)
     description = models.CharField(max_length=255)
-    trait = models.ForeignKey(Trait, null=True, on_delete=models.SET_NULL)
+    trait = models.ForeignKey(Trait, null=True, on_delete=models.CASCADE)
     method = models.CharField(max_length=255)
-    scale = models.ForeignKey(Scale, null=True, on_delete=models.SET_NULL)
+    scale = models.ForeignKey(Scale, null=True, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'vavilov_observation_variable'
