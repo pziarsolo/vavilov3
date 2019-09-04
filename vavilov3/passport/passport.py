@@ -588,6 +588,10 @@ class Passport():
     def germplasm_storage_type(self):
         return self._data.get(GERMPLASM_STORAGE_TYPE, None)
 
+    @germplasm_storage_type.setter
+    def germplasm_storage_type(self, storage):
+        self._data[GERMPLASM_STORAGE_TYPE] = storage
+
     @property
     def duplication_site_description(self):
         return None
