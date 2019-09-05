@@ -64,7 +64,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                 data_source_code = request.data['data_source_code']
                 data_source_kind = request.data['data_source_kind']
             except KeyError:
-                msg = 'could not found csv file or data_store info'
+                msg = 'Could not found excel file or data_store info'
                 raise ValidationError(msg)
             try:
                 data = serialize_accessions_from_excel(fhand, data_source_code,
@@ -84,4 +84,3 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
             # prev_time = calc_duration('perform_create', prev_time)
             return Response({'task_id': serializer.instance.id},
                             status=status.HTTP_200_OK, headers={})
-
