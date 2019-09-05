@@ -70,7 +70,7 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                 data = serialize_accessions_from_excel(fhand, data_source_code,
                                                        data_source_kind)
             except AccessionValidationError as error:
-                raise ValueError(format_error_message(error))
+                raise ValidationError(format_error_message(error))
         else:
             data = request.data
         # prev_time = calc_duration('csv to json', prev_time)

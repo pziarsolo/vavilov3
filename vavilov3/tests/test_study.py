@@ -116,6 +116,18 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json()['data'], api_data['data'])
 
+        api_data = {'data': {'name': 'study99',
+                             'description': 'description3',
+                             'season': 'asads', 'location': 'valencia',
+                             'institution': 'asdas'},
+                    'metadata': {}}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+
+        detail_url = reverse('study-detail', kwargs={'name': 'study99'})
+        response = self.client.get(detail_url)
+        print(response.json())
+
     def test_update(self):
         self.add_admin_credentials()
         detail_url = reverse('study-detail', kwargs={'name': 'study1'})

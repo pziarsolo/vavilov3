@@ -241,10 +241,18 @@ class AccessionStruct():
 
             if field_conf:
                 setter = field_conf['setter']
-                setter(self, value)
+                try:
+                    setter(self, value)
+                except ValueError as error:
+                    raise AccessionValidationError(error)
+
             if passport_field_conf:
                 passport_setter = passport_field_conf['setter']
-                passport_setter(_passport, value)
+                try:
+                    passport_setter(_passport, value)
+                except ValueError as error:
+                    print(error)
+                    raise AccessionValidationError(error)
         self.passports = [_passport]
 
 

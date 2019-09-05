@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.pagination import LimitOffsetPagination
 
 from vavilov3.permissions import (filter_queryset_by_user_group_public_permissions,
