@@ -14,7 +14,8 @@ def validate_passport_data(data):
 
 
 def merge_passports(passports):
-    _merge_passports(passports)
+    merged_passport = _merge_passports(passports)
+    return PassportStruct(merged_passport.data)
 
 
 class PassportStruct(Passport):
