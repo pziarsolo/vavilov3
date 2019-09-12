@@ -10,6 +10,7 @@ from vavilov3.entities.tags import (TRAIT_NAME, TRAIT_DESCRIPTION, ONTOLOGY_ID,
 
 from vavilov3.views import format_error_message
 from vavilov3.models import Trait
+from vavilov3.id_validator import validate_name
 
 TRAIT_ALLOWED_FIELDS = (TRAIT_NAME, TRAIT_DESCRIPTION, ONTOLOGY_NAME, ONTOLOGY_ID)
 
@@ -30,6 +31,10 @@ def validate_trait_data(data):
 
     if not_allowed_fields:
         msg = 'Not allowes fields: {}'.format(', '.join(not_allowed_fields))
+        raise TraitValidationError(msg)
+    try:
+        validate_name(data[TRAIT_NAME])
+    except ValueError as msg:
         raise TraitValidationError(msg)
 
 

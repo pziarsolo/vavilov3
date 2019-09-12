@@ -95,6 +95,19 @@ class ObservationVariableViewTest(BaseTest):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+        # check name validator
+        bad_api_data = {
+            "data": {
+                "name": "Plant/kjhas",
+                "description": "Measure of plant heigth",
+                "trait": "Plant Growth type",
+                "method": "by tape",
+                "scale": "centimeter"},
+            "metadata": {}}
+        response = self.client.post(list_url, data=bad_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(), ['Plant/kjhas: "\\", "/", "*", "<", ">", """ are not allowed characters'])
+
     def test_update(self):
         self.add_admin_credentials()
         detail_url = reverse('observationvariable-detail',

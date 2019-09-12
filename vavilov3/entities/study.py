@@ -14,6 +14,7 @@ from vavilov3.entities.tags import (
 from vavilov3.views import format_error_message
 from vavilov3.models import Group, Study, Project
 from vavilov3.permissions import is_user_admin
+from vavilov3.id_validator import validate_name
 
 
 class StudyValidationError(Exception):
@@ -35,6 +36,10 @@ def validate_study_data(data):
 
     if not_allowed_fields:
         msg = 'Not allowes fields: {}'.format(', '.join(not_allowed_fields))
+        raise StudyValidationError(msg)
+    try:
+        validate_name(data[STUDY_NAME])
+    except ValueError as msg:
         raise StudyValidationError(msg)
 
 
@@ -227,8 +232,8 @@ _STUDY_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'name', val)},
     {'csv_field_name': 'DESCRIPTION', 'getter': lambda x: x.description,
      'setter': lambda obj, val: setattr(obj, 'description', val)},
-#     {'csv_field_name': 'ACTIVE', 'getter': lambda x: x.is_active,
-#      'setter': lambda obj, val: setattr(obj, 'is_active', True if val.lower() == 'yes' else False)},
+    # {'csv_field_name': 'ACTIVE', 'getter': lambda x: x.is_active,
+    # 'setter': lambda obj, val: setattr(obj, 'is_active', True if val.lower() == 'yes' else False)},
     {'csv_field_name': 'START_DATE', 'getter': lambda x: x.start_date,
      'setter': lambda obj, val: setattr(obj, 'start_date', val)},
     {'csv_field_name': 'END_DATE', 'getter': lambda x: x.end_date,

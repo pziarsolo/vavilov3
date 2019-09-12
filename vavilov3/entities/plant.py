@@ -12,6 +12,7 @@ from vavilov3.entities.tags import (PLANT_NAME, PLANT_X, PLANT_Y, BLOCK_NUMBER,
                                     ENTRY_NUMBER, PLANT_NUMBER, PLOT_NUMBER)
 from vavilov3.models import Group, Plant
 from vavilov3.permissions import is_user_admin
+from vavilov3.id_validator import validate_name
 
 
 class PlantValidationError(Exception):
@@ -30,6 +31,10 @@ def validate_plant_data(data):
 
     if not_allowed_fields:
         msg = 'Not allowes fields: {}'.format(', '.join(not_allowed_fields))
+        raise PlantValidationError(msg)
+    try:
+        validate_name(data[PLANT_NAME])
+    except ValueError as msg:
         raise PlantValidationError(msg)
 
 

@@ -11,6 +11,7 @@ from vavilov3.entities.tags import (INSTITUTE_CODE, INSTITUTE_NAME,
                                     INSTITUTE_MANAGER, INSTITUTE_PHONE)
 from vavilov3.views import format_error_message
 from rest_framework.exceptions import ValidationError
+from vavilov3.id_validator import validate_id
 
 
 class InstituteValidationError(Exception):
@@ -33,6 +34,10 @@ def validate_institute_data(payload):
 
     if not_allowed_fields:
         msg = 'Not allowed fields: {}'.format(', '.join(not_allowed_fields))
+        raise InstituteValidationError(msg)
+    try:
+        validate_id(payload[INSTITUTE_CODE])
+    except ValueError as msg:
         raise InstituteValidationError(msg)
 
 

@@ -24,6 +24,7 @@ from vavilov3.permissions import is_user_admin
 from vavilov3.views import format_error_message
 from vavilov3.excel import excel_dict_reader
 from decimal import InvalidOperation
+from vavilov3.id_validator import validate_id
 
 
 class AccessionValidationError(Exception):
@@ -35,6 +36,17 @@ def validate_accession_data(data):
         raise AccessionValidationError('{} mandatory'.format(INSTITUTE_CODE))
     if GERMPLASM_NUMBER not in data:
         raise AccessionValidationError('{} mandatory'.format(GERMPLASM_NUMBER))
+
+    try:
+        validate_id(data[INSTITUTE_CODE])
+    except ValueError as msg:
+        raise AccessionValidationError(msg)
+
+    try:
+        validate_id(data[GERMPLASM_NUMBER])
+    except ValueError as msg:
+        raise AccessionValidationError(msg)
+
     if (CONSTATUS in data and
             data[CONSTATUS] not in VALID_CONSERVATION_STATUSES):
         msg = 'Conservation status ({})must be one of this: {}'

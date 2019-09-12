@@ -13,6 +13,7 @@ from vavilov3.entities.metadata import Metadata
 from vavilov3.views import format_error_message
 from vavilov3.models import AccessionSet, Accession, Institute, Group
 from vavilov3.permissions import is_user_admin
+from vavilov3.id_validator import validate_id
 
 
 class AccessionSetValidationError(Exception):
@@ -24,6 +25,15 @@ def validate_accessionset_data(data):
         raise AccessionSetValidationError('{} mandatory'.format(INSTITUTE_CODE))
     if ACCESSIONSET_NUMBER not in data:
         raise AccessionSetValidationError('{} mandatory'.format(ACCESSIONSET_NUMBER))
+    try:
+        validate_id(data[INSTITUTE_CODE])
+    except ValueError as msg:
+        raise AccessionSetValidationError(msg)
+
+    try:
+        validate_id(data[ACCESSIONSET_NUMBER])
+    except ValueError as msg:
+        raise AccessionSetValidationError(msg)
 
     if ACCESSIONS in data:
         for accession in data[ACCESSIONS]:

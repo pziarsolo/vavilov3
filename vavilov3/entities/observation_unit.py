@@ -14,6 +14,7 @@ from vavilov3.entities.tags import (OBSERVATION_UNIT_NAME,
                                     OBSERVATION_UNIT_STUDY, PLANTS)
 from vavilov3.models import Accession, Study, Plant, ObservationUnit
 from vavilov3.permissions import is_user_admin
+from vavilov3.id_validator import validate_name
 
 
 class ObservationUnitValidationError(Exception):
@@ -48,6 +49,10 @@ def validate_observation_unit_data(data):
 
     if not_allowed_fields:
         msg = 'Not allowes fields: {}'.format(', '.join(not_allowed_fields))
+        raise ObservationUnitValidationError(msg)
+    try:
+        validate_name(data[OBSERVATION_UNIT_NAME])
+    except ValueError as msg:
         raise ObservationUnitValidationError(msg)
 
 

@@ -12,6 +12,7 @@ from vavilov3.entities.tags import (SCALE_NAME, SCALE_DESCRIPTION,
                                     ORDINAL, NOMINAL)
 from vavilov3.views import format_error_message
 from vavilov3.models import ScaleDataType, Scale, ScaleCategory
+from vavilov3.id_validator import validate_name
 
 SCALE_ALLOWED_FIELDS = (SCALE_NAME, SCALE_DESCRIPTION, SCALE_DATA_TYPE,
                         SCALE_DECIMAL_PLACES, SCALE_MIN, SCALE_MAX,
@@ -38,6 +39,11 @@ def validate_scale_data(data):
 
     if not_allowed_fields:
         msg = 'Not allowes fields: {}'.format(', '.join(not_allowed_fields))
+        raise ScaleValidationError(msg)
+
+    try:
+        validate_name(data[SCALE_NAME])
+    except ValueError as msg:
         raise ScaleValidationError(msg)
     return data
 

@@ -13,6 +13,7 @@ from vavilov3.entities.tags import (OBSERVATION_VARIABLE_NAME, TRAIT,
                                     DATA_TYPE, SCALE)
 from vavilov3.models import Group, ObservationVariable, Scale, Trait
 from vavilov3.permissions import is_user_admin
+from vavilov3.id_validator import validate_name
 
 
 class ObservationVariableValidationError(Exception):
@@ -35,6 +36,21 @@ def validate_observation_variable_data(data):
 
     if not_allowed_fields:
         msg = 'Not allowes fields: {}'.format(', '.join(not_allowed_fields))
+        raise ObservationVariableValidationError(msg)
+
+    try:
+        validate_name(data[OBSERVATION_VARIABLE_NAME])
+    except ValueError as msg:
+        raise ObservationVariableValidationError(msg)
+    try:
+        validate_name(data[OBSERVATION_VARIABLE_NAME])
+    except ValueError as msg:
+        raise ObservationVariableValidationError(msg)
+
+    try:
+        validate_name(data[TRAIT])
+    except ValueError as msg:
+
         raise ObservationVariableValidationError(msg)
 
 
@@ -190,7 +206,7 @@ def create_observation_variable_in_db(api_data, user):
     try:
         struct = ObservationVariableStruct(api_data)
     except ObservationVariableValidationError as error:
-        print(error)
+        print('asdasda', error)
         raise
 
     if (struct.metadata.group):
