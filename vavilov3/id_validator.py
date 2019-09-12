@@ -25,7 +25,7 @@ def validate_name(name):
         errors.append('Id can not be just a number')
 
     if re.search('[\/*"<>]', name):
-        errors.append(f'{name}: "\\", "/", "*", "<", ">", """ are not allowed characters')
+        errors.append('{}: "\\", "/", "*", "<", ">", """ are not allowed characters'.format(name))
 
     if errors:
         raise ValueError(" ".join(errors))
