@@ -4,7 +4,7 @@ from rest_framework import viewsets
 
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
-                                   BulkOperationsMixin)
+                                   BulkOperationsMixin, CheckBeforeRemoveMixim)
 from vavilov3.models import Plant
 from vavilov3.permissions import UserGroupObjectPermission, is_user_admin
 from vavilov3.serializers.plant import PlantSerializer
@@ -13,8 +13,8 @@ from vavilov3.filters.plant import PlantFilter
 from django.contrib.auth.models import AnonymousUser
 
 
-class PlantViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
-                   BulkOperationsMixin):
+class PlantViewSet(DynamicFieldsViewMixin, CheckBeforeRemoveMixim,
+                   viewsets.ModelViewSet, BulkOperationsMixin):
     lookup_field = "name"
     serializer_class = PlantSerializer
     queryset = Plant.objects.all()

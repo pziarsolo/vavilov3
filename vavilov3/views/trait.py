@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
-                                   StandardResultsSetPagination)
+                                   StandardResultsSetPagination,
+                                   CheckBeforeRemoveMixim)
 from vavilov3.models import Trait, Observation
 from vavilov3.permissions import IsAdminOrReadOnly
 from vavilov3.serializers.trait import TraitSerializer
@@ -17,7 +18,8 @@ from vavilov3.filters.trait import TraitFilter
 from vavilov3.views import format_error_message
 
 
-class TraitViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
+class TraitViewSet(DynamicFieldsViewMixin, CheckBeforeRemoveMixim,
+                   viewsets.ModelViewSet):
     lookup_field = 'name'
     serializer_class = TraitSerializer
     queryset = Trait.objects.all()
@@ -45,13 +47,9 @@ class TraitViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet):
                         status=status.HTTP_200_OK,
                         headers={})
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+    def check_before_remove(self, instance):
         if Observation.objects.filter(observation_variable__trait=instance).count():
             msg = 'Can not delete this trait because there are observations'
             msg += ' associated with it'
             return Response(format_error_message(msg),
                             status=status.HTTP_400_BAD_REQUEST)
-
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)

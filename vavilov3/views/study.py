@@ -6,7 +6,8 @@ from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    GroupObjectPublicPermMixin,
                                    BulkOperationsMixin,
-                                   OptionalStreamedListCsvMixin)
+                                   OptionalStreamedListCsvMixin,
+                                   CheckBeforeRemoveMixim)
 from vavilov3.models import Study
 from vavilov3.permissions import UserGroupObjectPublicPermission
 from vavilov3.serializers.study import StudySerializer
@@ -25,6 +26,7 @@ class PaginatedStudyCSVRenderer(renderers.CSVStreamingRenderer):
 
 
 class StudyViewSet(GroupObjectPublicPermMixin, DynamicFieldsViewMixin,
+                   CheckBeforeRemoveMixim,
                    viewsets.ModelViewSet, BulkOperationsMixin,
                    OptionalStreamedListCsvMixin):
     lookup_field = 'name'

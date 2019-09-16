@@ -203,3 +203,17 @@ class ListModelMixinWithErrorCheck():
             return Response(format_error_message(errors),
                             status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data)
+
+
+class CheckBeforeRemoveMixim():
+
+    def check_before_remove(self, instance):
+        pass
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        response_or_none = self.check_before_remove(instance)
+        if response_or_none is not None:
+            return response_or_none
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -7,14 +7,15 @@ from rest_framework.exceptions import ValidationError
 
 from django_filters.rest_framework.backends import DjangoFilterBackend
 
-from vavilov3.models import Accession
+from vavilov3.models import Accession, Observation
 from vavilov3.views.shared import (DynamicFieldsViewMixin,
                                    StandardResultsSetPagination,
                                    MultipleFieldLookupMixin,
                                    GroupObjectPublicPermMixin,
                                    TooglePublicMixim,
                                    OptionalStreamedListCsvMixin,
-                                   ListModelMixinWithErrorCheck)
+                                   ListModelMixinWithErrorCheck,
+    CheckBeforeRemoveMixim)
 from vavilov3.serializers.accession import AccessionSerializer
 from vavilov3.filters.accession import AccessionFilter
 from vavilov3.permissions import UserGroupObjectPublicPermission
@@ -39,7 +40,7 @@ class AccessionCSVRenderer(renderers.CSVStreamingRenderer):
 class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
                        DynamicFieldsViewMixin, TooglePublicMixim,
                        ListModelMixinWithErrorCheck,
-                       viewsets.ModelViewSet,
+                       CheckBeforeRemoveMixim, viewsets.ModelViewSet,
                        OptionalStreamedListCsvMixin):
     lookup_fields = ('institute_code', 'germplasm_number')
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<germplasm_number'
@@ -84,3 +85,10 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
             # prev_time = calc_duration('perform_create', prev_time)
             return Response({'task_id': serializer.instance.id},
                             status=status.HTTP_200_OK, headers={})
+
+    def check_before_remove(self, instance):
+        if Observation.objects.filter(observation_unit__accession=instance).count():
+            msg = 'Can not delete this accession because there are observations'
+            msg += ' associated to it'
+            return Response(format_error_message(msg),
+                            status=status.HTTP_400_BAD_REQUEST)
