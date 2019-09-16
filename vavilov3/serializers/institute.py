@@ -22,6 +22,13 @@ class InstituteListSerializer(serializers.ListSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user
+        if user is None:
+            error = 'User must be logged'
+            raise ValidationError(format_error_message(error))
+
+        if not user.groups.exists():
+            error = 'User must belong to a group'
+            raise ValidationError(format_error_message(error))
 
         async_result = create_institutes_task.delay(validated_data)
 #         async_result = wait_func.delay(5)
@@ -71,6 +78,17 @@ class InstituteSerializer(DynamicFieldsSerializer):
         return data
 
     def create(self, validated_data):
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+        if user is None:
+            error = 'User must be logged'
+            raise ValidationError(format_error_message(error))
+
+        if not user.groups.exists():
+            error = 'User must belong to a group'
+            raise ValidationError(format_error_message(error))
         try:
             return create_institute_in_db(validated_data)
         except ValueError as error:
@@ -79,6 +97,17 @@ class InstituteSerializer(DynamicFieldsSerializer):
             raise ValidationError(format_error_message(error))
 
     def update(self, instance, validated_data):
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+        if user is None:
+            error = 'User must be logged'
+            raise ValidationError(format_error_message(error))
+
+        if not user.groups.exists():
+            error = 'User must belong to a group'
+            raise ValidationError(format_error_message(error))
         try:
             return update_institute_in_db(validated_data, instance)
         except ValueError as error:

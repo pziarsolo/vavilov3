@@ -223,6 +223,14 @@ class VavilovSerializer(DynamicFieldsSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user
+        if user is None:
+            error = 'User must be logged'
+            raise ValidationError(format_error_message(error))
+
+        if not user.groups.exists():
+            error = 'User must belong to a group'
+            raise ValidationError(format_error_message(error))
+
         try:
             return self.create_item_in_db(validated_data, user)
         except ValueError as error:
@@ -233,6 +241,14 @@ class VavilovSerializer(DynamicFieldsSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user
+        if user is None:
+            error = 'User must be logged'
+            raise ValidationError(format_error_message(error))
+
+        if not user.groups.exists():
+            error = 'User must belong to a group'
+            raise ValidationError(format_error_message(error))
+
         try:
             return self.update_item_in_db(validated_data, instance, user)
         except ValueError as error:
