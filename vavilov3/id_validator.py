@@ -9,8 +9,8 @@ def validate_id(code):
 #     if re.search('[a-z]', code):
 #         errors.append('Ids must be all upper case')
 
-    if re.search('[\/:*"<>-]', code):
-        errors.append('"\", "/", ":", "*", "<", ">", "-", """ are not allowed characters')
+    if re.search('[\/*"<>]', code):
+        errors.append('"\", "/", "*", "<", ">", """ are not allowed characters')
 
 #     if re.search('^[1-9]*$', code):
 #         errors.append('Id can not be just a number')

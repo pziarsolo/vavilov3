@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django_filters',
     'vavilov3',
     'django_celery_results',
-    'drf_yasg']
+    'drf_yasg',
+    'django_extensions']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
