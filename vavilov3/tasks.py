@@ -202,7 +202,7 @@ def extract_files_from_zip(fpath, extract_dir=None):
         try:
             study = directory_tree[-2]
             accession = directory_tree[-3]
-            institute_code, germplasm_number = accession.split(':', 1)
+            institute_code, germplasm_number = accession.split('#', 1)
         except (IndexError, ValueError):
             raise ValueError("The zip file's Directory tree is wrong!")
 
