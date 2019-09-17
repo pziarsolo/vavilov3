@@ -1,4 +1,5 @@
 import xlrd
+from collections import OrderedDict
 
 
 def excel_dict_reader(fhand, sheet_name=None, values_as_text=False):
@@ -29,4 +30,4 @@ def excel_dict_reader(fhand, sheet_name=None, values_as_text=False):
         else:
             rowcells = [cell for cell in row]
 
-        yield dict(zip(header, rowcells))
+        yield OrderedDict(zip(header, rowcells))
