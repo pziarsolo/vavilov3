@@ -29,5 +29,5 @@ def excel_dict_reader(fhand, sheet_name=None, values_as_text=False):
                 rowcells.append(str_value)
         else:
             rowcells = [cell for cell in row]
-
-        yield OrderedDict(zip(header, rowcells))
+        row_data = OrderedDict(zip(header, rowcells))
+        yield row_data

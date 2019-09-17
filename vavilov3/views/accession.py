@@ -79,7 +79,12 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
         if action == 'POST':
             serializer = self.get_serializer(data=data, many=True)
             # prev_time = calc_duration('get_serializer', prev_time)
-            serializer.is_valid(raise_exception=True)
+            try:
+                serializer.is_valid(raise_exception=True)
+            except BaseException as errors:
+                errors = [error for error in errors.detail if error]
+                raise ValidationError(errors)
+
             self.perform_create(serializer)
 
             # prev_time = calc_duration('perform_create', prev_time)

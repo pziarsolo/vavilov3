@@ -376,20 +376,24 @@ class AccessionPermissionsViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
 
-    def xtest_bulk_create(self):
+    def test_bulk_create_with_errors(self):
         self.add_user_credentials()
         list_url = reverse('accession-list')
         api_data = [{'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0006'},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
+                              'germplasmNumber': 'BGE0006 11'},
+                     'metadata': {}},
                     {'data': {'instituteCode': 'ESP004',
-                              'germplasmNumber': 'BGE0007'},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
+                              'germplasmNumber': 'BGE0007 11'},
+                     'metadata': {}},
                     ]
         response = self.client.post(list_url + 'bulk/', data=api_data,
                                     format='json')
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+#         print(response.json())
+#         print(response.status_code)
+        return
+
         # correct data
         api_data = [{'data': {'instituteCode': 'ESP004',
                               'germplasmNumber': 'BGE0006'},
