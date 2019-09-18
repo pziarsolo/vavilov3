@@ -17,9 +17,10 @@ from vavilov3.permissions import ObservationByStudyPermission, is_user_admin
 from vavilov3.serializers.observation_image import ObservationImageSerializer
 from vavilov3.filters.observation_image import ObservationImageFilter
 from vavilov3.entities.observation import CREATE_OBSERVATION_UNITS
-from vavilov3.tasks import extract_files_from_zip, delete_image, \
-    add_task_to_user
+from vavilov3.tasks import (extract_files_from_zip, delete_image,
+                            add_task_to_user)
 from vavilov3.views import format_error_message
+from vavilov3.conf.settings import TMP_DIR
 
 logger = logging.getLogger('vavilov.prod')
 
@@ -56,14 +57,15 @@ class ObservationImageViewSet(DynamicFieldsViewMixin, ModelViewSet):
     def bulk(self, request):
         action = request.method
 #         prev_time = time()
-        with tempfile.TemporaryDirectory() as tmp_dir:
+        with tempfile.TemporaryDirectory(dir=TMP_DIR) as tmp_dir:
             extract_dir = tmp_dir
 
         if 'multipart/form-data' in request.content_type:
             create_observation_units = request.data.get(CREATE_OBSERVATION_UNITS, None)
             fhand = request.FILES['file']
             logger.debug('1')
-            with tempfile.NamedTemporaryFile(mode='wb', suffix='.zip') as destination:
+            with tempfile.NamedTemporaryFile(mode='wb', suffix='.zip',
+                                             dir=TMP_DIR) as destination:
                 for chunk in fhand.chunks():
                     destination.write(chunk)
                 destination.flush()
