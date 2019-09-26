@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     'django_filters',
     'vavilov3',
     'django_celery_results',
-    'drf_yasg',
-    'django_extensions']
+    'drf_yasg']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,7 +117,7 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'http://localhost:8000/media/'
 
-CORS_ORIGIN_WHITELIST = ('localhost:4200',)
+CORS_ORIGIN_WHITELIST = ('https://localhost:4200','http://localhost:4200')
 CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
 CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
 CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
