@@ -1,9 +1,10 @@
 from django.urls.conf import path, include
 
 from rest_framework.routers import DefaultRouter
-
+from rest_framework.schemas import get_schema_view
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
+import vavilov3
 from vavilov3.views.institute import InstituteViewSet
 from vavilov3.views.accession import AccessionViewSet
 from vavilov3.views.country import CountryViewSet
@@ -22,6 +23,7 @@ from vavilov3.views.task import TaskViewSet
 from vavilov3.views.scale import ScaleViewSet
 from vavilov3.views.trait import TraitViewSet
 from vavilov3.views.observation_image import ObservationImageViewSet
+from django.views.generic.base import TemplateView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -42,11 +44,24 @@ router.register(r'traits', TraitViewSet)
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'observation_images', ObservationImageViewSet)
 
+schema_view = get_schema_view(
+    title="Vavilov3 Restful api",
+    description="Api to work with genebank data",
+    version=vavilov3.version
+)
+
 urlpatterns = [
     path('auth/token/', CRFTokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(),
          name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('schema/', schema_view, name='openapi-schema'),
+    path('doc/', TemplateView.as_view(template_name='swagger-ui.html',
+                                      extra_context={'schema_url': 'openapi-schema'}),
+         name='swagger-ui'),
+    path('redoc/', TemplateView.as_view(template_name='redoc.html',
+                                        extra_context={'schema_url': 'openapi-schema'}),
+         name='redoc'),
     path('', include(router.urls))
 ]
