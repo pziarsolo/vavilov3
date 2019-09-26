@@ -1,5 +1,5 @@
 django<3
-djangorestframework<3.10
+djangorestframework
 django-filter
 psycopg2
 iso3166
