@@ -71,6 +71,24 @@ class UserViewTest(TestCase):
         assert user.email == new_email
         client.credentials()
 
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.crf_token)
+        response = client.patch(reverse('user-detail',
+                                kwargs={'username': user.username}),
+                                {'email': 'p4@p.es',
+                                 'first_name': "jabato",
+                                 'last_name': 333,
+                                 'failable_test_field': "test",
+                                 'id': 3,
+                                 })
+        assert response.status_code == 200
+        user = User.objects.get(username='user')
+        # Readonly parameters can't be changed
+        assert user.id == 2
+
+        assert type(user.last_name) == str
+        assert user.first_name == "jabato"
+        assert user.email == "p4@p.es"
+
         token = self.get_token('user', 'pass')
         client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         # user can see itself
@@ -121,3 +139,13 @@ class UserViewTest(TestCase):
                       kwargs={'username': user.username})
         response = client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        # admin can change his own password
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.crf_token)
+        url = reverse('user-set-password',
+                      kwargs={'username': 'crf1'})
+        response = client.post(url, {'password': 'newpass'})
+        assert response.status_code == 200
+
+        
+
