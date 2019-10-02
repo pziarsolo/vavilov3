@@ -18,5 +18,29 @@
         "instituteCode": "PeruExpedition",
         "name": "Expedicion a peru",
         "type": "Project"
+    },
+
+    {
+        "instituteCode": "ESP333",
+        "name": "UAC genebank",
+        "type": "Private",
+        "address": "Avda del cid",
+        "zipcode": 46960,
+        "email": "uac@gmail.com",
+        "phone": 6597054,
+        "city": "Madrid",
+        "url": "https://uac.com",
+        "manager": "Jabato Anderson"
+
+    },
+
+    {
+        "instituteCode": "USA001",
+        "name": "AMERICAN GENBANK"
+    },
+
+    {
+        "instituteCode": "AME0001",
+        "name": "USA genbank"
     }
 ]
