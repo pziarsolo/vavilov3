@@ -18,8 +18,17 @@ from vavilov3.tests.data_io import (load_accessions_from_file,
                                     load_observations_from_file)
 from vavilov3.data_io import initialize_db
 from vavilov3.views import DETAIL
+from vavilov3.passport.validation import PassportValidationError
 
-from vavilov3.entities.tags import DATA_SOURCE
+from vavilov3.entities.tags import (DATA_SOURCE, GERMPLASM_NUMBER, CONSTATUS,
+                                    IS_AVAILABLE, PASSPORTS)
+from vavilov3.passport.tags import (BIO_STATUS, BREEDING_INSTITUTE, 
+                                    INSTITUTE_CODE, REMARKS,
+                                    MLSSTATUS, COLLECTION_SOURCE,
+                                    RETRIEVAL_DATE, COUNTRY, PROVINCE,
+                                    COLLECTION_SITE, SITE, LATITUDE, ALTITUDE,
+                                    LONGITUDE, COORDUNCERTAINTY, COLLECTION_NUMBER,
+                                    FIELD_COLLECTION_NUMBER, COLLECTION_DATE, OTHER_NUMBERS)
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
@@ -42,12 +51,12 @@ class AccessionViewTest(BaseTest):
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.json()
-        self.assertEqual(result['data']['instituteCode'], 'ESP004')
-        self.assertEqual(result['data']['germplasmNumber'], 'BGE0001')
-        self.assertEqual(result['data']['is_available'], True)
-        self.assertEqual(result['data']['conservation_status'], 'is_active')
-        self.assertTrue(result['data']['passports'])
-        self.assertEqual(result['data']['passports'][0][DATA_SOURCE],
+        self.assertEqual(result['data'][INSTITUTE_CODE], 'ESP004')
+        self.assertEqual(result['data'][GERMPLASM_NUMBER], 'BGE0001')
+        self.assertEqual(result['data'][IS_AVAILABLE], True)
+        self.assertEqual(result['data'][CONSTATUS], 'is_active')
+        self.assertTrue(result['data'][PASSPORTS])
+        self.assertEqual(result['data'][PASSPORTS][0][DATA_SOURCE],
                          {'code': 'CRF', 'kind': 'project'})
         self.assertTrue(result['metadata'])
 
@@ -67,16 +76,16 @@ class AccessionViewTest(BaseTest):
                               ['Passed fields are not allowed'])
 
         response = self.client.get(detail_url,
-                                   data={'fields': 'instituteCode'})
+                                   data={'fields': INSTITUTE_CODE})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['data']['instituteCode'], 'ESP004')
+        self.assertEqual(response.json()['data'][INSTITUTE_CODE], 'ESP004')
         self.assertEqual(len(response.json()['data'].keys()), 1)
 
         response = self.client.get(
             detail_url,
             data={'fields': 'instituteCode,passports,genera'})
-        self.assertEqual(response.json()['data']['instituteCode'], 'ESP004')
-        self.assertEqual(len(response.json()['data']['passports']), 1)
+        self.assertEqual(response.json()['data'][INSTITUTE_CODE], 'ESP004')
+        self.assertEqual(len(response.json()['data'][PASSPORTS]), 1)
         self.assertEqual(len(response.json()['data'].keys()), 3)
         self.assertEqual(response.json()['data']['genera'], ['Solanum'])
 
@@ -90,8 +99,8 @@ class AccessionViewTest(BaseTest):
     def test_create_delete(self):
         self.add_admin_credentials()
         list_url = reverse('accession-list')
-        api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0005'},
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
+                             GERMPLASM_NUMBER: 'BGE0005'},
                     'metadata': {'group': 'admin', 'is_public': True}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -99,8 +108,8 @@ class AccessionViewTest(BaseTest):
         assert_error_is_equal(
             response.json(),
             ['can not set group or is public while creating the accession'])
-        api_data = {'data': {'instituteCode': 'ESP004',
-                             'germplasmNumber': 'BGE0005'},
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
+                             GERMPLASM_NUMBER: 'BGE0005'},
                     'metadata': {}}
 
         response = self.client.post(list_url, data=api_data, format='json')
@@ -109,15 +118,15 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.json()['data'], api_data['data'])
 
         # bad payload data
-        api_data = {'data': {'instituteCode': 'ESP004'},
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004'},
                     'metadata': {'group': 'admin', 'is_public': True}}
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         assert_error_is_equal(response.json(), ['germplasmNumber mandatory'])
 
         with transaction.atomic():
-            api_data = {'data': {'instituteCode': 'ESP004',
-                                 'germplasmNumber': 'BGE0005'},
+            api_data = {'data': {INSTITUTE_CODE: 'ESP004',
+                                 GERMPLASM_NUMBER: 'BGE0005'},
                         'metadata': {'group': 'admin', 'is_public': True}}
 
             response = self.client.post(list_url, data=api_data, format='json')
@@ -132,12 +141,244 @@ class AccessionViewTest(BaseTest):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+
+        # full info accession creation
+
+        api_data = {"metadata": { },
+                    "data": {INSTITUTE_CODE: "ESP004",
+                             IS_AVAILABLE: False,
+                             CONSTATUS: "is_active",
+                              GERMPLASM_NUMBER: "LO6032",
+                    PASSPORTS: [
+                                  {
+                                  GERMPLASM_NUMBER: {
+                                  INSTITUTE_CODE: "ESP026",
+                                  GERMPLASM_NUMBER: "LO6032"
+                                  },
+                                  COLLECTION_SOURCE: "13",
+                                  "version": "1.0",
+                                  BIO_STATUS: "100",
+                                  "mlsStatus": "N",
+                    "taxonomy": {
+                                 "species": {
+                                 "name": "resupinatum",
+                                 "author": "L."
+                                },
+                    "genus": {
+                                "name": "Trifolium"
+                             }
+                    },
+                    "dataSource": {
+                        RETRIEVAL_DATE: "2019-05-30",
+                        "kind": "project",
+                        "code": "CRF"
+                    },
+                    COLLECTION_SITE: {
+                        COUNTRY: "PRT",
+                        PROVINCE: "Beja",
+                        SITE: "Moura_Safara cruce Amareleja al lado de una carbonera",
+                        LATITUDE: 38.125,
+                        LONGITUDE: -7.24166666666667,
+                        ALTITUDE: 131,
+                        COORDUNCERTAINTY: "1840"
+                    },
+                    COLLECTION_NUMBER: {
+                        INSTITUTE_CODE: "ESP026",
+                        FIELD_COLLECTION_NUMBER: "ESPO-Tr28"
+                    },
+                    COLLECTION_DATE: "19980709",
+                    OTHER_NUMBERS: [
+                        {
+                            INSTITUTE_CODE: "ESP026",
+                            GERMPLASM_NUMBER: "BGE033362"
+                        }
+                    ]
+                }
+            ]
+        }}                    
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["data"], api_data["data"])
+        self.assertEqual(response.json()["metadata"], {'group': 'admin', 'is_public': False})
+
+        api_data["data"][GERMPLASM_NUMBER] = "LO6033"
+        api_data["data"]["passports"][0][GERMPLASM_NUMBER][GERMPLASM_NUMBER] = "LO6033"
+        
+        # passports need an accession number
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0].pop(GERMPLASM_NUMBER)
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        # taxonomy can be empty
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0].pop("taxonomy")
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        detail_url = reverse("accession-detail", kwargs={'institute_code': 'ESP004',
+                                                         'germplasm_number': "LO6033"})
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # taxonomy can't have undefined fields
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0]["taxonomy"] = {"category": {"name": "puntiagudo", 
+                                                                         "author": "admin"}}
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        # datasource can be empty
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0].pop("dataSource")
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # datasource shouldn't have unspecified fields
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0]["dataSource"]["padrino"] = "Fernando"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        #retrievaldate should be a valid date
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0]["dataSource"][RETRIEVAL_DATE] = "lunes"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Datasource should have kind and code
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0]["dataSource"] = {RETRIEVAL_DATE: "2019-05-30"}
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Origin country should be 3 characters long
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][COLLECTION_SITE][COUNTRY] = "PORTUGAL"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Latitude should be a number
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][COLLECTION_SITE][LATITUDE] = "Arriba"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # Altitude should be a number
+
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][COLLECTION_SITE][ALTITUDE] = "Abajo"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # longitude should be a number
+
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][COLLECTION_SITE][LONGITUDE] = "Alolargo"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Collection site shouldn't have unespecified fields
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][COLLECTION_SITE]["esquina"] = "La que da sombra"
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Bio status value should be defined in the biostatus codes
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][BIO_STATUS] = '100'
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][BIO_STATUS] = '666'
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # remarks should have the correct fields
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][REMARKS] = {'collection': 'notes of the collection',
+                                                         'genebank_management': 'aaa'}
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][REMARKS] = {'notes': 'notes of the collection',
+                                                         'database': 'aaa'}
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # MLSSTATUS can only be 'Y' or 'N'
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][MLSSTATUS] = 'Y'
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        new_api_data = deepcopy(api_data)
+        new_api_data["data"]["passports"][0][MLSSTATUS] = 'yes'
+        response = self.client.post(list_url, data=new_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # users can create accessions
+        self.remove_credentials()
+        self.add_user_credentials()
+        user_api_data = {"metadata": { },
+                    "data": {INSTITUTE_CODE: "ESP004",
+                             "is_available": False,
+                             "conservation_status": "is_active",
+                             GERMPLASM_NUMBER: "LO666"}
+                    }
+        response = self.client.post(list_url, data=user_api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+
+
     def test_update(self):
         self.add_admin_credentials()
         detail_url = reverse('accession-detail',
                              kwargs={'institute_code': 'ESP004',
                                      'germplasm_number': 'BGE0001'})
-        api_data = {'data': {'instituteCode': 'ESP004',
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
                              'germplasmNumber': 'BGE0001'},
                     'metadata': {'group': 'admin', 'is_public': False}}
         response = self.client.put(detail_url, data=api_data, format='json')
@@ -145,21 +386,23 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.json(), api_data)
 
         # admin can change group
-        api_data = {'data': {'instituteCode': 'ESP004',
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
                              'germplasmNumber': 'BGE0001'},
                     'metadata': {'group': 'userGroup', 'is_public': True}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), api_data)
-
+        
         # Fail changing group if not exists
-        api_data = {'data': {'instituteCode': 'ESP004',
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
                              'germplasmNumber': 'BGE0001'},
                     'metadata': {'group': 'rGroup', 'is_public': True}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         assert_error_is_equal(response.json(),
                               ['Provided group does not exist in db: rGroup'])
+
+        
 
     def test_filter(self):
         self.add_admin_credentials()
@@ -313,7 +556,7 @@ class AccessionPermissionsViewTest(BaseTest):
     def test_create(self):
         self.add_user_credentials()
         list_url = reverse('accession-list')
-        api_data = {'data': {'instituteCode': 'ESP004',
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
                              'germplasmNumber': 'BGE0005'},
                     'metadata': {'group': 'admin', 'is_public': True}}
 
@@ -323,7 +566,7 @@ class AccessionPermissionsViewTest(BaseTest):
         assert_error_is_equal(
             response.json(),
             ['can not set group or is public while creating the accession'])
-        api_data = {'data': {'instituteCode': 'ESP004',
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
                              'germplasmNumber': 'BGE0005'},
                     'metadata': {}}
 
@@ -376,7 +619,33 @@ class AccessionPermissionsViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
 
-    def test_bulk_create_with_errors(self):
+    def test_user_cannot_make_public(self):
+        self.add_user_credentials()
+        list_url = reverse('accession-list')
+        api_data = {'data': {INSTITUTE_CODE: 'ESP004',
+                             'germplasmNumber': 'BGE0005'},
+                    'metadata': {}}
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()['metadata'],
+                         {'group': 'userGroup', 'is_public': False})
+        
+        detail_url = reverse("accession-detail", 
+                             kwargs={'institute_code': 'ESP004',
+                                     'germplasm_number': 'BGE0005'})
+
+        public_api_data = deepcopy(api_data)
+        public_api_data["metadata"] = {'group': 'userGroup', 'is_public': True}
+        response = self.client.put(detail_url, data=public_api_data,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        
+        
+
+        
+
+    """ def test_bulk_create_with_errors(self):
         self.add_user_credentials()
         list_url = reverse('accession-list')
         api_data = [{'data': {'instituteCode': 'ESP004',
@@ -422,7 +691,7 @@ class AccessionPermissionsViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(len(response.json()[DETAIL]), 2)
 
-        self.assertEqual(len(self.client.get(list_url).json()), 5)
+        self.assertEqual(len(self.client.get(list_url).json()), 5) """
 
 
 class AccessionCsvTests(BaseTest):
