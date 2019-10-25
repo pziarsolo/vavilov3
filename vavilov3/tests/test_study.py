@@ -128,6 +128,51 @@ class StudyViewTest(BaseTest):
         response = self.client.get(detail_url)
         print(response.json())
 
+
+        # full post
+        api_data = {'data': {'name': 'study666',
+                             'description': 'description3',
+                             'season': 'asads', 'location': 'valencia',
+                             'institution': 'asdas',
+                             "start_date": "2017/01/17", 
+                             "end_date": "2017/12/01",
+                             "contacts": "Alguien"},
+                    'metadata': {}}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+
+        detail_url = reverse('study-detail', kwargs={'name': 'study666'})
+        response = self.client.get(detail_url)
+        print(response.json())
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Dates should be valid
+        api_data = {'data': {'name': 'study666',
+                             'description': 'description3',
+                             'season': 'asads', 'location': 'valencia',
+                             'institution': 'asdas',
+                             "start_date": "Ayer", 
+                             "end_date": "2017/12/01",
+                             "contacts": "Alguien"},
+                    'metadata': {}}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        api_data = {'data': {'name': 'study666',
+                             'description': 'description3',
+                             'season': 'asads', 'location': 'valencia',
+                             'institution': 'asdas',
+                             "start_date": "2017/12/01", 
+                             "end_date": "Mañana",
+                             "contacts": "Alguien"},
+                    'metadata': {}}
+
+        response = self.client.post(list_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_update(self):
         self.add_admin_credentials()
         detail_url = reverse('study-detail', kwargs={'name': 'study1'})
@@ -144,6 +189,31 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), api_data)
 
+        # full data
+
+        api_data = {'data': {'name': 'study1',
+                             'description': 'description1',
+                             'season': 'asads', 'location': 'valencia',
+                             'institution': 'asdas',
+                             "start_date": "2017/01/17", 
+                             "end_date": "2017/12/01",
+                             "contacts": "Alguien"},
+                    'metadata': {'group': 'userGroup', 'is_public': True}}
+        response = self.client.put(detail_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), api_data)
+
+        #Fail if wrong date format
+        api_data['data']['start_date'] = 'ayer'
+        response = self.client.put(detail_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        api_data['data']['start_date'] = '2017/01/17'
+        api_data['data']['end_date'] = 'mañana'
+        response = self.client.put(detail_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        
         # Fail changing group if not exists
         api_data = {'data': {'name': 'study1',
                              'description': 'description1'},
@@ -166,6 +236,22 @@ class StudyViewTest(BaseTest):
         self.assertEqual(len(response.json()), 4)
 
         response = self.client.get(list_url, data={'description_icontains': 'description'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 4)
+
+        response = self.client.get(list_url, data={'location_contains': 'Valencia'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 4)
+
+        response = self.client.get(list_url, data={'location_icontains': 'valencia'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 4)
+
+        response = self.client.get(list_url, data={'start_date_contains': '2017/01/17'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 4)
+
+        response = self.client.get(list_url, data={'end_date_contains': '2017/12/01'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 4)
 
@@ -247,6 +333,20 @@ class StudyPermissionsViewTest(BaseTest):
         response = self.client.put(detail_url, data={})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         assert_error_is_equal(response.json(), ['Data key not present'])
+
+        api_data = {'data': {'name': "study4", 
+                             'description': "updated_description",
+                             'start_date': "2018/01/17",
+                             'end_date': "2020/12/01",
+                             'location': "updated_city",
+                             'contacts': "updated_contact"},
+                    'metadata': { "group": "userGroup", 
+                                  "is_public": False}}
+        response = self.client.put(detail_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(detail_url)
+        print(response.json())
+
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -312,22 +412,22 @@ class StudyPermissionsViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
 
-    def test_bulk_create(self):
-        self.add_user_credentials()
-        list_url = reverse('study-list')
-        api_data = [{'data': {'name': 'study4',
-                              'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    {'data': {'name': 'study5', 'description': 'BGE0006',
-                              'active': True},
-                     'metadata': {'group': 'userGroup', 'is_public': True}},
-                    ]
-        response = self.client.post(list_url + 'bulk/', data=api_data,
-                                    format='json')
+    # def test_bulk_create(self):
+    #     self.add_user_credentials()
+    #     list_url = reverse('study-list')
+    #     api_data = [{'data': {'name': 'study4',
+    #                           'description': 'BGE0006',
+    #                           'active': True},
+    #                  'metadata': {'group': 'userGroup', 'is_public': True}},
+    #                 {'data': {'name': 'study5', 'description': 'BGE0006',
+    #                           'active': True},
+    #                  'metadata': {'group': 'userGroup', 'is_public': True}},
+    #                 ]
+    #     response = self.client.post(list_url + 'bulk/', data=api_data,
+    #                                 format='json')
 
-        assert 'task_id' in response.json().keys()
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     assert 'task_id' in response.json().keys()
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class StudyCsvViewTest(BaseTest):
