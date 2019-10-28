@@ -52,3 +52,5 @@ SHORT_PROCESS_TIMEOUT = getattr(settings, 'VAVILOV3_LONG_PROCESS_TIMEOUT',
 
 #  this directory must be writable by web server and celery
 TMP_DIR = getattr(settings, 'VAVILOV3_TMP_DIR', None)
+
+VALID_TRUE_VALUES = (True, 'True', 'T', 't', 'true', '1')

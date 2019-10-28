@@ -4,6 +4,7 @@ from django.db.models.aggregates import Count
 
 from vavilov3.filters.shared import TermFilterMixin
 from vavilov3.models import Country
+from vavilov3.conf import settings
 
 
 class CountryFilter(TermFilterMixin, filters.FilterSet):
@@ -28,7 +29,7 @@ class CountryFilter(TermFilterMixin, filters.FilterSet):
     def only_with_accessions_filter(self, queryset, _, value):
         queryset = queryset.annotate(
             num_accessionss=Count("passport__accession", distinct=True))
-        if value:
+        if value in settings.VALID_TRUE_VALUES:
             queryset = queryset.filter(num_accessionss__gt=0)
         else:
             queryset = queryset.exclude(num_accessionss__gt=0)

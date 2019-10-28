@@ -13,6 +13,7 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
                                     assert_error_is_equal)
 
 from vavilov3.data_io import initialize_db
+from vavilov3.conf import settings
 
 TEST_DATA_DIR = abspath(join(dirname(__file__), 'data', 'jsons'))
 
@@ -230,12 +231,12 @@ class InstituteViewTest(BaseTest):
         response = self.client.get(list_url, data={'code_or_name': 'AME', 'limit': '1'})
         self.assertEqual(len(response.json()), 1)
 
-        for valid_true in (True, 'True', 'T', 't', 'true', '1'):
+        for valid_true in settings.VALID_TRUE_VALUES:
             response = self.client.get(list_url, data={'only_with_accessions': valid_true})
             self.assertEqual(len(response.json()), 3)
         for not_valid_true in (False, 'aaa', '2'):
             response = self.client.get(list_url, data={'only_with_accessions': not_valid_true})
-            self.assertEqual(len(response.json()), 7)
+            self.assertEqual(len(response.json()), 4)
 
 
 class InstituteStatsTest(BaseTest):

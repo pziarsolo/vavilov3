@@ -4,6 +4,7 @@ from django.db.models.aggregates import Count
 
 from vavilov3.models import Institute
 from vavilov3.filters.shared import TermFilterMixin
+from vavilov3.conf import settings
 
 
 class InstituteFilter(TermFilterMixin, filters.FilterSet):
@@ -23,10 +24,12 @@ class InstituteFilter(TermFilterMixin, filters.FilterSet):
                                Q(code__icontains=value))
 
     def only_with_accession_filter(self, queryset, _, value):
-        if value in (True, 'True', 'T', 't', 'true', '1'):
-            queryset = queryset.annotate(_num_accessions=Count(
-                "accession", distinct=True))
-            queryset = queryset.filter(_num_accessions__gt=0)
-            queryset = queryset.order_by('-_num_accessions')
+        queryset = queryset.annotate(num_accessionss=Count("accession",
+                                                           distinct=True))
+        if value in settings.VALID_TRUE_VALUES:
+            queryset = queryset.filter(num_accessionss__gt=0)
+        else:
+            queryset = queryset.exclude(num_accessionss__gt=0)
 
+        queryset = queryset.order_by('-num_accessionss')
         return queryset
