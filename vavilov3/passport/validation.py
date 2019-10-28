@@ -1,8 +1,7 @@
-
 import unittest
-import datetime
 import json
 import sys
+from datetime import datetime
 
 from iso3166 import countries_by_alpha3
 
@@ -96,7 +95,7 @@ ALLOWED_COUNTRIES = list(countries_by_alpha3.keys())
 OLD_COUNTRIES = set(OLD_COUNTRIES.values())
 ALLOWED_COUNTRIES.extend(OLD_COUNTRIES)
 
-NOW_YEAR = datetime.datetime.now().year
+NOW_YEAR = datetime.now().year
 
 
 def _check_accession_number(accession_number, required_fields=(INSTITUTE_CODE,
@@ -166,6 +165,15 @@ def _validate_version_1(passport, raise_if_error):
         assert isinstance(passport['dataSource']['code'], str)
         if 'kind' in passport['dataSource']:
             assert passport['dataSource']['kind'] in ALLOWED_DATA_SOURCE_KINDS, 'data source kinds not in allowed types'
+        if RETRIEVAL_DATE in passport['dataSource']:
+            retrieval_date = passport['dataSource'][RETRIEVAL_DATE]
+
+            assert isinstance(retrieval_date, str), 'Data source retrieval date must be string'
+            try:
+                datetime.strptime(retrieval_date, "%Y-%m-%d")
+                print(retrieval_date)
+            except ValueError as error:
+                raise AssertionError('datasource retrieval date format must be YYYY-MM-DD')
 
     if INSTITUTE_CODE in passport[GERMPLASM_ID]:
         assert isinstance(passport[GERMPLASM_ID][INSTITUTE_CODE], str), 'institute_code is required'

@@ -432,6 +432,9 @@ def update_accession_in_db(validated_data, instance, user):
         msg = 'Can not change ownership if group does not belong to you : {}'
         msg = msg.format(accession_struct.metadata.group)
         raise ValidationError(format_error_message(msg))
+    if not is_user_admin(user) and instance.is_public != accession_struct.metadata.is_public:
+        msg = 'User can not make accession public or private'
+        raise ValidationError(format_error_message(msg))
 
     try:
         group = Group.objects.get(name=accession_struct.metadata.group)

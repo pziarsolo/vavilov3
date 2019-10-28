@@ -1,6 +1,7 @@
 import json
 from copy import copy
 from collections import OrderedDict
+from datetime import datetime
 
 from vavilov3.passport.tags import (CROP_NAME, ACQUISITION_DATE, BIO_STATUS,
                                     SPECIES, GENUS, INSTITUTE_CODE,
@@ -467,12 +468,17 @@ class Passport():
 
     @property
     def retrieval_date(self):
-        return self._data.get(DATA_SOURCE, {}).get(RETRIEVAL_DATE, None)
+        retrieval_date = self._data.get(DATA_SOURCE, {}).get(RETRIEVAL_DATE, None)
+        if retrieval_date is not None:
+            retrieval_date = retrieval_date.strftime("%Y-%m-%d")
+        return retrieval_date
 
     @retrieval_date.setter
     def retrieval_date(self, retrieval_date):
+        print(retrieval_date)
         if not self.data_source:
             raise ValueError('Can not set retrieval date if data source is not defined')
+        retrieval_date = datetime.strptime(retrieval_date, "%Y-%m-%d")
         self._data[DATA_SOURCE][RETRIEVAL_DATE] = retrieval_date
 
     @property

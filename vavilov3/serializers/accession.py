@@ -5,6 +5,8 @@ from vavilov3.entities.accession import (AccessionValidationError,
                                          create_accession_in_db)
 
 from vavilov3.serializers.shared import VavilovListSerializer, VavilovSerializer
+from vavilov3.entities.passport import PassportValidationError
+from vavilov3.passport.validation import PassportValidationError as PassportValidationError2
 
 
 class AccessionMixinSerializer():
@@ -17,7 +19,10 @@ class AccessionMixinSerializer():
         return create_accession_in_db(item, user)
 
     def validate_data(self, data):
-        return validate_accession_data(data)
+        try:
+            return validate_accession_data(data)
+        except (PassportValidationError, PassportValidationError2) as error:
+            raise AccessionValidationError(error)
 
 
 class AccessionListSerializer(AccessionMixinSerializer, VavilovListSerializer):
