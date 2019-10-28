@@ -607,7 +607,7 @@ class AccessionPermissionsViewTest(BaseTest):
         public_api_data["metadata"] = {'group': 'userGroup', 'is_public': True}
         response = self.client.put(detail_url, data=public_api_data,
                                    format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     """ def test_bulk_create_with_errors(self):
         self.add_user_credentials()

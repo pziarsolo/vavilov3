@@ -136,7 +136,7 @@ class InstituteViewTest(BaseTest):
         list_url = reverse('institute-list')
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # user can't add new institutes
         self.remove_credentials()
         self.add_user_credentials()
@@ -148,7 +148,6 @@ class InstituteViewTest(BaseTest):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP005'})
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
 
     def test_update(self):
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
@@ -169,9 +168,9 @@ class InstituteViewTest(BaseTest):
         self.docs_are_equal(response.json(), returned_api_data)
 
         api_data = {'instituteCode': 'ESP004', 'name': 'test genebank',
-                             'address': 'Avda Cid', 'city': 'Madrid', 'email': 'esp004@gmail.com',
-                             'manager': 'test_manager', 'phone': '6666', 'type': 'governamental',
-                             'url': 'esp004.upv.es', 'zipcode': '46960'}
+                    'address': 'Avda Cid', 'city': 'Madrid', 'email': 'esp004@gmail.com',
+                    'manager': 'test_manager', 'phone': '6666', 'type': 'governamental',
+                    'url': 'esp004.upv.es', 'zipcode': '46960'}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.docs_are_equal(response.json(), api_data)
 
@@ -182,7 +181,6 @@ class InstituteViewTest(BaseTest):
                     'url': 'esp004.upv.es', 'zipcode': '46960'}
         response = self.client.patch(detail_url, data=api_data, format='json')
         self.docs_are_equal(response.json(), api_data)
-
 
         # user can't update institutes
         self.remove_credentials()
@@ -197,7 +195,6 @@ class InstituteViewTest(BaseTest):
         response = self.client.patch(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-
     def test_filter(self):
         list_url = reverse('institute-list')
         response = self.client.get(list_url, data={'code': 'eSP004'})
@@ -208,10 +205,9 @@ class InstituteViewTest(BaseTest):
 
         response = self.client.get(list_url, data={'code__iexact': 'esp004'})
         self.assertEqual(len(response.json()), 1)
-        
+
         response = self.client.get(list_url, data={'code__icontains': 'esp'})
         self.assertEqual(len(response.json()), 4)
-
 
         response = self.client.get(list_url, data={'name': 'UAC genebank'})
         self.assertEqual(len(response.json()), 1)
@@ -221,7 +217,7 @@ class InstituteViewTest(BaseTest):
 
         response = self.client.get(list_url, data={'name__icontains': 'uac'})
         self.assertEqual(len(response.json()), 1)
-        
+
         response = self.client.get(list_url, data={'code_or_name': 'AME'})
         self.assertEqual(len(response.json()), 2)
 
@@ -234,11 +230,12 @@ class InstituteViewTest(BaseTest):
         response = self.client.get(list_url, data={'code_or_name': 'AME', 'limit': '1'})
         self.assertEqual(len(response.json()), 1)
 
-        response = self.client.get(list_url, data={'only_with_accessions': 'asda'})
-        print("ESTE TEST FALLA; HAY QUE REVISAR EL CODIGO")
-
-
-
+        for valid_true in (True, 'True', 'T', 't', 'true', '1'):
+            response = self.client.get(list_url, data={'only_with_accessions': valid_true})
+            self.assertEqual(len(response.json()), 3)
+        for not_valid_true in (False, 'aaa', '2'):
+            response = self.client.get(list_url, data={'only_with_accessions': not_valid_true})
+            self.assertEqual(len(response.json()), 7)
 
 
 class InstituteStatsTest(BaseTest):

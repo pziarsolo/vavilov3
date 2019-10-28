@@ -475,7 +475,6 @@ class Passport():
 
     @retrieval_date.setter
     def retrieval_date(self, retrieval_date):
-        print(retrieval_date)
         if not self.data_source:
             raise ValueError('Can not set retrieval date if data source is not defined')
         retrieval_date = datetime.strptime(retrieval_date, "%Y-%m-%d")

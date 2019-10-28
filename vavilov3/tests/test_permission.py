@@ -14,10 +14,12 @@ class PermissionsTest(unittest.TestCase):
 
     @staticmethod
     def set_up_mocks(obj_owner, obj_is_public, action, user_is_staff,
-                     user_groups=[], anonUser=False):
+                     user_groups=[], anonUser=False,
+                     request_data_is_public=False):
         obj = MagicMock(owner=obj_owner, is_public=obj_is_public)
         request = MagicMock(user=MagicMock(is_staff=user_is_staff,
-                                           token={'groups': user_groups}))
+                                           token={'groups': user_groups}),
+                            data={'metadata': {'is_public': request_data_is_public}})
         if anonUser:
             request.user = AnonymousUser()
         view = MagicMock(action=action)
@@ -40,14 +42,21 @@ class PermissionsTest(unittest.TestCase):
                                       action=action,
                                       user_is_staff=False,
                                       user_groups=['COMAV'])
-            if action == 'partial_update':
+            if action in ['partial_update']:
                 self.assertFalse(self.permisions.has_object_permission(*mocks),
                                  mocks)
             else:
                 self.assertTrue(self.permisions.has_object_permission(*mocks),
                                 mocks)
-
-        # if it is yours and is public, allow anything
+        # trying to change public when you are not staff
+        mocks = self.set_up_mocks(obj_owner='COMAV',
+                                  obj_is_public=False,
+                                  action='update',
+                                  user_is_staff=False,
+                                  user_groups=['COMAV'],
+                                  request_data_is_public=True)
+        self.assertFalse(self.permisions.has_object_permission(*mocks), mocks)
+        # if it is yours and is public, READ anything, Modify nothing
         for action in ['retrieve', 'update', 'partial_update', 'destroy']:
             mocks = self.set_up_mocks(obj_owner='COMAV',
                                       obj_is_public=True,

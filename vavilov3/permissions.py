@@ -68,12 +68,27 @@ class UserGroupObjectPublicPermission(permissions.BasePermission):
         # admins
         elif action in ['partial_update', 'toggle_public'] and is_user_admin(request.user):
             return True
-        elif action in ['update', 'destroy']:
+        elif action in ['destroy']:
             if (is_user_admin(request.user) or
                (request.user.is_authenticated and user_is_owner and
                     not is_public)):
                 return True
+        elif action == 'update':
+            request_obj_is_public = request.data.get('metadata', {}).get('is_public', None)
+            if (is_user_admin(request.user) or
+               (request.user.is_authenticated and user_is_owner and not
+                    is_public and
+                    not self._changing_is_public(is_public, request_obj_is_public))):
+                return True
 
+        return False
+
+    @staticmethod
+    def _changing_is_public(inst_is_public, request_is_public):
+        if request_is_public is None:
+            return False
+        if inst_is_public != request_is_public:
+            return True
         return False
 
 

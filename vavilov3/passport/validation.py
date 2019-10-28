@@ -171,7 +171,6 @@ def _validate_version_1(passport, raise_if_error):
             assert isinstance(retrieval_date, str), 'Data source retrieval date must be string'
             try:
                 datetime.strptime(retrieval_date, "%Y-%m-%d")
-                print(retrieval_date)
             except ValueError as error:
                 raise AssertionError('datasource retrieval date format must be YYYY-MM-DD')
 

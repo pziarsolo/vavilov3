@@ -62,6 +62,7 @@ class UserViewTest(TestCase):
                                 'password': 'pass'})
         assert response.status_code == status.HTTP_201_CREATED
         user = User.objects.get(username='user')
+        user_id = user.id
         new_email = 'p3@p.es'
         response = client.patch(reverse('user-detail',
                                         kwargs={'username': user.username}),
@@ -83,7 +84,7 @@ class UserViewTest(TestCase):
         assert response.status_code == 200
         user = User.objects.get(username='user')
         # Readonly parameters can't be changed
-        assert user.id == 2
+        assert user.id == user_id
 
         assert type(user.last_name) == str
         assert user.first_name == "jabato"
@@ -146,6 +147,4 @@ class UserViewTest(TestCase):
                       kwargs={'username': 'crf1'})
         response = client.post(url, {'password': 'newpass'})
         assert response.status_code == 200
-
-        
 

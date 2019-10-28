@@ -126,15 +126,14 @@ class StudyViewTest(BaseTest):
 
         detail_url = reverse('study-detail', kwargs={'name': 'study99'})
         response = self.client.get(detail_url)
-        print(response.json())
-
+#         print(response.json())
 
         # full post
         api_data = {'data': {'name': 'study666',
                              'description': 'description3',
                              'season': 'asads', 'location': 'valencia',
                              'institution': 'asdas',
-                             "start_date": "2017/01/17", 
+                             "start_date": "2017/01/17",
                              "end_date": "2017/12/01",
                              "contacts": "Alguien"},
                     'metadata': {}}
@@ -143,7 +142,7 @@ class StudyViewTest(BaseTest):
 
         detail_url = reverse('study-detail', kwargs={'name': 'study666'})
         response = self.client.get(detail_url)
-        print(response.json())
+#         print(response.json())
 
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -153,7 +152,7 @@ class StudyViewTest(BaseTest):
                              'description': 'description3',
                              'season': 'asads', 'location': 'valencia',
                              'institution': 'asdas',
-                             "start_date": "Ayer", 
+                             "start_date": "Ayer",
                              "end_date": "2017/12/01",
                              "contacts": "Alguien"},
                     'metadata': {}}
@@ -165,7 +164,7 @@ class StudyViewTest(BaseTest):
                              'description': 'description3',
                              'season': 'asads', 'location': 'valencia',
                              'institution': 'asdas',
-                             "start_date": "2017/12/01", 
+                             "start_date": "2017/12/01",
                              "end_date": "Mañana",
                              "contacts": "Alguien"},
                     'metadata': {}}
@@ -190,12 +189,11 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.json(), api_data)
 
         # full data
-
         api_data = {'data': {'name': 'study1',
                              'description': 'description1',
                              'season': 'asads', 'location': 'valencia',
                              'institution': 'asdas',
-                             "start_date": "2017/01/17", 
+                             "start_date": "2017/01/17",
                              "end_date": "2017/12/01",
                              "contacts": "Alguien"},
                     'metadata': {'group': 'userGroup', 'is_public': True}}
@@ -203,7 +201,7 @@ class StudyViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), api_data)
 
-        #Fail if wrong date format
+        # Fail if wrong date format
         api_data['data']['start_date'] = 'ayer'
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -213,7 +211,6 @@ class StudyViewTest(BaseTest):
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        
         # Fail changing group if not exists
         api_data = {'data': {'name': 'study1',
                              'description': 'description1'},
@@ -334,18 +331,28 @@ class StudyPermissionsViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         assert_error_is_equal(response.json(), ['Data key not present'])
 
-        api_data = {'data': {'name': "study4", 
+        api_data = {'data': {'name': "study4",
                              'description': "updated_description",
                              'start_date': "2018/01/17",
                              'end_date': "2020/12/01",
                              'location': "updated_city",
                              'contacts': "updated_contact"},
-                    'metadata': { "group": "userGroup", 
-                                  "is_public": False}}
+                    'metadata': {"group": "userGroup",
+                                 "is_public": False}}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(detail_url)
-        print(response.json())
+
+        api_data = {'data': {'name': "study4",
+                             'description': "updated_description",
+                             'start_date': "2018/01/17",
+                             'end_date': "2020/12/01",
+                             'location': "updated_city",
+                             'contacts': "updated_contact"},
+                    'metadata': {"group": "userGroup",
+                                 "is_public": True}}
+        response = self.client.put(detail_url, data=api_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
