@@ -19,26 +19,26 @@
 import os
 import subprocess
 from subprocess import CalledProcessError
+from . import _version
 
-
-def get_version(path):
-
-    def git_command(args):
-        prefix = ['git', '-C', path]
-        try:
-            return subprocess.check_output(prefix + args).decode().strip()
-        except CalledProcessError:
-            return None
-
-    try:
-        import vavilov3._version
-        return vavilov3._version.version
-    except ImportError:
-        version_full = git_command(['describe', '--tags', '--dirty=.dirty'])
-        if version_full is None:
-            return ''
-        else:
-            return version_full.replace('-', '.dev', 1).replace('-', '+')[1:]
+# def get_version(path):
+#
+#     def git_command(args):
+#         prefix = ['git', '-C', path]
+#         try:
+#             return subprocess.check_output(prefix + args).decode().strip()
+#         except CalledProcessError:
+#             return None
+#
+#     try:
+#         import vavilov3._version
+#         return vavilov3._version.version
+#     except ImportError:
+#         version_full = git_command(['describe', '--tags', '--dirty=.dirty'])
+#         if version_full is None:
+#             return ''
+#         else:
+#             return version_full.replace('-', '.dev', 1).replace('-', '+')[1:]
 
 # Return the git revision as a string
 # def git_version():
@@ -69,7 +69,6 @@ def get_version(path):
 #
 #     return GIT_REVISION
 
-
 name = 'vavilov3'
 default_app_config = 'vavilov3.apps.Vavilov3Config'
-version = get_version(os.path.dirname(os.path.realpath(__file__)))
+version = _version.version
