@@ -39,13 +39,26 @@ def git_version():
 
     try:
         out = _minimal_ext_cmd(['git', 'describe', '--tags'])
-        GIT_REVISION = out.strip().decode('ascii')
+        GIT_REVISION = out.strip().decode('ascii')[1:]
+        print(GIT_REVISION)
     except OSError:
         GIT_REVISION = "Unknown"
 
     return GIT_REVISION
 
 
+def git_pep440_version(path):
+
+    def git_command(args):
+        prefix = ['git', '-C', path]
+        return subprocess.check_output(prefix + args).decode().strip()
+
+    version_full = git_command(['describe', '--tags', '--dirty=.dirty'])
+    version_tag = git_command(['describe', '--tags', '--abbrev=0'])
+    version_tail = version_full[len(version_tag):]
+    return version_tag + version_tail.replace('-', '.dev', 1).replace('-', '+', 1)
+
+
 name = 'vavilov3'
 default_app_config = 'vavilov3.apps.Vavilov3Config'
-version = git_version()
+version = git_pep440_version(os.path.dirname(os.path.realpath(__file__)))
