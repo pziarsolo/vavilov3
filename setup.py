@@ -19,8 +19,16 @@
 import setuptools
 from vavilov3._version import version
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+with open("README.md", "r") as fhand:
+    long_description = fhand.read()
+
+with open("requeriments.txt", "r") as fhand:
+    requeriments = []
+    for line in fhand:
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        requeriments.append(line)
 
 setuptools.setup(
     name="vavilov3",
@@ -33,6 +41,8 @@ setuptools.setup(
     url="https://github.com/pziarsolo/vavilov3",
     license="GNU Affero General Public License v3 or later (AGPLv3+)",
     packages=setuptools.find_packages(),
+    package_data={'tests': ['tests.data']},
+    install_requires=requeriments,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
