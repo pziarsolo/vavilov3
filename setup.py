@@ -15,21 +15,54 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #
-import vavilov3
+
 import setuptools
+import subprocess
+import os
+from subprocess import CalledProcessError
+
+
+def git_pep440_version(path):
+
+    def git_command(args):
+        prefix = ['git', '-C', path]
+        try:
+            return subprocess.check_output(prefix + args).decode().strip()
+        except CalledProcessError:
+            return None
+
+    version_full = git_command(['describe', '--tags', '--dirty=.dirty'])
+    if version_full is None:
+        return ''
+    else:
+        return version_full.replace('-', '.dev', 1).split('-')[0][1:]
+
+
+version = git_pep440_version(os.path.dirname(os.path.realpath(__file__)))
+with open('vavilov3/_version.py', 'r') as fhand:
+    version_in_file = fhand.readline().strip().split('=')[1]
+
+if version != version_in_file:
+    with open('vavilov3/_version.py', 'w') as fhand:
+        fhand.write(f'version="{version}"')
+        fhand.flush()
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+# packages = setuptools.find_packages()
+# packages.pop(packages.index('vavilov3.tests'))
+# print(packages)
 setuptools.setup(
-    name="vavilov3-pziarsolo",  # Replace with your own username
-    version=vavilov3.version,
+    name="vavilov3",
+    version=version,
     author="P. Ziarsolo",
     author_email="pziarsolo@gmail.com",
     description="A django based REST api to deal with passport and phenotyping data",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pziarsolo/vavilov3",
+    license="GNU Affero General Public License v3 or later (AGPLv3+)",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

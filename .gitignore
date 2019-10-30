@@ -6,3 +6,4 @@
 vavilov3_web/media
 build/
 dist
+vavilov3.egg-info/

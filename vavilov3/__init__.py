@@ -18,47 +18,58 @@
 
 import os
 import subprocess
+from subprocess import CalledProcessError
 
 
-# Return the git revision as a string
-def git_version():
-
-    def _minimal_ext_cmd(cmd):
-        # construct minimal environment
-        env = {}
-        for k in ['SYSTEMROOT', 'PATH']:
-            v = os.environ.get(k)
-            if v is not None:
-                env[k] = v
-        # LANGUAGE is used on win32
-        env['LANGUAGE'] = 'C'
-        env['LANG'] = 'C'
-        env['LC_ALL'] = 'C'
-        out = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
-        return out
-
-    try:
-        out = _minimal_ext_cmd(['git', 'describe', '--tags'])
-        GIT_REVISION = out.strip().decode('ascii')[1:]
-        print(GIT_REVISION)
-    except OSError:
-        GIT_REVISION = "Unknown"
-
-    return GIT_REVISION
-
-
-def git_pep440_version(path):
+def get_version(path):
 
     def git_command(args):
         prefix = ['git', '-C', path]
-        return subprocess.check_output(prefix + args).decode().strip()
+        try:
+            return subprocess.check_output(prefix + args).decode().strip()
+        except CalledProcessError:
+            return None
 
-    version_full = git_command(['describe', '--tags', '--dirty=.dirty'])
-    version_tag = git_command(['describe', '--tags', '--abbrev=0'])
-    version_tail = version_full[len(version_tag):]
-    return version_tag + version_tail.replace('-', '.dev', 1).replace('-', '+', 1)
+    try:
+        import vavilov3._version
+        return vavilov3._version.version
+    except ImportError:
+        version_full = git_command(['describe', '--tags', '--dirty=.dirty'])
+        if version_full is None:
+            return ''
+        else:
+            return version_full.replace('-', '.dev', 1).replace('-', '+')[1:]
+
+# Return the git revision as a string
+# def git_version():
+#
+#     def _minimal_ext_cmd(cmd):
+#         # construct minimal environment
+#         env = {}
+#         for k in ['SYSTEMROOT', 'PATH']:
+#             v = os.environ.get(k)
+#             if v is not None:
+#                 env[k] = v
+#         # LANGUAGE is used on win32
+#         env['LANGUAGE'] = 'C'
+#         env['LANG'] = 'C'
+#         env['LC_ALL'] = 'C'
+#         try:
+#             out = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
+#         except Exception as error:
+#             print(type(error))
+#             raise
+#         return out
+#
+#     try:
+#         out = _minimal_ext_cmd(['git', 'describe', '--tags'])
+#         GIT_REVISION = out.strip().decode('ascii')[1:]
+#     except (OSError, CalledProcessError):
+#         GIT_REVISION = "Unknown"
+#
+#     return GIT_REVISION
 
 
 name = 'vavilov3'
 default_app_config = 'vavilov3.apps.Vavilov3Config'
-version = git_pep440_version(os.path.dirname(os.path.realpath(__file__)))
+version = get_version(os.path.dirname(os.path.realpath(__file__)))
