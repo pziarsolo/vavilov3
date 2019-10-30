@@ -65,12 +65,12 @@ class VersionManager:
         else:
             git_version = git_version.replace('-', '.dev', 1).replace('-', '+')[1:]
 
-        print(git_version)
         self.version = git_version
 
 
 if __name__ == '__main__':
     import sys
     if sys.argv[1] == 'update_version':
+        print('cucu')
         manager = VersionManager()
         manager.update_version(pre_commit=True)
