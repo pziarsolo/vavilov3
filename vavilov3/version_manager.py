@@ -64,7 +64,6 @@ class VersionManager:
             git_version += f'.dev{commit_num}'
         else:
             git_version = git_version.replace('-', '.dev', 1).replace('-', '+')[1:]
-
         self.version = git_version
 
 
