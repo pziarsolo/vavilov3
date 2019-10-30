@@ -71,6 +71,6 @@ class VersionManager:
 if __name__ == '__main__':
     import sys
     if sys.argv[1] == 'update_version':
-        print('cucu3')
+        print('cucu4')
         manager = VersionManager()
         manager.update_version(pre_commit=True)
