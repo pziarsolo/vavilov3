@@ -56,8 +56,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'vavilov3',
-    'django_celery_results',
-    'drf_yasg']
+    'django_celery_results']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

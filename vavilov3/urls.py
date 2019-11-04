@@ -81,5 +81,8 @@ urlpatterns = [
     path('redoc/', TemplateView.as_view(template_name='redoc.html',
                                         extra_context={'schema_url': 'openapi-schema'}),
          name='redoc'),
+    path('api-auth/', include('rest_framework.urls',
+                              namespace='rest_framework')),
+
     path('', include(router.urls))
 ]

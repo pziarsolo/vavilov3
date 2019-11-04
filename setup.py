@@ -29,6 +29,7 @@ with open("requeriments.txt", "r") as fhand:
         if not line or line.startswith('#'):
             continue
         requeriments.append(line)
+    requeriments.reverse()
 
 setuptools.setup(
     name="vavilov3",
@@ -41,7 +42,17 @@ setuptools.setup(
     url="https://github.com/pziarsolo/vavilov3",
     license="GNU Affero General Public License v3 or later (AGPLv3+)",
     packages=setuptools.find_packages(),
-    package_data={'tests': ['tests.data']},
+    include_package_data=True,
+    package_data={
+        'vavilov3.tests': ['data/jsons/*.json',
+                           'data/csvs/*.csv',
+                           'data/excels/*xslx',
+                           'data/images/*jpg',
+                           'data/images/*JPG',
+                           'data/images.zip',
+                           'data/to.obo'],
+        'vavilov3': ['templates/*.html']
+    },
     install_requires=requeriments,
     classifiers=[
         "Programming Language :: Python :: 3",
