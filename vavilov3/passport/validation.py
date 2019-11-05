@@ -142,6 +142,9 @@ def _check_no_empty_fields(passport, key=None):
     if isinstance(passport, (float, int)):
         assert passport is not None, 'Empty field: ' + key
         return
+    if isinstance(passport, datetime):
+        assert passport is not None, 'Empty field: ' + key
+        return
 
     if isinstance(passport, list):
         items = zip(passport, [key] * len(passport))
@@ -186,7 +189,7 @@ def _validate_version_1(passport, raise_if_error):
         if RETRIEVAL_DATE in passport['dataSource']:
             retrieval_date = passport['dataSource'][RETRIEVAL_DATE]
 
-            assert isinstance(retrieval_date, str), 'Data source retrieval date must be string'
+            assert isinstance(retrieval_date, str), 'Data source retrieval date must be a string'
             try:
                 datetime.strptime(retrieval_date, "%Y-%m-%d")
             except ValueError as error:

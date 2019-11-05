@@ -17,7 +17,7 @@
 #
 
 import json
-from copy import copy
+from copy import copy, deepcopy
 from collections import OrderedDict
 from datetime import datetime
 
@@ -422,6 +422,14 @@ class Passport():
                 validate_passport_data(data)
             self._data = copy(data)
 
+        if data is not None and DATA_SOURCE in data:
+            data_source = data[DATA_SOURCE]
+            self.data_source = data_source['code']
+            if 'kind' in data_source:
+                self.data_source_kind = data_source['kind']
+            if RETRIEVAL_DATE in data_source:
+                self.retrieval_date = data_source[RETRIEVAL_DATE]
+
         _id = self._data[GERMPLASM_ID] if GERMPLASM_ID in self._data else {}
         self._accession_id = AccessionId(_id)
 
@@ -445,7 +453,7 @@ class Passport():
 
     @property
     def data(self):
-        _data = self._data
+        _data = deepcopy(self._data)
         if self._accession_id:
             _data[GERMPLASM_ID] = self._accession_id.data
         if self._donor:
@@ -464,6 +472,12 @@ class Passport():
             _data['taxonomy'] = self._taxonomy.data
         if _data:
             _data['version'] = str(VERSION)
+        if self.data_source:
+            _data[DATA_SOURCE]['code'] = self.data_source
+            if self.data_source_kind:
+                _data[DATA_SOURCE]['kind'] = self.data_source_kind
+            if self.retrieval_date:
+                _data[DATA_SOURCE][RETRIEVAL_DATE] = self.retrieval_date
         return _data
 
     @property

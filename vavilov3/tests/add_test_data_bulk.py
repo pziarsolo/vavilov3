@@ -49,130 +49,143 @@ RUN_FAILLING_REQUESTS = False
 TRAITS_IN_COLUMNS = 'traits_in_columns'
 CREATE_OBSERVATION_UNITS = 'create_observation_units'
 
+VERIFY = True
+
 
 def main():
+    if len(sys.argv) > 1:
+        server_url = sys.argv[1]
+        admin_user = sys.argv[2]
+        admin_pass = sys.argv[3]
+    else:
+        server_url = SERVER_URL
+        admin_user = ADMINUSER
+        admin_pass = ADMINPASS
+
     print('It needs django server with fresh db and celery running')
     # get token
-    response = requests.post(SERVER_URL + 'api/auth/token/',
-                             json={'username': ADMINUSER, 'password': ADMINPASS})
+    response = requests.post(server_url + 'api/auth/token/',
+                             json={'username': admin_user,
+                                   'password': admin_pass},
+                             verify=VERIFY)
     token = response.json()['access']
     headers = {'Authorization': 'Bearer {}'.format(token)}
 
     # instal institute
-    response = requests.post(SERVER_URL + 'api/institutes/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/institutes/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(INSTITUTE_FPATH, mode='rb')})
 
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     # install accession
-    response = requests.post(SERVER_URL + 'api/accessions/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/accessions/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(ACCESSIONS_FPATH, mode='rb')},
                              data={'data_source_code': 'CRF',
                                    'data_source_kind': 'project'})
 
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
-        response = requests.post(SERVER_URL + 'api/accessions/bulk/',
-                                 headers=headers,
+        response = requests.post(server_url + 'api/accessions/bulk/',
+                                 headers=headers, verify=VERIFY,
                                  files={'file': open(ACCESSIONS_FPATH, mode='rb')},
                                  data={'data_source_code': 'CRF',
                                        'data_source_kind': 'project'})
         try:
-            process_task_response(response, headers)
+            process_task_response(response, headers, server_url)
             raise ValueError()
         except RuntimeError:
             pass
 
     # install accessionset
-    response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/accessionsets/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(ACCESSIONSETS_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
-        response = requests.post(SERVER_URL + 'api/accessionsets/bulk/',
-                                 headers=headers,
+        response = requests.post(server_url + 'api/accessionsets/bulk/',
+                                 headers=headers, verify=VERIFY,
                                  files={'file': open(ACCESSIONSETS_FPATH, mode='rb')})
 
         try:
-            process_task_response(response, headers)
+            process_task_response(response, headers, server_url)
             raise ValueError()
         except RuntimeError:
             pass
 
     # adding studies
-    response = requests.post(SERVER_URL + 'api/studies/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/studies/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(STUDIES_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
-        response = requests.post(SERVER_URL + 'api/studies/bulk/',
-                                 headers=headers,
+        response = requests.post(server_url + 'api/studies/bulk/',
+                                 headers=headers, verify=VERIFY,
                                  files={'file': open(STUDIES_FPATH, mode='rb')})
         try:
-            process_task_response(response, headers)
+            process_task_response(response, headers, server_url)
             raise ValueError()
         except RuntimeError:
             pass
 
     # adding plants
-    response = requests.post(SERVER_URL + 'api/plants/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/plants/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(PLANTS_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
-        response = requests.post(SERVER_URL + 'api/plants/bulk/',
-                                 headers=headers,
+        response = requests.post(server_url + 'api/plants/bulk/',
+                                 headers=headers, verify=VERIFY,
                                  files={'file': open(PLANTS_FPATH, mode='rb')})
         try:
-            process_task_response(response, headers)
+            process_task_response(response, headers, server_url)
             raise ValueError()
         except RuntimeError:
             pass
 
     # adding observation units
-    response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/observation_units/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
-        response = requests.post(SERVER_URL + 'api/observation_units/bulk/',
-                                 headers=headers,
+        response = requests.post(server_url + 'api/observation_units/bulk/',
+                                 headers=headers, verify=VERIFY,
                                  files={'file': open(OBSERVATION_UNITS_FPATH, mode='rb')})
         try:
-            process_task_response(response, headers)
+            process_task_response(response, headers, server_url)
             raise ValueError()
         except RuntimeError:
             pass
 
 #     # adding traits
-    response = requests.post(SERVER_URL + 'api/traits/create_by_obo/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/traits/create_by_obo/',
+                             headers=headers, verify=VERIFY,
                              files={'obo': open(TRAITS_FPATH)})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     # adding scales
-    response = requests.post(SERVER_URL + 'api/scales/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/scales/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(SCALE_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     # adding observation_variables
-    response = requests.post(SERVER_URL + 'api/observation_variables/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/observation_variables/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(OBSERVATION_VARIABLES_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
 #     if RUN_FAILLING_REQUESTS:
 #         # Adding again fails
@@ -186,46 +199,46 @@ def main():
 #             pass
 
     # adding Observations
-    response = requests.post(SERVER_URL + 'api/observations/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/observations/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(OBSERVATIONS_FPATH, mode='rb')})
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     # adding Observations: traits in columns
-    response = requests.post(SERVER_URL + 'api/observations/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/observations/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(OBSERVATIONS_IN_COLUMNS_FPATH, 'rb')},
                              data={TRAITS_IN_COLUMNS: True,
                                    CREATE_OBSERVATION_UNITS: 'foreach_observation'})
 
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
     # Images
-    response = requests.post(SERVER_URL + 'api/observation_images/bulk/',
-                             headers=headers,
+    response = requests.post(server_url + 'api/observation_images/bulk/',
+                             headers=headers, verify=VERIFY,
                              files={'file': open(OBSERVATION_IMAGES_FPATH, mode='rb')},
                              data={CREATE_OBSERVATION_UNITS: 'foreach_observation'})
 
-    process_task_response(response, headers)
+    process_task_response(response, headers, server_url)
 
 
-def process_task_response(response, headers):
+def process_task_response(response, headers, server_url):
     if response.status_code != status.HTTP_200_OK:
         raise ValueError('there was a error\n: {}'.format(response.json()))
     task = response.json()
-    task_response = requests.get(SERVER_URL + 'api/tasks/' + task['task_id'] + '/',
-                                 headers=headers)
+    task_response = requests.get(server_url + 'api/tasks/' + task['task_id'] + '/',
+                                 headers=headers, verify=VERIFY)
     if task_response.status_code == status.HTTP_404_NOT_FOUND:
         time.sleep(0.1)
-        task_response = requests.get(SERVER_URL + 'api/tasks/' + task['task_id'] + '/',
-                                     headers=headers)
+        task_response = requests.get(server_url + 'api/tasks/' + task['task_id'] + '/',
+                                     headers=headers, verify=VERIFY)
     task = task_response.json()
 
     if task['status'] == 'SUCCESS':
         sys.stdout.write('{} OK: {}\n'.format(task['name'], task['result']))
     elif task['status'] == 'PENDING':
         time.sleep(1)
-        process_task_response(response, headers)
+        process_task_response(response, headers, server_url)
     elif task['status'] == 'FAILURE':
         raise RuntimeError('{} task failed: {}'.format(task['name'],
                                                        task['result']))

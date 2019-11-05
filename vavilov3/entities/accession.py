@@ -357,7 +357,6 @@ def create_accession_in_db(api_data, user, is_public=None):
 
 
 def _create_passport_in_db(passport_struct, accession):
-
     institute_code = passport_struct.institute_code
     germplasm_number = passport_struct.germplasm_number
     institute = Institute.objects.get(code=institute_code)
