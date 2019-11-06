@@ -18,15 +18,13 @@
 
 django<3
 djangorestframework
-vine<5.0
-celery==4.3
+celery<4.4
 django-filter
 psycopg2
 iso3166
 djangorestframework_simplejwt
 djangorestframework-csv
 django-crispy-forms
-django-cors-headers
 django-celery-results
 xlrd
 pillow

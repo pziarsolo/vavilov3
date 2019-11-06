@@ -29,8 +29,13 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-from corsheaders.defaults import default_headers
 from datetime import timedelta
+
+cors_present = True
+try:
+    from corsheaders.defaults import default_headers
+except ImportError:
+    cors_present = False
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,7 +52,6 @@ SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2irb)d)e*'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'corsheaders',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -60,14 +64,23 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
+
+# needed configuration example for apps working outside the working domain
+
+if cors_present:
+    INSTALLED_APPS.insert(1, 'corsheaders')
+    MIDDLEWARE.insert(1, 'corsheaders.middleware.CorsMiddleware')
+    CORS_ORIGIN_WHITELIST = ('https://localhost:4200', 'http://localhost:4200')
+    CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
+    CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
+    CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
 
 ROOT_URLCONF = 'vavilov3_web.urls'
 
@@ -131,26 +144,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'http://localhost:8000/media/'
 
-CORS_ORIGIN_WHITELIST = ('https://localhost:4200', 'http://localhost:4200')
-CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
-CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
-CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
-
-REST_AUTHENTICATION_CLASSES = [
-    'rest_framework_simplejwt.authentication.JWTAuthentication']
-
-if True:  # DEVELOPMENT_MACHINE:
-    REST_AUTHENTICATION_CLASSES.append(
-        'rest_framework.authentication.SessionAuthentication')
-
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS':
-        ('django_filters.rest_framework.DjangoFilterBackend',
-         'rest_framework.filters.OrderingFilter'),
-    'DEFAULT_AUTHENTICATION_CLASSES': REST_AUTHENTICATION_CLASSES
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter'),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication')
 }
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1)
@@ -163,3 +167,14 @@ CELERY_BROKER_URL = 'amqp:///'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_BIN = "celery"
+CELERY_APP = "vavilov3_web.celery:app"
+CELERYD_CHDIR = BASE_DIR
+CELERYD_OPTS = "--time-limit=300 --concurrency=8"
+CELERYD_LOG_LEVEL = "DEBUG"
+CELERYD_LOG_FILE = "/var/log/celery/%n%I.log"
+CELERYD_PID_FILE = "/var/run/celery/%n.pid"
+CELERYD_USER = "celery"
+CELERYD_GROUP = "celery"
+CELERY_CREATE_DIRS = 1
