@@ -1,7 +1,7 @@
 Vavilov3
 -------
 
-[Status](https://travis-ci.org/pziarsolo/vavilov3.svg?branch=master)](https://travis-ci.org/pziarsolo/vavilov3)
+[![Build Status](https://travis-ci.org/pziarsolo/vavilov3.svg?branch=master)](https://travis-ci.org/pziarsolo/vavilov3)
 
 Vavilov3 is django rest API application. It is made to deal with passport and phenotyping data.
 
