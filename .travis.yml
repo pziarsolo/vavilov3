@@ -24,4 +24,5 @@ before_script:
 
 # command to run tests
 script:
+  - $(shell export PYTHONPATH=$PYTHONPATH:$(pwd)/vavilov3_web/)
   - python manage.py test vavilov3
