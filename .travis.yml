@@ -21,10 +21,10 @@ install:
 before_script:
   - psql -c "CREATE DATABASE travisdb;" -U postgres
   - python vavilov3_web/manage.py makemigrations
-  - python vavilov3/manage.py migrate
-  - python vavilov3/manage.py initialize_db -u vavilov3/tests/data/csvs/users.csv;
+  - python vavilov3_web/manage.py migrate
+  - python vavilov3_web/manage.py initialize_db -u vavilov3/tests/data/csvs/users.csv;
   - python vavilov3_web/manage.py runserver &
-  - celery worker -A vavilov3_web  -l info
+  - celery worker -A vavilov3_web  -l info &
 
 
 # command to run tests
