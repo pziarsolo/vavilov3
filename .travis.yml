@@ -30,7 +30,9 @@ before_script:
   - python vavilov3_web/manage.py migrate
   - python vavilov3_web/manage.py initialize_db -u vavilov3/tests/data/csvs/users.csv;
   - python vavilov3_web/manage.py runserver &
+  - cd vavilov3_web
   - celery worker -A vavilov3_web -l info &
+  - cd ..
 
 
 # command to run tests
