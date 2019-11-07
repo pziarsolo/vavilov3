@@ -10,7 +10,7 @@ env:
   global:
 # - DJANGO="x.y.z"
   - DJANGO_SETTINGS_MODULE="vavilov_web.settings"
-  - PYTHONPATH="/home/travis/build/pziarsolo/vavilov3"
+  - PYTHONPATH="/home/travis/build/pziarsolo/vavilov3:/home/travis/build/pziarsolo/vavilov3_web"
   - PIP_USE_MIRRORS=true
 
 # command to install dependencies
@@ -24,5 +24,4 @@ before_script:
 
 # command to run tests
 script:
-  - $(shell export PYTHONPATH=$PYTHONPATH:$(pwd)/vavilov3_web/)
   - python manage.py test vavilov3
