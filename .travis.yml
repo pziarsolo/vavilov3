@@ -7,10 +7,14 @@ python:
 
 services:
   - postgresql
-  - rabbitmq
+
+addons:
+  apt:
+    packages:
+      - rabbitmq-server
 env:
+  # - DJANGO="x.y.z"
   global:
-# - DJANGO="x.y.z"
   - DJANGO_SETTINGS_MODULE="vavilov3_web.settings"
   - PYTHONPATH="/home/travis/build/pziarsolo/vavilov3:/home/travis/build/pziarsolo/vavilov3_web"
   - PIP_USE_MIRRORS=true
@@ -26,7 +30,7 @@ before_script:
   - python vavilov3_web/manage.py migrate
   - python vavilov3_web/manage.py initialize_db -u vavilov3/tests/data/csvs/users.csv;
   - python vavilov3_web/manage.py runserver &
-  - celery worker -A vavilov3_web  -l info &
+  - celery worker -A vavilov3_web -l info &
 
 
 # command to run tests

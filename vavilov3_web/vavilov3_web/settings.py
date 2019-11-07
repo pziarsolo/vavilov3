@@ -181,13 +181,13 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-CELERY_BIN = "celery"
-CELERY_APP = "vavilov3_web.celery:app"
-CELERYD_CHDIR = BASE_DIR
-CELERYD_OPTS = "--time-limit=300 --concurrency=8"
-CELERYD_LOG_LEVEL = "DEBUG"
-CELERYD_LOG_FILE = "/var/log/celery/%n%I.log"
-CELERYD_PID_FILE = "/var/run/celery/%n.pid"
-CELERYD_USER = "celery"
-CELERYD_GROUP = "celery"
-CELERY_CREATE_DIRS = 1
+# CELERY_BIN = "celery"
+# CELERY_APP = "vavilov3_web.celery:app"
+# CELERYD_CHDIR = BASE_DIR
+# CELERYD_OPTS = "--time-limit=300 --concurrency=8"
+# CELERYD_LOG_LEVEL = "DEBUG"
+# CELERYD_LOG_FILE = "/var/log/celery/%n%I.log"
+# CELERYD_PID_FILE = "/var/run/celery/%n.pid"
+# CELERYD_USER = "celery"
+# CELERYD_GROUP = "celery"
+# CELERY_CREATE_DIRS = 1
