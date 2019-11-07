@@ -5,7 +5,9 @@ python:
   - "3.7"
   - "3.8"
 
-services: postgresql
+services:
+  - postgresql
+  - rabbitmq
 env:
   global:
 # - DJANGO="x.y.z"
@@ -30,6 +32,6 @@ before_script:
 # command to run tests
 script:
   - coverage run --source=. vavilov3_web/manage.py test vavilov3 --noinput --settings=vavilov3_web.settings
-  - coverage run  vavilov3/tests/vavilov3/tests/add_test_data_bulk.py
+  - coverage run  vavilov3/tests/add_test_data_bulk.py
 after_success:
   - coveralls
