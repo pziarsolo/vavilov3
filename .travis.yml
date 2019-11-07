@@ -9,7 +9,7 @@ services: postgresql
 env:
   global:
 # - DJANGO="x.y.z"
-  - DJANGO_SETTINGS_MODULE="vavilov_web.settings"
+  - DJANGO_SETTINGS_MODULE="vavilov3_web.settings"
   - PYTHONPATH="/home/travis/build/pziarsolo/vavilov3:/home/travis/build/pziarsolo/vavilov3_web"
   - PIP_USE_MIRRORS=true
 
