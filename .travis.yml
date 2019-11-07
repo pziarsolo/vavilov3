@@ -24,4 +24,7 @@ before_script:
 
 # command to run tests
 script:
-  - python manage.py test vavilov3
+  - coverage run --source=. vavilov3_web/manage.py test vavilov3 --noinput --settings=vavilov3_web.settings
+
+after_success:
+  - coveralls
