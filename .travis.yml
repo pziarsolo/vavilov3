@@ -20,7 +20,6 @@ install:
 
 before_script:
   - psql -c "CREATE DATABASE travisdb;" -U postgres
-  - cd vavilov3_web
 
 # command to run tests
 script:
