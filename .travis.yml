@@ -16,14 +16,17 @@ env:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install coveralls radon
+  - pip install coveralls radon requests
 
 before_script:
   - psql -c "CREATE DATABASE travisdb;" -U postgres
+  - python avilov3_web/manage.py runserver &
+  - celery worker -A vavilov3_web  -l info
+
 
 # command to run tests
 script:
   - coverage run --source=. vavilov3_web/manage.py test vavilov3 --noinput --settings=vavilov3_web.settings
-
+  - coverage run  vavilov3/tests/vavilov3/tests/add_test_data_bulk.py
 after_success:
   - coveralls
