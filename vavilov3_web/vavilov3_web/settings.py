@@ -115,6 +115,19 @@ DATABASES = {
         'PASSWORD': 'vavilov_pass'
     }
 }
+
+if 'TRAVIS' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'travisci',
+            'USER': 'postgres',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '',
+        }
+    }
+
 ALLOWED_HOSTS = ['localhost']
 
 # Password validation

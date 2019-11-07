@@ -4,11 +4,24 @@ python:
   - "3.6"      # current default Python on Travis CI
   - "3.7"
   - "3.8"
-  - "3.8-dev"  # 3.8 development branch
-  - "nightly"  # nightly build
+
+services: postgresql
+env:
+  global:
+# - DJANGO="x.y.z"
+  - DJANGO_SETTINGS_MODULE="vavilov_web.settings"
+  - PYTHONPATH="/home/travis/build/pziarsolo/vavilov3"
+  - PIP_USE_MIRRORS=true
+
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install coveralls radon
+
+before_script:
+  - psql -c "CREATE DATABASE travisdb;" -U postgres
+  - cd vavilov3_web
+
 # command to run tests
 script:
-  - python -m unittest discover -s vavilov3/tests -p "test_*.py"
+  - python manage.py test vavilov3

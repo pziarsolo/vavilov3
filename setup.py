@@ -22,7 +22,7 @@ from vavilov3._version import version
 with open("README.md", "r") as fhand:
     long_description = fhand.read()
 
-with open("requeriments.txt", "r") as fhand:
+with open("requirements.txt", "r") as fhand:
     requeriments = []
     for line in fhand:
         line = line.strip()
