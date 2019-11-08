@@ -58,13 +58,14 @@ class VersionManager:
     def update_version(self, pre_commit=True):
         git_version = self.get_git_version()
         items = git_version.split('-')
+
         if pre_commit:
             git_version = items[0][1:]
             commit_num = int(items[1]) + 1
             git_version += f'.dev{commit_num}'
         else:
             git_version = git_version.replace('-', '.dev', 1).replace('-', '+')[1:]
-        #self.version = git_version
+        self.version = git_version
 
 
 if __name__ == '__main__':
