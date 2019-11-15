@@ -8,3 +8,4 @@ build/
 dist
 vavilov3.egg-info/
 .commit
+vavilov3_db_schema.png
