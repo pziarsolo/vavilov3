@@ -60,8 +60,6 @@ def add_user_to_task(user):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             async_result = func(*args, **kwargs)
-            print('inside_decorator', dir(async_result))
-            print('user', user)
             add_task_to_user(user, async_result)
             return async_result
 

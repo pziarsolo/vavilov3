@@ -99,7 +99,7 @@ INVALID1 = {"version": "1.0",
 
 ALLOWED_FIELDS = set(VALID_PASSPORT_DATA.keys())
 ALLOWED_DATA_SOURCE_KINDS = ['genebank', 'study', 'project',
-                             'passport_collector']
+                             'passport_collector', 'Governamental']
 
 ALLOWED_SUBTAXA = ['subspecies', 'variety', 'convarietas', 'group', 'forma']
 ALLOWED_TAXONOMIC_RANKS = ['family', 'genus', 'species'] + ALLOWED_SUBTAXA
