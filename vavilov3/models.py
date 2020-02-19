@@ -310,6 +310,12 @@ class Accession(models.Model):
         return genera.values_list('name', flat=True)
 
     @property
+    def species(self):
+        species = Taxon.objects.filter(passport__accession=self,
+                                       rank__name='species').distinct()
+        return species.values_list('name', flat=True)
+
+    @property
     def countries(self):
         queryset = Country.objects.filter(passport__accession=self).distinct()
         return queryset.values_list('code', flat=True)
@@ -333,6 +339,12 @@ class AccessionSet(models.Model):
         genera = Taxon.objects.filter(passport__accession__accessionset=self,
                                       rank__name='genus').distinct()
         return genera.values_list('name', flat=True)
+
+    @property
+    def species(self):
+        species = Taxon.objects.filter(passport__accession__accessionset=self,
+                                       rank__name='species').distinct()
+        return species.values_list('name', flat=True)
 
     @property
     def countries(self):

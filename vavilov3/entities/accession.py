@@ -179,6 +179,14 @@ class AccessionStruct():
         self._data['genera'] = genera
 
     @property
+    def species(self):
+        return self._data.get('species', None)
+
+    @species.setter
+    def species(self, species):
+        self._data['species'] = species
+
+    @property
     def countries(self):
         return self._data.get('countries', None)
 
@@ -200,7 +208,7 @@ class AccessionStruct():
         self.metadata.is_public = instance.is_public
         accepted_fields = [INSTITUTE_CODE, GERMPLASM_NUMBER, IS_AVAILABLE,
                            CONSTATUS, PASSPORTS, 'genera', 'countries',
-                           'longitude', 'latitude']
+                           'longitude', 'latitude', 'species']
         if fields is not None and not set(fields).issubset(accepted_fields):
             msg = format_error_message('Passed fields are not allowed')
             raise ValidationError(msg)
@@ -218,6 +226,9 @@ class AccessionStruct():
 
         if instance.genera and fields and 'genera' in fields:
             self.genera = instance.genera
+
+        if instance.species and fields and 'species' in fields:
+            self.species = instance.species
 
         if instance.countries and fields and 'countries' in fields:
             self.countries = instance.countries

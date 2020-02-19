@@ -136,6 +136,14 @@ class AccessionSetStruct():
         self._data['genera'] = genera
 
     @property
+    def species(self):
+        return self._data.get('species', None)
+
+    @species.setter
+    def species(self, species):
+        self._data['species'] = species
+
+    @property
     def countries(self):
         return self._data.get('countries', None)
 
@@ -163,7 +171,8 @@ class AccessionSetStruct():
         self.metadata.group = instance.group.name
         self.metadata.is_public = instance.is_public
         accepted_fields = [INSTITUTE_CODE, ACCESSIONSET_NUMBER, ACCESSIONS,
-                           'genera', 'countries', 'latitudes', 'longitudes']
+                           'genera', 'countries', 'latitudes', 'longitudes',
+                           'species']
         if (fields is not None and
                 len(set(fields).intersection(accepted_fields)) == 0):
             msg = format_error_message('Passed fields are not allowed')
@@ -176,6 +185,9 @@ class AccessionSetStruct():
 
         if instance.genera and fields and 'genera' in fields:
             self.genera = instance.genera
+
+        if instance.species and fields and 'species' in fields:
+            self.species = instance.species
 
         if instance.countries and fields and 'countries' in fields:
             self.countries = instance.countries
