@@ -244,6 +244,7 @@ def _validate_version_1(passport, raise_if_error):
         try:
             check_date(passport['acquisitionDate'])
         except AssertionError as error:
+            error = 'acquisition date: ' + str(error)
             sys.stderr.write('{}: {} {}\n'.format(passport[GERMPLASM_ID][GERMPLASM_NUMBER],
                                                   passport['acquisitionDate'],
                                                   error))
@@ -254,6 +255,7 @@ def _validate_version_1(passport, raise_if_error):
         try:
             check_date(passport['collectionDate'])
         except AssertionError as error:
+            error = 'collection date: ' + str(error)
             sys.stderr.write('{}: {} {}\n'.format(passport[GERMPLASM_ID][GERMPLASM_NUMBER],
                                                   passport['collectionDate'],
                                                   error))

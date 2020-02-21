@@ -1,20 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (C) 2019 P.Ziarsolo
-#  
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-# 
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-# 
-#-------------------------------------------------------------------------------
 #
 # Copyright (C) 2019 P.Ziarsolo
 #
@@ -42,7 +25,8 @@ from vavilov3.entities.tags import (INSTITUTE_CODE, INSTITUTE_NAME,
                                     INSTITUTE_TYPE, INSTITUTE_ADDRESS,
                                     INSTITUTE_ZIPCODE, INSTITUTE_EMAIL,
                                     INSTITUTE_CITY, INSTITUTE_URL,
-                                    INSTITUTE_MANAGER, INSTITUTE_PHONE)
+                                    INSTITUTE_MANAGER, INSTITUTE_PHONE,
+                                    COLLECTIONS)
 from vavilov3.views import format_error_message
 from rest_framework.exceptions import ValidationError
 from vavilov3.id_validator import validate_id
@@ -55,7 +39,7 @@ class InstituteValidationError(Exception):
 INSTITUTE_ALLOWED_FIELDS = (INSTITUTE_CODE, INSTITUTE_NAME, INSTITUTE_TYPE,
                             INSTITUTE_ADDRESS, INSTITUTE_ZIPCODE, INSTITUTE_EMAIL,
                             INSTITUTE_CITY, INSTITUTE_URL, INSTITUTE_MANAGER,
-                            INSTITUTE_PHONE,
+                            INSTITUTE_PHONE, COLLECTIONS,
                             'num_accessions', 'num_accessionsets',
                             'stats_by_country', 'stats_by_taxa', 'pdcis')
 
@@ -178,6 +162,14 @@ class InstituteStruct():
     def manager(self, manager):
         self._data[INSTITUTE_MANAGER] = manager
 
+    @property
+    def collections(self):
+        return self._data.get(INSTITUTE_MANAGER, None)
+
+    @collections.setter
+    def collections(self, collections):
+        self._data[COLLECTIONS] = collections
+
     def _populate_with_instance(self, instance, fields):
         if fields is not None and not set(fields).issubset(INSTITUTE_ALLOWED_FIELDS):
             msg = format_error_message('Passed fields are not allowed')
@@ -202,6 +194,8 @@ class InstituteStruct():
             self.url = instance.data.get(INSTITUTE_URL, None)
         if fields is None or INSTITUTE_MANAGER in fields:
             self.manager = instance.data.get(INSTITUTE_MANAGER, None)
+        if fields is None or COLLECTIONS in fields:
+            self.collections = instance.data.get(COLLECTIONS, None)
 
         if fields is None or 'num_accessions' in fields:
             self._data['num_accessions'] = instance.num_accessions
@@ -254,6 +248,8 @@ _INSTITUTE_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'url', val)},
     {'csv_field_name': 'MANAGER', 'getter': lambda x: x.manager,
      'setter': lambda obj, val: setattr(obj, 'manager', val)},
+    {'csv_field_name': 'COLLECTIONS', 'getter': lambda x: x.collections,
+     'setter': lambda obj, val: setattr(obj, 'collections', val)},
 
 ]
 INSTITUTE_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f)
