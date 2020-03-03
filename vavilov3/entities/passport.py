@@ -154,6 +154,7 @@ def parse_subtaxa(subtaxa):
             name = subtaxa_items[index + 1]
         except IndexError:
             print(index, subtaxa_items)
+            continue
         try:
             subtaxas[SUBTAXAS[rank]] = {'name': name}
         except KeyError:
@@ -203,7 +204,9 @@ def set_other_numbers(passport, val):
             institute, number = other_number.split(':')
         except ValueError:
             print(other_number)
-            raise ValueError('Other numbers field in {} accession number is not well formated'.format(passport.germplasm_number))
+            msg = 'Other numbers field in {} is not well formated.'.format(passport.germplasm_number)
+            msg += ' It needs institute_code : accession number'
+            raise ValueError(msg)
         acc = AccessionId(institute=institute, number=number)
         other_numbers.append(acc)
     passport.other_numbers = other_numbers
