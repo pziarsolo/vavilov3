@@ -47,7 +47,7 @@ class InstituteViewSet(DynamicFieldsViewMixin,
     pagination_class = StandardResultsSetPagination
     Struct = InstituteStruct
     ordering_fields = ('code', 'name', 'by_num_accessions', 'by_num_accessionsets')
-    ordering = ('-by_num_accessions',)
+    ordering = ('code', '-by_num_accessions')
 
     def get_queryset(self):
         return self.queryset.annotate(by_num_accessions=Count('accession', distinct=True),

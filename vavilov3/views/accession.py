@@ -64,13 +64,15 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<germplasm_number'
     lookup_value_regex = '[^/]+'
     filter_foreignkey_mapping = {'institute_code': 'institute__code'}
-    queryset = Accession.objects.all()
+    queryset = Accession.objects.all().order_by('germplasm_number')
     serializer_class = AccessionSerializer
     filter_class = AccessionFilter
     filter_backends = (AccessionByObservationFilterBackend, DjangoFilterBackend)
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [AccessionCSVRenderer]
+    ordering_fields = ('code', 'institute_code')
+    ordering = ('-germplasm_number',)
 
     @action(methods=['post'], detail=False)
     def bulk(self, request):

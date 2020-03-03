@@ -48,10 +48,11 @@ class StudyViewSet(GroupObjectPublicPermMixin, DynamicFieldsViewMixin,
                    viewsets.ModelViewSet, BulkOperationsMixin,
                    OptionalStreamedListCsvMixin):
     lookup_field = 'name'
-    queryset = Study.objects.all()
+    queryset = Study.objects.all().order_by('name')
     serializer_class = StudySerializer
     filter_class = StudyFilter
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedStudyCSVRenderer]
     Struct = StudyStruct
+    ordering = ('name',)
