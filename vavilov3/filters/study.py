@@ -47,6 +47,15 @@ class StudyFilter(TermFilterMixin, filters.FilterSet):
     germplasm_number = filters.CharFilter(label='germplasm_number', lookup_expr='iexact',
                                           field_name='observationunit__accession__germplasm_number',
                                           distinct=True)
+    taxon = filters.CharFilter(
+        label='taxon',
+        field_name='observationunit__accession__passports__taxa__name',
+        lookup_expr='exact', distinct=True)
+
+    rank = filters.CharFilter(
+        label='rank',
+        field_name='observationunit__accession__passports__taxa__rank__name',
+        lookup_expr='exact', distinct=True)
 
     class Meta:
         model = Study
