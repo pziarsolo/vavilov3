@@ -22,7 +22,12 @@ from vavilov3.models import Taxon
 
 
 class TaxonFilter(filters.FilterSet):
+    accession_in_study = filters.CharFilter(label='Only_accession_in_study',
+                                            method='only_in_studies')
 
     class Meta:
         model = Taxon
         fields = {'name': ['icontains']}
+
+    def only_in_studies(self, queryset, _, value):
+        return queryset.filter(passport__accession__observationunit__study__isnull=False).distinct().order_by('name')
