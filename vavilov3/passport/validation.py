@@ -244,23 +244,26 @@ def _validate_version_1(passport, raise_if_error):
         try:
             check_date(passport['acquisitionDate'])
         except AssertionError as error:
-            error = 'acquisition date: ' + str(error)
             sys.stderr.write('{}: {} {}\n'.format(passport[GERMPLASM_ID][GERMPLASM_NUMBER],
+                                                  'acquisitionDate',
                                                   passport['acquisitionDate'],
-                                                  error))
+                                                  str(error)))
+
             if raise_if_error:
-                raise
+                raise AssertionError('acquisitionDate {}: {}'.format(passport['acquisitionDate'],
+                                                                     str(error)))
 
     if 'collectionDate' in passport:
         try:
             check_date(passport['collectionDate'])
         except AssertionError as error:
-            error = 'collection date: ' + str(error)
-            sys.stderr.write('{}: {} {}\n'.format(passport[GERMPLASM_ID][GERMPLASM_NUMBER],
-                                                  passport['collectionDate'],
-                                                  error))
+            sys.stderr.write('{}: {} {} {}\n'.format(passport[GERMPLASM_ID][GERMPLASM_NUMBER],
+                                                     'collectionDate',
+                                                     passport['collectionDate'],
+                                                     str(error)))
             if raise_if_error:
-                raise
+                raise AssertionError('collectionDate {}: {}'.format(passport['collectionDate'],
+                                                                    str(error)))
 
     if BIO_STATUS in passport:
         check_bio_status(passport[BIO_STATUS])
@@ -291,12 +294,17 @@ def validate_passport_data(passport, raise_if_error=True):
     except AssertionError as error:
         try:
             number = passport[GERMPLASM_NUMBER]
+            number = '{}:{}'.format(number[INSTITUTE_CODE],
+                                    number[GERMPLASM_NUMBER])
         except KeyError:
             number = ''
+        print('a', number)
         raise PassportValidationError('{}: {}'.format(number, str(error)))
     except KeyError as error:
         try:
             number = passport[GERMPLASM_NUMBER]
+            number = '{}:{}'.format(number[INSTITUTE_CODE],
+                                    number[GERMPLASM_NUMBER])
         except KeyError:
             number = ''
         error = str(error) + ' not found'
