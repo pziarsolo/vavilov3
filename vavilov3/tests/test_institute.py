@@ -53,8 +53,8 @@ class InstituteViewTest(BaseTest):
         response = self.client.get(list_url)
         result = response.json()
         self.assertEqual(len(result), 7)
-        self.assertEqual(result[0]['instituteCode'], 'ESP004')
-        self.assertEqual(result[0]['name'], 'CRF genebank')
+        self.assertEqual(result[0]['instituteCode'], 'AME0001')
+        self.assertEqual(result[0]['name'], 'USA genbank')
 
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
         result = self.client.get(detail_url)
@@ -68,7 +68,7 @@ class InstituteViewTest(BaseTest):
         response = self.client.get(list_url)
         result = response.json()
         self.assertEqual(len(result), 7)
-        self.assertEqual(result[0]['instituteCode'], 'ESP004')
+        self.assertEqual(result[0]['instituteCode'], 'AME0001')
         self.assertTrue('name' not in result[0])
 
         detail_url = reverse('institute-detail', kwargs={'code': 'ESP004'})
@@ -111,7 +111,7 @@ class InstituteViewTest(BaseTest):
         created_api_data = {'instituteCode': 'ESP005', 'name': 'test genebank',
                             'address': None, 'city': None, 'email': None,
                             'manager': None, 'phone': None, 'type': None,
-                            'url': None, 'zipcode': None}
+                            'url': None, 'zipcode': None, 'collections': None}
         self.docs_are_equal(response.json(), created_api_data)
 
         # Sending corrupt data should fail and return proper error
@@ -141,7 +141,7 @@ class InstituteViewTest(BaseTest):
                     'address': "rere", 'city': "csdsds", 'email': "email@aasa.es",
                     'manager': "manager", 'phone': "1231231231",
                     'type': "Gobernamental", 'url': 'http://test',
-                    'zipcode': '1121231'}
+                    'zipcode': '1121231', 'collections': 'zea'}
 
         response = self.client.post(list_url, data=api_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -183,13 +183,13 @@ class InstituteViewTest(BaseTest):
         returned_api_data = {'instituteCode': 'ESP004', 'name': 'test genebank',
                              'address': None, 'city': None, 'email': None,
                              'manager': None, 'phone': None, 'type': None,
-                             'url': None, 'zipcode': None}
+                             'url': None, 'zipcode': None, 'collections': None}
         self.docs_are_equal(response.json(), returned_api_data)
 
         api_data = {'instituteCode': 'ESP004', 'name': 'test genebank',
                     'address': 'Avda Cid', 'city': 'Madrid', 'email': 'esp004@gmail.com',
                     'manager': 'test_manager', 'phone': '6666', 'type': 'governamental',
-                    'url': 'esp004.upv.es', 'zipcode': '46960'}
+                    'url': 'esp004.upv.es', 'zipcode': '46960', 'collections': 'res'}
         response = self.client.put(detail_url, data=api_data, format='json')
         self.docs_are_equal(response.json(), api_data)
 
@@ -197,7 +197,7 @@ class InstituteViewTest(BaseTest):
         api_data = {'instituteCode': 'ESP004', 'name': 'test genebank',
                     'address': 'Avda Cid', 'city': 'Barcelona', 'email': 'esp004@gmail.com',
                     'manager': 'test_manager', 'phone': '6666', 'type': 'governamental',
-                    'url': 'esp004.upv.es', 'zipcode': '46960'}
+                    'url': 'esp004.upv.es', 'zipcode': '46960', 'collections': 'res'}
         response = self.client.patch(detail_url, data=api_data, format='json')
         self.docs_are_equal(response.json(), api_data)
 
