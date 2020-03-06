@@ -298,7 +298,6 @@ def validate_passport_data(passport, raise_if_error=True):
                                     number[GERMPLASM_NUMBER])
         except KeyError:
             number = ''
-        print('a', number)
         raise PassportValidationError('{}: {}'.format(number, str(error)))
     except KeyError as error:
         try:

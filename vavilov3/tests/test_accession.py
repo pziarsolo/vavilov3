@@ -37,7 +37,8 @@ from vavilov3.tests.data_io import (load_accessions_from_file,
 from vavilov3.data_io import initialize_db
 
 from vavilov3.entities.tags import (DATA_SOURCE, GERMPLASM_NUMBER, CONSTATUS,
-                                    IS_AVAILABLE, PASSPORTS)
+                                    IS_AVAILABLE, PASSPORTS,
+    IN_NUCLEAR_COLLECTION)
 from vavilov3.passport.tags import (BIO_STATUS,
                                     INSTITUTE_CODE, REMARKS,
                                     MLSSTATUS, COLLECTION_SOURCE,
@@ -166,6 +167,7 @@ class AccessionViewTest(BaseTest):
                 IS_AVAILABLE: False,
                 CONSTATUS: "is_active",
                 GERMPLASM_NUMBER: "LO6032",
+                IN_NUCLEAR_COLLECTION: True,
                 PASSPORTS: [
                     {
                         GERMPLASM_NUMBER: {
@@ -220,6 +222,7 @@ class AccessionViewTest(BaseTest):
         self.assertEqual(response.json()["metadata"], {'group': 'admin', 'is_public': False})
 
         api_data["data"][GERMPLASM_NUMBER] = "LO6033"
+        api_data["data"][IN_NUCLEAR_COLLECTION] = True
         api_data["data"]["passports"][0][GERMPLASM_NUMBER][GERMPLASM_NUMBER] = "LO6033"
 
         # passports need an accession number

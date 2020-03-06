@@ -35,6 +35,7 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
                                           lookup_expr='iexact')
 
     is_available = filters.BooleanFilter()
+    in_nulear_collection = filters.BooleanFilter()
 
     # passport realted filters
     country = filters.CharFilter(

@@ -296,7 +296,7 @@ class Accession(models.Model):
     germplasm_number = models.CharField(max_length=100, db_index=True)
     is_available = models.NullBooleanField()
     conservation_status = models.CharField(max_length=50, null=True)
-    is_save_duplicate = models.NullBooleanField()
+    in_nuclear_collection = models.NullBooleanField()
     data = JSONField()
 
     class Meta:

@@ -26,9 +26,9 @@ from django.db.utils import IntegrityError
 from rest_framework.exceptions import ValidationError
 
 from vavilov3.entities.tags import (INSTITUTE_CODE, GERMPLASM_NUMBER,
-                                    IS_SAVE_DUPLICATE, IS_AVAILABLE,
-                                    CONSTATUS, PASSPORTS, PUID,
-                                    VALID_CONSERVATION_STATUSES)
+                                    IS_AVAILABLE, CONSTATUS, PASSPORTS, PUID,
+                                    VALID_CONSERVATION_STATUSES,
+                                    IN_NUCLEAR_COLLECTION)
 from vavilov3.entities.metadata import Metadata
 from vavilov3.entities.passport import (PassportStruct,
                                         validate_passport_data,
@@ -42,6 +42,7 @@ from vavilov3.views import format_error_message
 from vavilov3.excel import excel_dict_reader
 from decimal import InvalidOperation
 from vavilov3.id_validator import validate_id
+from vavilov3.conf.settings import VALID_TRUE_VALUES
 
 
 class AccessionValidationError(Exception):
@@ -151,12 +152,12 @@ class AccessionStruct():
         self._data[GERMPLASM_NUMBER] = number
 
     @property
-    def is_save_duplicate(self):
-        return self._data.get(IS_SAVE_DUPLICATE, None)
+    def in_nuclear_collection(self):
+        return self._data.get(IN_NUCLEAR_COLLECTION, None)
 
-    @is_save_duplicate.setter
-    def is_save_duplicate(self, is_save_duplicate):
-        self._data[IS_SAVE_DUPLICATE] = is_save_duplicate
+    @in_nuclear_collection.setter
+    def in_nuclear_collection(self, in_nuclear_collection):
+        self._data[IN_NUCLEAR_COLLECTION] = in_nuclear_collection
 
     @property
     def is_available(self):
@@ -208,7 +209,8 @@ class AccessionStruct():
         self.metadata.is_public = instance.is_public
         accepted_fields = [INSTITUTE_CODE, GERMPLASM_NUMBER, IS_AVAILABLE,
                            CONSTATUS, PASSPORTS, 'genera', 'countries',
-                           'longitude', 'latitude', 'species']
+                           'longitude', 'latitude', 'species',
+                           IN_NUCLEAR_COLLECTION]
         if fields is not None and not set(fields).issubset(accepted_fields):
             msg = format_error_message('Passed fields are not allowed')
             raise ValidationError(msg)
@@ -223,6 +225,10 @@ class AccessionStruct():
         if (instance.conservation_status is not None and
                 (fields is None or CONSTATUS in fields)):
             self.conservation_status = instance.conservation_status
+
+        if (instance.in_nuclear_collection is not None and
+                (fields is None or IN_NUCLEAR_COLLECTION in fields)):
+            self.in_nuclear_collection = instance.in_nuclear_collection
 
         if instance.genera and fields and 'genera' in fields:
             self.genera = instance.genera
@@ -306,7 +312,9 @@ _ACCESSION_CSV_FIELD_CONFS = [
     {'csv_field_name': 'CONSTATUS', 'getter': lambda x: x.conservation_status,
      'setter': lambda obj, val: setattr(obj, 'conservation_status', val)},
     {'csv_field_name': 'IS_AVAILABLE', 'getter': lambda x: x.is_available,
-     'setter': lambda obj, val: setattr(obj, 'is_available', True if val == 'True' else False)},
+     'setter': lambda obj, val: setattr(obj, 'is_available', True if val in VALID_TRUE_VALUES else False)},
+    {'csv_field_name': 'IN_NUCLEAR_COLLECTION', 'getter': lambda x: x.in_nuclear_collection,
+     'setter': lambda obj, val: setattr(obj, 'in_nuclear_collection', True if val in VALID_TRUE_VALUES else False)},
 ]
 ACCESSION_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _ACCESSION_CSV_FIELD_CONFS])
 
@@ -344,6 +352,7 @@ def create_accession_in_db(api_data, user, is_public=None):
                 germplasm_number=accession_struct.germplasm_number,
                 conservation_status=accession_struct.conservation_status,
                 is_available=accession_struct.is_available,
+                in_nuclear_collection=accession_struct.in_nuclear_collection,
                 group=group,
                 is_public=is_public,
                 data=accession_struct.data)
@@ -472,8 +481,10 @@ def update_accession_in_db(validated_data, instance, user):
     with transaction.atomic():
         instance.is_available = accession_struct.is_available
         instance.conservation_status = accession_struct.conservation_status
+        instance.in_nuclear_collection = accession_struct.in_nuclear_collection
         instance.group = group
         instance.is_public = accession_struct.metadata.is_public
+
         instance.passports.all().delete()
         for passport_struct in accession_struct.passports:
             _create_passport_in_db(passport_struct, instance)
