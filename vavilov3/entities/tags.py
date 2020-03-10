@@ -36,13 +36,16 @@ IS_ACTIVE = 'is_active'
 IS_BASE = 'is_base'
 IS_HISTORIC = 'is_historic'
 IS_ARCHIVE = 'is_archive'
+IS_SECONDARY = 'is_secondary'
+IS_ACTIVE_AND_BASE = 'is_active_and_base'
 IN_NUCLEAR_COLLECTION = 'in_nuclear_collection'
 HAS_GERMPLASM_STORED = 'has_germplasm_stored'
 CONSTATUS = 'conservation_status'
 PASSPORTS = 'passports'
 ACCESSIONSET_NUMBER = 'accessionsetNumber'
 ACCESSIONS = 'accessions'
-VALID_CONSERVATION_STATUSES = [IS_ACTIVE, IS_BASE, IS_HISTORIC, IS_ARCHIVE]
+VALID_CONSERVATION_STATUSES = [IS_ACTIVE, IS_BASE, IS_HISTORIC, IS_ARCHIVE,
+                               IS_ACTIVE_AND_BASE, IS_SECONDARY]
 
 # phenotyping
 # study
