@@ -88,7 +88,7 @@ def main():
                                    'data_source_kind': 'project'})
     print(response.json())
     process_task_response(response, headers, server_url, verify)
-    return
+
     if RUN_FAILLING_REQUESTS:
         # Adding again fails
         response = requests.post(server_url + 'api/accessions/bulk/',
