@@ -258,7 +258,7 @@ class AccessionStruct():
 
     def to_list_representation(self, fields):
         items = []
-        for field in fields[:5]:
+        for field in fields[:6]:
             getter = ACCESSION_CSV_FIELD_CONFS.get(field)['getter']
             items.append(getter(self))
 
@@ -268,7 +268,7 @@ class AccessionStruct():
                 passport = passports[0]
             else:
                 passport = merge_passports(passports)
-            passport_items = passport.to_list_representation(fields[5:])
+            passport_items = passport.to_list_representation(fields[6:])
         else:
             passport_items = [''] * len(fields[5:])
         items.extend(passport_items)

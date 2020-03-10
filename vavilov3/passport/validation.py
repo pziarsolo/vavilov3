@@ -37,7 +37,7 @@ from vavilov3.passport.tags import (ACQUISITION_DATE, ALTITUDE, ANCESTRY, BIO_ST
                                     STATE, BREDDESCR, COORDUNCERTAINTY,
                                     COORD_SPATIAL_REFERENCE, MLSSTATUS,
                                     GERMPLASM_STORAGE_TYPE, LOCATION_SAVE_DUPLICATES,
-                                    PEDIGREE)
+                                    PEDIGREE, DONOR_INSTITUTE_DESC)
 
 
 class PassportValidationError(Exception):
@@ -82,7 +82,9 @@ VALID_PASSPORT_DATA = {'version': '1.0',
                        BREDDESCR: 'asasda',
                        MLSSTATUS: 'Y',
                        GERMPLASM_STORAGE_TYPE: 'aaa',
-                       PEDIGREE: 'pedigree'
+                       PEDIGREE: 'pedigree',
+                       DONOR_INSTITUTE_DESC: 'desc',
+                       LOCATION_SAVE_DUPLICATES: 'asdasda'
                        }
 
 INVALID1 = {"version": "1.0",

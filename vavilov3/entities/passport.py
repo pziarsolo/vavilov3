@@ -153,7 +153,6 @@ def parse_subtaxa(subtaxa):
         try:
             name = subtaxa_items[index + 1]
         except IndexError:
-            print(index, subtaxa_items)
             continue
         try:
             subtaxas[SUBTAXAS[rank]] = {'name': name}
@@ -203,7 +202,6 @@ def set_other_numbers(passport, val):
         try:
             institute, number = other_number.split(':')
         except ValueError:
-            print(other_number)
             msg = 'Other numbers field in {} is not well formated.'.format(passport.germplasm_number)
             msg += ' It needs institute_code : accession number'
             raise ValueError(msg)
@@ -278,7 +276,7 @@ _PASSPORT_CSV_FIELD_CONFS = [
     {'csv_field_name': 'OTHERNUMB', 'getter': build_other_numbers,
      'setter': set_other_numbers},
     {'csv_field_name': 'DUPLSITE',
-     'getter': lambda x: ":".join(x.save_dup_sites) if x.save_dup_sites is not None else '',
+     'getter': lambda x: ";".join(x.save_dup_sites) if x.save_dup_sites is not None else '',
      'setter': lambda obj, val: setattr(obj, 'save_dup_sites', val)},
     {'csv_field_name': 'STORAGE', 'getter': lambda x: x.germplasm_storage_type,
      'setter': lambda obj, val: setattr(obj, 'germplasm_storage_type', val)},

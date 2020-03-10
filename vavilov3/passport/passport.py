@@ -34,7 +34,9 @@ from vavilov3.passport.tags import (CROP_NAME, ACQUISITION_DATE, BIO_STATUS,
                                     ISLAND, OTHER, BREEDING_INSTITUTE, BREDDESCR,
                                     REMARKS, COORDUNCERTAINTY, COORD_SPATIAL_REFERENCE,
                                     LOCATION_SAVE_DUPLICATES, MLSSTATUS,
-                                    GERMPLASM_STORAGE_TYPE, PEDIGREE)
+                                    GERMPLASM_STORAGE_TYPE, PEDIGREE,
+                                    DONOR_INSTITUTE_DESC,
+                                    COLLECTION_INSTITUTE_DESCRIPTION)
 from vavilov3.passport.validation import (ALLOWED_SUBTAXA, validate_passport_data,
                                           ALLOWED_TAXONOMIC_RANKS,
                                           ALLOWED_COLLECTING_SITE_KEYS)
@@ -594,7 +596,11 @@ class Passport():
 
     @property
     def donor_institute_description(self):
-        return None
+        return self._data.get(DONOR_INSTITUTE_DESC, None)
+
+    @donor_institute_description.setter
+    def donor_institute_description(self, desc):
+        self._data[DONOR_INSTITUTE_DESC] = desc
 
     @property
     def collection(self):
@@ -602,7 +608,11 @@ class Passport():
 
     @property
     def collection_institute_description(self):
-        return None
+        return self._data.get(COLLECTION_INSTITUTE_DESCRIPTION, None)
+
+    @collection_institute_description.setter
+    def collection_institute_description(self, desc):
+        self._data[COLLECTION_INSTITUTE_DESCRIPTION] = desc
 
     @property
     def other_numbers(self):
@@ -618,7 +628,7 @@ class Passport():
 
     @save_dup_sites.setter
     def save_dup_sites(self, location_save_duplicates):
-        sites = location_save_duplicates.split(':')
+        sites = location_save_duplicates.split(';')
         self._data[LOCATION_SAVE_DUPLICATES] = sites
 
     @property

@@ -95,7 +95,6 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
         else:
             data = request.data
         # prev_time = calc_duration('csv to json', prev_time)
-
         if action == 'POST':
             serializer = self.get_serializer(data=data, many=True)
             # prev_time = calc_duration('get_serializer', prev_time)

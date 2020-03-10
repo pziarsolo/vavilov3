@@ -59,3 +59,5 @@ PROVINCE = 'province'
 MUNICIPALITY = 'municipality'
 DATA_STORE = 'dataStore'
 PEDIGREE = 'pedigree'
+DONOR_INSTITUTE_DESC = "donorInstituteDescriptor"
+COLLECTION_INSTITUTE_DESCRIPTION = "collectionInstituteDescription"
