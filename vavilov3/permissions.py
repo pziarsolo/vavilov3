@@ -246,6 +246,7 @@ class SeedPetitionPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if view.action == 'create':
+            return True	
             request_ip = request.META['REMOTE_ADDR']
             host_name, host_ip = get_host_ip()
 #            print(request_ip, host_ip)
