@@ -21,6 +21,8 @@ from django_filters import rest_framework as filters
 
 from vavilov3.filters.shared import TermFilterMixin
 from vavilov3.models import Accession
+from vavilov3.entities.tags import IS_ACTIVE
+from vavilov3.conf import settings
 
 
 class AccessionFilter(TermFilterMixin, filters.FilterSet):
@@ -69,10 +71,20 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
                                lookup_expr='iexact', distinct=True)
     study_icontains = filters.CharFilter(label='study', field_name='observationunit__study__name',
                                          lookup_expr='icontains', distinct=True)
+    seed_available = filters.BooleanFilter('Seed available',
+                                           method='seed_available_filter',
+                                           distinct=True)
 
     class Meta:
         model = Accession
         fields = {'germplasm_number': ['icontains']}
+
+    def seed_available_filter(self, queryset, _, value):
+        query = (Q(is_available=True) &
+                 Q(conservation_status__iexact=IS_ACTIVE))
+        if value in settings.VALID_TRUE_VALUES:
+            queryset = queryset.filter(query).distinct()
+        return queryset
 
     def number_filter(self, queryset, _, value):
         queryset = queryset.filter(
