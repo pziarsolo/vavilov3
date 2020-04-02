@@ -172,7 +172,11 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1)
 }
-
+VAVILOV3_SEED_PETITION_MAIL_SUBJECT = 'Petición de semillas'
+VAVILOV3_EMAIL_DEBUG = True
+VAVILOV3_SEED_PETITION_DEBUG_MAIL = 'pziarsolo@upv.es'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = '1025'
 # celery
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_RESULT_BACKEND_DB = 'postgresql://..'

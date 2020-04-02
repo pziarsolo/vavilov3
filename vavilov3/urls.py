@@ -17,6 +17,7 @@
 #
 
 from django.urls.conf import path, include
+from django.views.generic.base import TemplateView
 
 from rest_framework.routers import DefaultRouter
 from rest_framework.schemas import get_schema_view
@@ -41,7 +42,7 @@ from vavilov3.views.task import TaskViewSet
 from vavilov3.views.scale import ScaleViewSet
 from vavilov3.views.trait import TraitViewSet
 from vavilov3.views.observation_image import ObservationImageViewSet
-from django.views.generic.base import TemplateView
+from vavilov3.views.seed_petition import SeedPetitionViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -61,6 +62,7 @@ router.register(r'scales', ScaleViewSet)
 router.register(r'traits', TraitViewSet)
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'observation_images', ObservationImageViewSet)
+router.register(r'seed_petitions', SeedPetitionViewSet)
 
 schema_view = get_schema_view(
     title="Vavilov3 Restful api",

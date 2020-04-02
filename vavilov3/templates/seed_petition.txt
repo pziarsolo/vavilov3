@@ -1,0 +1,32 @@
+
+Email de petición de semillas
+-----------------------------
+
+Nombre del peticionario:{petitioner_name}
+
+Tipo de peticionario:{petitioner_type}
+
+Institución / Empresa: {petitioner_institution}
+
+Direccion Postal:
+    Calle: {petitioner_address}
+    Ciudad: {petitioner_city}
+    Código Postal: {petitioner_postal_code} 
+    Provincia: {petitioner_region}
+    País: {petitioner_country}
+
+Direccion de correo Electronico: {petitioner_email}
+
+Material solicitado
+-------------------
+{petition_accessions}
+
+Objetivo de la petición
+----------------------- 
+{petition_aim}
+
+Commentarios
+------------ 
+{petition_comments}
+ 
+

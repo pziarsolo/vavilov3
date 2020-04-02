@@ -117,6 +117,22 @@ ONTOLOGY_ID = 'ontology_id'
 YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')
 
+# SEED PETITION
+PETITION_ID = 'petition_id'
+PETITIONER_NAME = 'name'
+PETITIONER_TYPE = 'type'
+PETITIONER_INSTITUTION = 'institution'
+PETITIONER_ADDRESS = 'address'
+PETITIONER_CITY = 'city'
+PETITIONER_POSTAL_CODE = 'postal_code'
+PETITIONER_REGION = 'region'
+PETITIONER_COUNTRY = 'country'
+PETITIONER_EMAIL = 'email'
+PETITION_DATE = 'petition_date'
+PETITION_AIM = 'aim'
+PETITION_COMMENTS = 'comments'
+PETITION_ACCESSIONS = 'accessions'
+
 ORDINAL = 'Ordinal'
 NUMERICAL = 'Numerical'
 NOMINAL = 'Nominal'

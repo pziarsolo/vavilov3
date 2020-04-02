@@ -14,8 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
+from os.path import abspath, join, dirname
 from django.conf import settings
+
+TEMPLATE_DIR = abspath(join(dirname(__file__), '..', 'templates'))
 
 ADMIN_GROUP = getattr(settings, 'VAVILOV3_ADMIN_GROUP', 'admin')
 
@@ -72,3 +74,16 @@ SHORT_PROCESS_TIMEOUT = getattr(settings, 'VAVILOV3_LONG_PROCESS_TIMEOUT',
 TMP_DIR = getattr(settings, 'VAVILOV3_TMP_DIR', None)
 
 VALID_TRUE_VALUES = (True, 'True', 'T', 't', 'true', '1')
+
+DEF_SEED_PETITION_TEMPLATE = join(TEMPLATE_DIR, 'seed_petition.txt')
+SEED_PETITION_TEMPLATE = getattr(settings, 'VAVILOV3_SEED_PETITION_TEMPLATE',
+                                 DEF_SEED_PETITION_TEMPLATE)
+
+DEF_SEED_PETITION_MAIL_SUBJECT = 'Seed petition'
+SEED_PETITION_MAIL_SUBJECT = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_SUBJECT',
+                                     DEF_SEED_PETITION_MAIL_SUBJECT)
+
+DEF_SEED_PETITION_DEBUG_MAIL = 'crf@mailinator.com'
+SEED_PETITION_DEBUG_MAIL = getattr(settings, 'VAVILOV3_SEED_PETITION_DEBUG_MAIL',
+                                   DEF_SEED_PETITION_DEBUG_MAIL)
+EMAIL_DEBUG = getattr(settings, 'VAVILOV3_EMAIL_DEBUG', False)

@@ -2,11 +2,13 @@
     {
         "instituteCode": "ESP004",
         "name": "CRF genebank",
+        "email": "test@crf.es",
         "type": "Governmental"
     },
     {
         "instituteCode": "ESP026",
         "name": "Comav Genebank",
+        "email": "test@comav.es",
         "type": "Governmental"
     },
     {

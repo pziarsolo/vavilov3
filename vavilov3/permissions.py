@@ -18,17 +18,19 @@
 
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
+from django.conf import settings as site_settings
 
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
 
 from vavilov3.conf.settings import USERS_CAN_CREATE_ACCESSIONSETS, ADMIN_GROUP
+from vavilov3.utils import get_host_ip
 
 
 def is_user_admin(user):
     if isinstance(user, AnonymousUser):
         return False
-    if user.is_staff:
+    if user and user.is_staff:
         return True
     if ADMIN_GROUP in user.groups.all().values_list('name', flat=True):
         return True
@@ -238,3 +240,21 @@ def filter_queryset_by_obs_unit_in_study_permissions(queryset, user):
                                    Q(observation_unit__study__group__in=user_groups))
         else:
             return queryset.filter(study__is_public=True)
+
+
+class SeedPetitionPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            request_ip = request.META['REMOTE_ADDR']
+            host_name, host_ip = get_host_ip()
+#            print(request_ip, host_ip)
+            if request_ip == '127.0.0.1' or request_ip in site_settings.ALLOWED_HOSTS:
+                return True
+            else:
+                return False
+
+            return host_ip == request_ip
+
+        else:
+            return is_user_admin(request.user)

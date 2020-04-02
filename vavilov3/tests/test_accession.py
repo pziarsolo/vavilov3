@@ -38,7 +38,7 @@ from vavilov3.data_io import initialize_db
 
 from vavilov3.entities.tags import (DATA_SOURCE, GERMPLASM_NUMBER, CONSTATUS,
                                     IS_AVAILABLE, PASSPORTS,
-    IN_NUCLEAR_COLLECTION)
+                                    IN_NUCLEAR_COLLECTION)
 from vavilov3.passport.tags import (BIO_STATUS,
                                     INSTITUTE_CODE, REMARKS,
                                     MLSSTATUS, COLLECTION_SOURCE,
@@ -694,8 +694,8 @@ class AccessionCsvTests(BaseTest):
         response = self.client.get(list_url, data={'format': 'csv'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = response.content
-        aaa = b'PUID,INSTCODE,ACCENUMB,CONSTATUS,IS_AVAILABLE,COLLNUMB'
-        bbb = b'ESP004,BGE0001,is_active,True,,,Solanum,lycopersicum,,var. cera'
+        aaa = b'PUID,INSTCODE,ACCENUMB,CONSTATUS,IS_AVAILABLE,IN_NUCLEAR_COLLECTION,COLLNUMB'
+        bbb = b'ESP004,BGE0001,is_active,True,,,,Solanum,lycopersicum,,var. cera'
         ccc = b'YACUCHO;province:HUAMANGA;municipality:Socos;site:Santa Rosa '
 
         for piece in (aaa, bbb, ccc):

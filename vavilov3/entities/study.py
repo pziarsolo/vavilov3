@@ -244,7 +244,7 @@ class StudyStruct():
                 setter(self, value)
 
 
-_STUDY_CSV_FIELD_CONFS = [
+_SEED_PETITION_CSV_FIELD_CONFS = [
     {'csv_field_name': 'NAME', 'getter': lambda x: x.name,
      'setter': lambda obj, val: setattr(obj, 'name', val)},
     {'csv_field_name': 'DESCRIPTION', 'getter': lambda x: x.description,
@@ -267,7 +267,7 @@ _STUDY_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj, 'institution', val)},
 
 ]
-STUDY_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _STUDY_CSV_FIELD_CONFS])
+STUDY_CSV_FIELD_CONFS = OrderedDict([(f['csv_field_name'], f) for f in _SEED_PETITION_CSV_FIELD_CONFS])
 
 
 def create_study_in_db(api_data, user, is_public=None):

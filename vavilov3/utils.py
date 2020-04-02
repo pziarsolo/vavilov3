@@ -17,7 +17,10 @@
 #
 
 import os
+import socket
+
 from django.conf import settings
+
 from vavilov3.models import ObservationImage
 
 
@@ -58,3 +61,9 @@ def observation_image_cleanup(delete=False):
                     else:
                         print(os.path.join(relative_root, dir_))
                     # os.rmdir(os.path.join(relative_root, dir_))
+
+
+def get_host_ip():
+    host_name = socket.gethostname()
+    host_ip = socket.gethostbyname(host_name)
+    return host_name, host_ip
