@@ -364,8 +364,8 @@ class AccessionSet(models.Model):
 
 class Rank(models.Model):
     rank_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
-    level = models.IntegerField()
+    name = models.CharField(max_length=100, db_index=True)
+    level = models.IntegerField(db_index=True)
 
     class Meta:
         db_table = 'vavilov_rank'
@@ -373,8 +373,8 @@ class Rank(models.Model):
 
 class Taxon(models.Model):
     taxon_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    rank = models.ForeignKey(Rank, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, db_index=True)
+    rank = models.ForeignKey(Rank, on_delete=models.CASCADE, db_index=True,)
 
     class Meta:
         db_table = 'vavilov_taxon'
