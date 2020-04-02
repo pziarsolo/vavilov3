@@ -356,10 +356,10 @@ def create_seed_petition_in_db(api_data, user=None, is_public=None):
                 msg = msg.format(accession[INSTITUTE_CODE], accession[GERMPLASM_NUMBER])
                 raise ValueError(msg)
             seed_petition.requested_accessions.add(accession_db)
-    try:
-        prepare_and_send_seed_petition_mails(struct)
-    except RuntimeError as error:
-        raise ValueError(error)
+        try:
+            prepare_and_send_seed_petition_mails(struct)
+        except RuntimeError as error:
+            raise ValueError(error)
 
     return seed_petition
 
