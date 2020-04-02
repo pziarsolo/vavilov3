@@ -36,12 +36,15 @@ def prepare_and_send_seed_petition_mails(struct):
 
     errors = []
     mail_tuples = []
+    petitioner_email = struct.petitioner_email
+
     subject = settings.SEED_PETITION_MAIL_SUBJECT
-    from_email = struct.petitioner_email
+    from_email = settings.SEED_PETITION_MAIL_FROM
+
     for institute_code, accessions in accessions_by_institute.items():
         institute = Institute.objects.get(code=institute_code)
-        email = institute.data.get(INSTITUTE_EMAIL, None)
-        if not email:
+        curator_email = institute.data.get(INSTITUTE_EMAIL, None)
+        if not curator_email:
             msg = 'This institute has no email to send petitions {}'
             errors.append(msg.format(institute_code))
             continue
@@ -60,8 +63,8 @@ def prepare_and_send_seed_petition_mails(struct):
                              petition_aim=struct.petition_aim,
                              petition_comments=struct.petition_comments)
         if settings.EMAIL_DEBUG:
-            email = settings.SEED_PETITION_DEBUG_MAIL
-        recipient_list = [email] + [from_email]
+            curator_email = settings.SEED_PETITION_MAIL_DEBUG_TO
+        recipient_list = [curator_email] + [petitioner_email]
         message = (subject, body, from_email, recipient_list)
         mail_tuples.append(message)
 

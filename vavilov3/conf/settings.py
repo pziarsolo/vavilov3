@@ -83,7 +83,10 @@ DEF_SEED_PETITION_MAIL_SUBJECT = 'Seed petition'
 SEED_PETITION_MAIL_SUBJECT = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_SUBJECT',
                                      DEF_SEED_PETITION_MAIL_SUBJECT)
 
-DEF_SEED_PETITION_DEBUG_MAIL = 'crf@mailinator.com'
-SEED_PETITION_DEBUG_MAIL = getattr(settings, 'VAVILOV3_SEED_PETITION_DEBUG_MAIL',
-                                   DEF_SEED_PETITION_DEBUG_MAIL)
+SEED_PETITION_MAIL_FROM = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_FROM', None)
+
+DEF_SEED_PETITION_MAIL_DEBUG_TO = 'crf@mailinator.com'
+SEED_PETITION_MAIL_DEBUG_TO = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_TO_DEBUG',
+                                      DEF_SEED_PETITION_MAIL_DEBUG_TO)
+
 EMAIL_DEBUG = getattr(settings, 'VAVILOV3_EMAIL_DEBUG', False)
