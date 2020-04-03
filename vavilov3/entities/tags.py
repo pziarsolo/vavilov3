@@ -118,7 +118,7 @@ YES_STRINGS = ('y', 'Y', 'Yes', 'yes', 'YES')
 NO_STRINGS = ('n', 'N', 'No', 'no', 'NO')
 
 # SEED PETITION
-PETITION_ID = 'petition_id'
+PETITION_UID = 'petition_uid'
 PETITIONER_NAME = 'name'
 PETITIONER_TYPE = 'type'
 PETITIONER_INSTITUTION = 'institution'

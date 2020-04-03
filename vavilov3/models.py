@@ -679,6 +679,7 @@ class ObservationImage(models.Model):
 
 class SeedPetition(models.Model):
     petition_id = models.AutoField(primary_key=True, editable=False)
+    petition_uid = models.CharField(max_length=100, unique=True, db_index=True)
     petitioner_name = models.CharField(max_length=100)
     petitioner_type = models.CharField(max_length=100)
     petitioner_institution = models.CharField(max_length=100)

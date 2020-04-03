@@ -41,7 +41,7 @@ def prepare_mail_petition(seed_petition):
 
     schema = Path(settings.SEED_PETITION_TEMPLATE).read_text()
     accessions = ["{}:{}".format(acc.institute.code, acc.germplasm_number) for acc in seed_petition.requested_accessions.all()]
-    body = schema.format(petition_id=seed_petition.petition_id,
+    body = schema.format(petition_uid=seed_petition.petition_uid,
                          petitioner_name=seed_petition.petitioner_name,
                          petitioner_type=seed_petition.petitioner_type,
                          petitioner_institution=seed_petition.petitioner_institution,
@@ -85,7 +85,7 @@ def prepare_and_send_seed_petition_mails(struct):
             continue
         schema = Path(settings.SEED_PETITION_TEMPLATE).read_text()
         accessions = ["{}:{}".format(acc[INSTITUTE_CODE], acc[GERMPLASM_NUMBER]) for acc in struct.petition_accessions]
-        body = schema.format(petition_id=struct.petition_id,
+        body = schema.format(petition_uid=struct.petition_uid,
                              petitioner_name=struct.petitioner_name,
                              petitioner_type=struct.petitioner_type,
                              petitioner_institution=struct.petitioner_institution,

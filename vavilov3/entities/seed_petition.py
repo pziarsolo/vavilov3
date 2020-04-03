@@ -19,9 +19,12 @@ import re
 from datetime import date
 from collections import OrderedDict
 from copy import deepcopy
+import smtplib
 
 import iso3166
+
 from django.db import transaction
+from django.core.mail import send_mass_mail
 
 from rest_framework.exceptions import ValidationError
 
@@ -36,11 +39,8 @@ from vavilov3.entities.tags import (PETITIONER_NAME, PETITIONER_TYPE,
                                     PETITION_AIM, PETITIONER_CITY,
                                     PETITIONER_POSTAL_CODE, PETITIONER_REGION,
                                     PETITIONER_COUNTRY, INSTITUTE_CODE,
-                                    GERMPLASM_NUMBER, PETITION_ID)
-from vavilov3.mail import prepare_and_send_seed_petition_mails, \
-    prepare_mail_petition
-from django.core.mail import send_mass_mail
-import smtplib
+                                    GERMPLASM_NUMBER, PETITION_UID)
+from vavilov3.mail import prepare_mail_petition
 
 
 class SeedPetitionValidationError(Exception):
@@ -52,7 +52,8 @@ SEED_REQUEST_MANDATORY_FIELDS = [PETITIONER_NAME, PETITIONER_TYPE, PETITIONER_IN
                                  PETITIONER_POSTAL_CODE, PETITIONER_REGION,
                                  PETITIONER_COUNTRY, PETITIONER_EMAIL, PETITION_DATE,
                                  PETITION_AIM, PETITION_ACCESSIONS]
-SEED_REQUEST_ALLOWED_FIELDS = SEED_REQUEST_MANDATORY_FIELDS + [PETITION_COMMENTS, PETITION_ID]
+SEED_REQUEST_ALLOWED_FIELDS = SEED_REQUEST_MANDATORY_FIELDS + [PETITION_COMMENTS,
+                                                               PETITION_UID]
 
 
 def validate_seed_petition_data(data):
@@ -118,12 +119,12 @@ class SeedPetitionStruct():
         self._metadata = metadata
 
     @property
-    def petition_id(self):
-        return self._data.get(PETITION_ID, None)
+    def petition_uid(self):
+        return self._data.get(PETITION_UID, None)
 
-    @petition_id.setter
-    def petition_id(self, name):
-        self._data[PETITION_ID] = name
+    @petition_uid.setter
+    def petition_uid(self, name):
+        self._data[PETITION_UID] = name
 
     @property
     def petitioner_name(self):
@@ -243,8 +244,8 @@ class SeedPetitionStruct():
             msg = format_error_message('Passed fields are not allowed')
             raise ValidationError(msg)
 
-        if fields is None or PETITION_ID in fields:
-            self.petition_id = instance.petition_id
+        if fields is None or PETITION_UID in fields:
+            self.petition_uid = instance.petition_uid
         if fields is None or PETITIONER_NAME in fields:
             self.petitioner_name = instance.petitioner_name
         if fields is None or PETITIONER_TYPE in fields:
@@ -306,7 +307,7 @@ def build_accesion_list(seed_petition):
 
 
 _SEED_PETITION_CSV_FIELD_CONFS = [
-    {'csv_field_name': 'PETITION ID', 'getter': lambda x: x.petition_id},
+    {'csv_field_name': 'PETITION UID', 'getter': lambda x: x.petition_uid},
     {'csv_field_name': 'NAME', 'getter': lambda x: x.petitioner_name},
     {'csv_field_name': 'TYPE', 'getter': lambda x: x.petitioner_type},
     {'csv_field_name': 'INSTITUTION', 'getter': lambda x: x.petitioner_institution},
@@ -346,8 +347,15 @@ def create_seed_petition_in_db(api_data, user=None, is_public=None):
 
         mails = []
         mail_prepare_errors = []
+
+        today = date.today().strftime('%Y%m%d')
+        petition_uid_num = SeedPetition.objects.filter(petition_uid__startswith=today)
+        todays_next_id = len(petition_uid_num) + 1
+
         for institute_code, accessions in accessions_by_institute.items():
+
             seed_petition = SeedPetition.objects.create(
+                petition_uid='{}-{:03d}'.format(today, todays_next_id),
                 petitioner_name=struct.petitioner_name,
                 petitioner_type=struct.petitioner_type,
                 petitioner_institution=struct.petitioner_institution,
@@ -360,6 +368,8 @@ def create_seed_petition_in_db(api_data, user=None, is_public=None):
                 petition_date=date.today(),
                 petition_aim=struct.petition_aim,
                 petition_comments=struct.petition_comments)
+            todays_next_id += 1
+
             for accession in accessions:
                 try:
                     accession_db = Accession.objects.get(institute__code=accession[INSTITUTE_CODE],

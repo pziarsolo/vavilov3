@@ -26,7 +26,7 @@ from vavilov3.models import SeedPetition
 from vavilov3.serializers.seed_petition import SeedPetitionSerializer
 from vavilov3.entities.seed_petition import SeedPetitionStruct
 
-SEED_PETITION_CSV_FIELDS = ['PETITION ID', 'NAME', 'TYPE', 'INSTITUTION',
+SEED_PETITION_CSV_FIELDS = ['PETITION UID', 'NAME', 'TYPE', 'INSTITUTION',
                             'ADDRESS', 'CITY', 'POSTAL_CODE', 'COUNTY',
                             'EMAIL', 'PETITION_DATE', 'AIM', 'COMMENTS',
                             'ACCESSIONS']
@@ -46,6 +46,7 @@ class SeedPetitionViewSet(DynamicFieldsViewMixin, mixins.CreateModelMixin,
                           mixins.DestroyModelMixin,
                           mixins.ListModelMixin,
                           viewsets.GenericViewSet):
+    lookup_field = 'petition_uid'
     queryset = SeedPetition.objects.all().order_by('-petition_date')
     serializer_class = SeedPetitionSerializer
     permission_classes = (SeedPetitionPermission,)

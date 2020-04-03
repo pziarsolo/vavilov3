@@ -1,7 +1,7 @@
 
 Email de petición de semillas
 -----------------------------
-Identificador de la petición: {petition_id}
+Identificador de la petición: {petition_uid}
 
 Nombre del peticionario:{petitioner_name}
 

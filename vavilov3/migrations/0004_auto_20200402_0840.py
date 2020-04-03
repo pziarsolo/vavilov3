@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('vavilov3', '0004_seedpetition'),
+        ('vavilov3', '0003_auto_20200306_1107'),
     ]
 
     operations = [

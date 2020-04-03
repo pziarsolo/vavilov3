@@ -32,7 +32,7 @@ from vavilov3.tests.data_io import (load_institutes_from_file,
 from vavilov3.entities.seed_petition import (SeedPetitionStruct,
                                              create_seed_petition_in_db)
 from vavilov3.entities.tags import (GERMPLASM_NUMBER, INSTITUTE_CODE,
-                                    PETITION_ID)
+                                    PETITION_UID)
 from vavilov3.conf import settings
 from vavilov3.mail import prepare_and_send_seed_petition_mails
 
@@ -51,6 +51,7 @@ class SeedPetitionViewTest(BaseTest):
 
     def create_petition(self):
         petition = SeedPetitionStruct()
+        petition.petition_uid = '{}-{:03d}'.format(date.today().strftime('%Y%m%d'), 1)
         petition.petitioner_name = 'userq'
         petition.petitioner_type = 'genbank'
         petition.petitioner_institution = 'HOME'
@@ -73,7 +74,7 @@ class SeedPetitionViewTest(BaseTest):
         struct = SeedPetitionStruct(instance=petition_db)
         expected = petition.get_api_document()
         result = struct.get_api_document()
-        del result['data'][PETITION_ID]
+        # del result['data'][PETITION_UID]
         assert result == expected
 
     def test_create_by_endpoint(self):
@@ -93,6 +94,7 @@ class SeedPetitionViewTest(BaseTest):
         expected = [{
             'data':
                 {
+                    'petition_uid': '20200403-001',
                     'name': 'userq', 'type': 'genbank', 'institution': 'HOME',
                     'address': 'calle', 'city': 'ciudad', 'postal_code': '12345',
                     'region': 'home33', 'country': 'ESP', 'email': 'user@pepe.es',
@@ -102,19 +104,19 @@ class SeedPetitionViewTest(BaseTest):
             'metadata': {}
         }]
         result = response.json()
-        del result[0]['data']['petition_id']
         self.assertEqual(response.json(), expected)
         # just one
-        detail_url = reverse('seedpetition-detail', kwargs={'pk': 2})
+        detail_url = reverse('seedpetition-detail',
+                             kwargs={'petition_uid': '20200403-001'})
 
         response = self.client.get(detail_url)
 
         petition = SeedPetitionStruct(response.json())
         result = petition.get_api_document()
-        del result['data']['petition_id']
         self.assertEqual(result, expected[0])
         # update
-        detail_url = reverse('seedpetition-detail', kwargs={'pk': 2})
+        detail_url = reverse('seedpetition-detail',
+                             kwargs={'petition_uid': '20200403-001'})
 
         response = self.client.put(detail_url, data={'': ''})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -123,7 +125,8 @@ class SeedPetitionViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
         # delete
-        detail_url = reverse('seedpetition-detail', kwargs={'pk': 2})
+        detail_url = reverse('seedpetition-detail',
+                             kwargs={'petition_uid': '20200403-001'})
 
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -134,7 +137,8 @@ class SeedPetitionViewTest(BaseTest):
         response = self.client.post(petitions_url, format='json',
                                     data=petition.get_api_document())
         self.assertEqual(response.json(),
-                         [{'data': {'petition_id': 5, 'name': 'userq',
+                         [{'data': {'petition_uid': '{}-{:03d}'.format(date.today().strftime('%Y%m%d'), 1),
+                                    'name': 'userq',
                                     'type': 'genbank', 'institution': 'HOME',
                                     'address': 'calle', 'city': 'ciudad',
                                     'postal_code': '12345', 'region': 'home33',
@@ -187,13 +191,14 @@ class SeedPetitionViewTest(BaseTest):
         petitions_url = reverse('seedpetition-list')
         response = self.client.post(petitions_url, format='json',
                                     data=petition.get_api_document())
-
+        created_petition_uid = response.json()[0]['data'][PETITION_UID]
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         response = self.client.get(petitions_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        detail_url = reverse('seedpetition-detail', kwargs={'pk': 1})
+        detail_url = reverse('seedpetition-detail',
+                             kwargs={'petition_uid': created_petition_uid})
 
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -206,4 +211,3 @@ class SeedPetitionViewTest(BaseTest):
 
         response = self.client.patch(detail_url, data={'': ''})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
