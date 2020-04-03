@@ -26,6 +26,41 @@ from vavilov3.conf import settings
 from vavilov3.models import Institute
 
 
+def prepare_mail_petition(seed_petition):
+    petitioner_email = seed_petition.petitioner_email
+
+    subject = settings.SEED_PETITION_MAIL_SUBJECT
+    from_email = settings.SEED_PETITION_MAIL_FROM
+    institute_code = seed_petition.requested_accessions.first().institute.code
+    institute = Institute.objects.get(code=institute_code)
+    curator_email = institute.data.get(INSTITUTE_EMAIL, None)
+
+    if not curator_email:
+        msg = 'This institute has no email to send petitions {}'
+        raise RuntimeError(msg.format(institute_code))
+
+    schema = Path(settings.SEED_PETITION_TEMPLATE).read_text()
+    accessions = ["{}:{}".format(acc.institute.code, acc.germplasm_number) for acc in seed_petition.requested_accessions.all()]
+    body = schema.format(petition_id=seed_petition.petition_id,
+                         petitioner_name=seed_petition.petitioner_name,
+                         petitioner_type=seed_petition.petitioner_type,
+                         petitioner_institution=seed_petition.petitioner_institution,
+                         petitioner_address=seed_petition.petitioner_address,
+                         petitioner_city=seed_petition.petitioner_city,
+                         petitioner_postal_code=seed_petition.petitioner_postal_code,
+                         petitioner_region=seed_petition.petitioner_region,
+                         petitioner_country=seed_petition.petitioner_country,
+                         petitioner_email=seed_petition.petitioner_email,
+                         petition_accessions="\n".join(accessions),
+                         petition_aim=seed_petition.petition_aim,
+                         petition_comments=seed_petition.petition_comments)
+    if settings.EMAIL_DEBUG:
+        curator_email = settings.SEED_PETITION_MAIL_DEBUG_TO
+    recipient_list = [curator_email] + [petitioner_email]
+    message = (subject, body, from_email, recipient_list)
+    return message
+
+
 def prepare_and_send_seed_petition_mails(struct):
     accessions_by_institute = {}
     for accession in struct.petition_accessions:

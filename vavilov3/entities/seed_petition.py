@@ -37,7 +37,10 @@ from vavilov3.entities.tags import (PETITIONER_NAME, PETITIONER_TYPE,
                                     PETITIONER_POSTAL_CODE, PETITIONER_REGION,
                                     PETITIONER_COUNTRY, INSTITUTE_CODE,
                                     GERMPLASM_NUMBER, PETITION_ID)
-from vavilov3.mail import prepare_and_send_seed_petition_mails
+from vavilov3.mail import prepare_and_send_seed_petition_mails, \
+    prepare_mail_petition
+from django.core.mail import send_mass_mail
+import smtplib
 
 
 class SeedPetitionValidationError(Exception):
@@ -331,37 +334,57 @@ def create_seed_petition_in_db(api_data, user=None, is_public=None):
         country = Country.objects.get(code=struct.petitioner_country)
     except Country.DoesNotExist:
         raise ValueError('given country does not exist {}'.format(struct.petitioner_country))
-
+    petitions = []
     with transaction.atomic():
-        seed_petition = SeedPetition.objects.create(
-            petitioner_name=struct.petitioner_name,
-            petitioner_type=struct.petitioner_type,
-            petitioner_institution=struct.petitioner_institution,
-            petitioner_address=struct.petitioner_address,
-            petitioner_city=struct.petitioner_city,
-            petitioner_postal_code=struct.petitioner_postal_code,
-            petitioner_region=struct.petitioner_region,
-            petitioner_country=country,
-            petitioner_email=struct.petitioner_email,
-            petition_date=date.today(),
-            petition_aim=struct.petition_aim,
-            petition_comments=struct.petition_comments)
-
+        # fo each accession institute one petition
+        accessions_by_institute = {}
         for accession in struct.petition_accessions:
+            institute_code = accession[INSTITUTE_CODE]
+            if institute_code not in accessions_by_institute:
+                accessions_by_institute[institute_code] = []
+            accessions_by_institute[institute_code].append(accession)
+
+        mails = []
+        mail_prepare_errors = []
+        for institute_code, accessions in accessions_by_institute.items():
+            seed_petition = SeedPetition.objects.create(
+                petitioner_name=struct.petitioner_name,
+                petitioner_type=struct.petitioner_type,
+                petitioner_institution=struct.petitioner_institution,
+                petitioner_address=struct.petitioner_address,
+                petitioner_city=struct.petitioner_city,
+                petitioner_postal_code=struct.petitioner_postal_code,
+                petitioner_region=struct.petitioner_region,
+                petitioner_country=country,
+                petitioner_email=struct.petitioner_email,
+                petition_date=date.today(),
+                petition_aim=struct.petition_aim,
+                petition_comments=struct.petition_comments)
+            for accession in accessions:
+                try:
+                    accession_db = Accession.objects.get(institute__code=accession[INSTITUTE_CODE],
+                                                         germplasm_number=accession[GERMPLASM_NUMBER])
+                except Accession.DoesNotExist:
+                    msg = 'This accession does not exists: {}:{}'
+                    msg = msg.format(accession[INSTITUTE_CODE], accession[GERMPLASM_NUMBER])
+                    raise ValueError(msg)
+                seed_petition.requested_accessions.add(accession_db)
+
             try:
-                accession_db = Accession.objects.get(institute__code=accession[INSTITUTE_CODE],
-                                                     germplasm_number=accession[GERMPLASM_NUMBER])
-            except Accession.DoesNotExist:
-                msg = 'This accession does not exists: {}:{}'
-                msg = msg.format(accession[INSTITUTE_CODE], accession[GERMPLASM_NUMBER])
-                raise ValueError(msg)
-            seed_petition.requested_accessions.add(accession_db)
+                mails.append(prepare_mail_petition(seed_petition))
+            except RuntimeError as error:
+                mail_prepare_errors.append(str(error))
+            petitions.append(seed_petition)
+
+        if mail_prepare_errors:
+            raise ValueError(mail_prepare_errors)
+
         try:
-            prepare_and_send_seed_petition_mails(struct)
-        except RuntimeError as error:
+            send_mass_mail(tuple(mails))
+        except smtplib.SMTPException as error:
             raise ValueError(error)
 
-    return seed_petition
+    return petitions
 
 
 def update_seed_petition_in_db(validated_data, instance, user):

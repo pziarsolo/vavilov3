@@ -69,7 +69,7 @@ class SeedPetitionViewTest(BaseTest):
 
     def test_create_function(self):
         petition = self.create_petition()
-        petition_db = create_seed_petition_in_db(petition.get_api_document())
+        petition_db = create_seed_petition_in_db(petition.get_api_document())[0]
         struct = SeedPetitionStruct(instance=petition_db)
         expected = petition.get_api_document()
         result = struct.get_api_document()
@@ -133,7 +133,17 @@ class SeedPetitionViewTest(BaseTest):
         petitions_url = reverse('seedpetition-list')
         response = self.client.post(petitions_url, format='json',
                                     data=petition.get_api_document())
-
+        self.assertEqual(response.json(),
+                         [{'data': {'petition_id': 5, 'name': 'userq',
+                                    'type': 'genbank', 'institution': 'HOME',
+                                    'address': 'calle', 'city': 'ciudad',
+                                    'postal_code': '12345', 'region': 'home33',
+                                    'country': 'ESP', 'email': 'user@pepe.es',
+                                    'petition_date': date.today().strftime('%Y/%m/%d'),
+                                    'aim': 'asadasd', 'comments': 'askjdhaksjdha',
+                                    'accessions': [{'instituteCode': 'ESP004',
+                                                    'germplasmNumber': 'BGE0001'}]},
+                          'metadata': {}}])
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # fields
 
@@ -162,14 +172,14 @@ class SeedPetitionViewTest(BaseTest):
                                     data=petition.get_api_document())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         assert_error_is_equal(response.json(),
-                              ['There were some error: This institute has no email to send petitions ESP058'])
+                              ["['This institute has no email to send petitions ESP058']"])
 
     def test_create_email(self):
         petition = self.create_petition()
         prepare_and_send_seed_petition_mails(petition)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, settings.SEED_PETITION_MAIL_SUBJECT)
-        self.assertEqual(mail.outbox[0].recipients(), [settings.SEED_PETITION_DEBUG_MAIL, 'user@pepe.es'])
+        self.assertEqual(mail.outbox[0].recipients(), [settings.SEED_PETITION_MAIL_DEBUG_TO, 'user@pepe.es'])
         self.assertIn("Email de petición de semillas", str(mail.outbox[0].message()))
 
     def test_check_permissions(self):

@@ -50,6 +50,25 @@ class SeedPetitionSerializer(SeedPetitionMixinSerializer, VavilovSerializer):
         Struct = SeedPetitionStruct
         ValidationError = SeedPetitionValidationError
 
+    def to_representation(self, instance):
+
+        if isinstance(instance, list):
+            representation = []
+            for item_instance in instance:
+                struct = self.Meta.Struct(instance=item_instance,
+                                          fields=self.selected_fields)
+                representation.append(struct.get_api_document())
+            return representation
+        else:
+            struct = self.Meta.Struct(instance=instance,
+                                      fields=self.selected_fields)
+
+            return struct.get_api_document()
+
+    @property
+    def data(self):
+        return self.to_representation(self.instance)
+
     def create(self, validated_data):
         try:
             return self.create_item_in_db(validated_data, None)
