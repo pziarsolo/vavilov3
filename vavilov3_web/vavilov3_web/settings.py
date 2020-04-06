@@ -173,9 +173,9 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1)
 }
 
-VAVILOV3_SEED_PETITION_MAIL_SUBJECT = 'Petición de semillas'
-VAVILOV3_SEED_PETITION_MAIL_FROM = 'from@mailinator.com'
-VAVILOV3_SEED_PETITION_MAIL_DEGUB_TO = 'crf@mailinator.com'
+VAVILOV3_SEED_REQUEST_MAIL_SUBJECT = 'Petición de semillas'
+VAVILOV3_SEED_REQUEST_MAIL_FROM = 'from@mailinator.com'
+VAVILOV3_SEED_REQUEST_MAIL_DEGUB_TO = 'crf@mailinator.com'
 VAVILOV3_EMAIL_DEBUG = True
 
 EMAIL_HOST = 'localhost'

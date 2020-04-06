@@ -75,18 +75,18 @@ TMP_DIR = getattr(settings, 'VAVILOV3_TMP_DIR', None)
 
 VALID_TRUE_VALUES = (True, 'True', 'T', 't', 'true', '1')
 
-DEF_SEED_PETITION_TEMPLATE = join(TEMPLATE_DIR, 'seed_petition.txt')
-SEED_PETITION_TEMPLATE = getattr(settings, 'VAVILOV3_SEED_PETITION_TEMPLATE',
-                                 DEF_SEED_PETITION_TEMPLATE)
+DEF_SEED_REQUEST_TEMPLATE = join(TEMPLATE_DIR, 'seed_request.txt')
+SEED_REQUEST_TEMPLATE = getattr(settings, 'VAVILOV3_SEED_REQUEST_TEMPLATE',
+                                DEF_SEED_REQUEST_TEMPLATE)
 
-DEF_SEED_PETITION_MAIL_SUBJECT = 'Seed petition'
-SEED_PETITION_MAIL_SUBJECT = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_SUBJECT',
-                                     DEF_SEED_PETITION_MAIL_SUBJECT)
+DEF_SEED_REQUEST_MAIL_SUBJECT = 'Seed request'
+SEED_REQUEST_MAIL_SUBJECT = getattr(settings, 'VAVILOV3_SEED_REQUEST_MAIL_SUBJECT',
+                                    DEF_SEED_REQUEST_MAIL_SUBJECT)
 
-SEED_PETITION_MAIL_FROM = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_FROM', None)
+SEED_REQUEST_MAIL_FROM = getattr(settings, 'VAVILOV3_SEED_REQUEST_MAIL_FROM', None)
 
-DEF_SEED_PETITION_MAIL_DEBUG_TO = 'crf@mailinator.com'
-SEED_PETITION_MAIL_DEBUG_TO = getattr(settings, 'VAVILOV3_SEED_PETITION_MAIL_TO_DEBUG',
-                                      DEF_SEED_PETITION_MAIL_DEBUG_TO)
+DEF_SEED_REQUEST_MAIL_DEBUG_TO = 'crf@mailinator.com'
+SEED_REQUEST_MAIL_DEBUG_TO = getattr(settings, 'VAVILOV3_SEED_REQUEST_MAIL_TO_DEBUG',
+                                     DEF_SEED_REQUEST_MAIL_DEBUG_TO)
 
 EMAIL_DEBUG = getattr(settings, 'VAVILOV3_EMAIL_DEBUG', False)

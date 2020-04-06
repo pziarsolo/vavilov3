@@ -1,0 +1,30 @@
+Email de solicitud de material
+-----------------------------
+Identificador de la solicitud: {request_uid}
+
+Nombre del solicitante:{requester_name}
+
+Correo electrónico: {requester_email}
+
+Tipo de solicitante:{requester_type}
+
+Institución/Empresa: {requester_institution}
+
+Dirección Postal:
+    Calle: {requester_address}
+    Municipio: {requester_city}
+    Código Postal: {requester_postal_code} 
+    Provincia: {requester_region}
+    País: {requester_country}
+
+Material solicitado
+-------------------
+{requested_accessions}
+
+Objetivo de la solicitud
+----------------------- 
+{request_aim}
+
+Comentarios
+------------ 
+{request_comments}

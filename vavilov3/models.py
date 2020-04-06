@@ -677,23 +677,23 @@ class ObservationImage(models.Model):
         return self.observation_unit.study.name
 
 
-class SeedPetition(models.Model):
-    petition_id = models.AutoField(primary_key=True, editable=False)
-    petition_uid = models.CharField(max_length=100, unique=True, db_index=True)
-    petitioner_name = models.CharField(max_length=100)
-    petitioner_type = models.CharField(max_length=100)
-    petitioner_institution = models.CharField(max_length=100)
-    petitioner_address = models.CharField(max_length=255)
-    petitioner_city = models.CharField(max_length=100)
-    petitioner_postal_code = models.CharField(max_length=10)
-    petitioner_region = models.CharField(max_length=100)
-    petitioner_country = models.ForeignKey(Country, on_delete=models.SET_NULL,
-                                           null=True)
-    petitioner_email = models.EmailField()
-    petition_date = models.DateField()
-    petition_aim = models.TextField()
-    petition_comments = models.TextField(null=True)
+class SeedRequest(models.Model):
+    seed_request_id = models.AutoField(primary_key=True, editable=False)
+    request_uid = models.CharField(max_length=100, unique=True, db_index=True)
+    requester_name = models.CharField(max_length=100)
+    requester_type = models.CharField(max_length=100)
+    requester_institution = models.CharField(max_length=100)
+    requester_address = models.CharField(max_length=255)
+    requester_city = models.CharField(max_length=100)
+    requester_postal_code = models.CharField(max_length=10)
+    requester_region = models.CharField(max_length=100)
+    requester_country = models.ForeignKey(Country, on_delete=models.SET_NULL,
+                                          null=True)
+    requester_email = models.EmailField()
+    request_date = models.DateField()
+    request_aim = models.TextField()
+    request_comments = models.TextField(null=True)
     requested_accessions = models.ManyToManyField(Accession)
 
     class Meta:
-        db_table = 'vavilov_seed_petition'
+        db_table = 'vavilov_seed_request'

@@ -17,38 +17,34 @@
 #
 
 from vavilov3.serializers.shared import VavilovListSerializer, VavilovSerializer
-from vavilov3.entities.seed_petition import (validate_seed_petition_data,
-                                             update_seed_petition_in_db,
-                                             create_seed_petition_in_db,
-                                             SeedPetitionStruct,
-                                             SeedPetitionValidationError)
+from vavilov3.entities.seed_request import (validate_seed_request_data,
+                                            SeedRequestStruct,
+                                            SeedRequestValidationError,
+                                            create_seed_request_in_db)
 from vavilov3.views import format_error_message
 from rest_framework.exceptions import ValidationError
 
 
-class SeedPetitionMixinSerializer():
-    data_type = 'seed_petition'
+class SeedRequestMixinSerializer():
+    data_type = 'seed_request'
 
     def validate_data(self, data):
-        return validate_seed_petition_data(data)
-
-    def update_item_in_db(self, payload, instance, user):
-        return update_seed_petition_in_db(payload, instance, user)
+        return validate_seed_request_data(data)
 
     def create_item_in_db(self, item, user):
-        return create_seed_petition_in_db(item, user)
+        return create_seed_request_in_db(item, user)
 
 
-class SeedPetitionListSerializer(SeedPetitionMixinSerializer, VavilovListSerializer):
+class SeedRequestListSerializer(SeedRequestMixinSerializer, VavilovListSerializer):
     pass
 
 
-class SeedPetitionSerializer(SeedPetitionMixinSerializer, VavilovSerializer):
+class SeedRequestSerializer(SeedRequestMixinSerializer, VavilovSerializer):
 
     class Meta:
-        list_serializer_class = SeedPetitionListSerializer
-        Struct = SeedPetitionStruct
-        ValidationError = SeedPetitionValidationError
+        list_serializer_class = SeedRequestListSerializer
+        Struct = SeedRequestStruct
+        ValidationError = SeedRequestValidationError
 
     def to_representation(self, instance):
 

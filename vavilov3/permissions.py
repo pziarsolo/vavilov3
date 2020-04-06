@@ -242,7 +242,7 @@ def filter_queryset_by_obs_unit_in_study_permissions(queryset, user):
             return queryset.filter(study__is_public=True)
 
 
-class SeedPetitionPermission(permissions.BasePermission):
+class SeedRequestPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if view.action == 'create':

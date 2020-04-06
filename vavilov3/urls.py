@@ -42,7 +42,7 @@ from vavilov3.views.task import TaskViewSet
 from vavilov3.views.scale import ScaleViewSet
 from vavilov3.views.trait import TraitViewSet
 from vavilov3.views.observation_image import ObservationImageViewSet
-from vavilov3.views.seed_petition import SeedPetitionViewSet
+from vavilov3.views.seed_request import SeedRequestViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -62,7 +62,7 @@ router.register(r'scales', ScaleViewSet)
 router.register(r'traits', TraitViewSet)
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'observation_images', ObservationImageViewSet)
-router.register(r'seed_petitions', SeedPetitionViewSet)
+router.register(r'seed_requests', SeedRequestViewSet)
 
 schema_view = get_schema_view(
     title="Vavilov3 Restful api",
