@@ -90,3 +90,5 @@ SEED_REQUEST_MAIL_DEBUG_TO = getattr(settings, 'VAVILOV3_SEED_REQUEST_MAIL_TO_DE
                                      DEF_SEED_REQUEST_MAIL_DEBUG_TO)
 
 EMAIL_DEBUG = getattr(settings, 'VAVILOV3_EMAIL_DEBUG', False)
+RECAPTCHA_SECRET = getattr(settings, 'VAVILOV3_RECAPTCHA_SECRET', None)
+RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'

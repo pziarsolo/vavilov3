@@ -18,13 +18,12 @@
 
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
-from django.conf import settings as site_settings
 
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
 
-from vavilov3.conf.settings import USERS_CAN_CREATE_ACCESSIONSETS, ADMIN_GROUP
-from vavilov3.utils import get_host_ip
+from vavilov3.conf import settings
+import requests
 
 
 def is_user_admin(user):
@@ -32,7 +31,7 @@ def is_user_admin(user):
         return False
     if user and user.is_staff:
         return True
-    if ADMIN_GROUP in user.groups.all().values_list('name', flat=True):
+    if settings.ADMIN_GROUP in user.groups.all().values_list('name', flat=True):
         return True
     return False
 
@@ -68,7 +67,7 @@ class UserGroupObjectPublicPermission(permissions.BasePermission):
             if isinstance(request.user, AnonymousUser):
                 return False
 
-            elif (not USERS_CAN_CREATE_ACCESSIONSETS and
+            elif (not settings.USERS_CAN_CREATE_ACCESSIONSETS and
                   view.basename == 'accessionset' and
                   not is_user_admin(request.user)):
                 return False
@@ -246,16 +245,17 @@ class SeedRequestPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if view.action == 'create':
-            return True	
-            request_ip = request.META['REMOTE_ADDR']
-            host_name, host_ip = get_host_ip()
-#            print(request_ip, host_ip)
-            if request_ip == '127.0.0.1' or request_ip in site_settings.ALLOWED_HOSTS:
-                return True
-            else:
+            if settings.RECAPTCHA_SECRET:
+                captcha_token = request.META.get('HTTP_RECAPTCHATOKEN', None)
+                if captcha_token:
+                    data = {'secret': settings.RECAPTCHA_SECRET,
+                            'response': captcha_token}
+                    response = requests.post(settings.RECAPTCHA_VERIFY_URL,
+                                             data=data)
+                    if response.status_code == 200:
+                        return response.json().get('success', False)
                 return False
-
-            return host_ip == request_ip
-
+            else:
+                return True
         else:
             return is_user_admin(request.user)

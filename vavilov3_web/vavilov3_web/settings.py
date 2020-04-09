@@ -30,6 +30,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 from datetime import timedelta
+from .secret_keys import DJANGO_SECRET_KEY, RECAPTCHA_SECRET
 
 cors_present = True
 try:
@@ -44,7 +45,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2irb)d)e*'
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -78,8 +79,9 @@ if cors_present:
     INSTALLED_APPS.insert(1, 'corsheaders')
     MIDDLEWARE.insert(1, 'corsheaders.middleware.CorsMiddleware')
     CORS_ORIGIN_WHITELIST = ('https://localhost:4200', 'http://localhost:4200')
-    CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization')
-    CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count']
+    CORS_ALLOW_HEADERS = default_headers + ('authentication', 'Authorization',
+                                            'recaptchatoken')
+    CORS_EXPOSE_HEADERS = ['Link', 'X-Total-Count', 'recaptchatoken']
     CORS_ALLOW_METHODS = ('DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT')
 
 ROOT_URLCONF = 'vavilov3_web.urls'
@@ -177,6 +179,7 @@ VAVILOV3_SEED_REQUEST_MAIL_SUBJECT = 'Petición de semillas'
 VAVILOV3_SEED_REQUEST_MAIL_FROM = 'from@mailinator.com'
 VAVILOV3_SEED_REQUEST_MAIL_DEGUB_TO = 'crf@mailinator.com'
 VAVILOV3_EMAIL_DEBUG = True
+VAVILOV3_RECAPTCHA_SECRET = RECAPTCHA_SECRET
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = '1025'
