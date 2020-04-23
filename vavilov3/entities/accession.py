@@ -419,7 +419,6 @@ def _create_passport_in_db(passport_struct, accession):
 
     collection_number = passport_struct.collection.number
     collection_field_number = passport_struct.collection.field_number
-
     if not collection_number and collection_field_number:
         collection_number = collection_field_number
 

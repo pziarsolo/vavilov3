@@ -257,8 +257,6 @@ _PASSPORT_CSV_FIELD_CONFS = [
      'setter': lambda obj, val: setattr(obj.location, 'georef_method', val)},
     {'csv_field_name': 'ELEVATION', 'getter': lambda x: x.location.altitude,
      'setter': lambda obj, val: setattr(obj.location, 'altitude', int(float(val)))},
-    {'csv_field_name': 'ACQDATE', 'getter': lambda x: x.acquisition_date,
-     'setter': lambda obj, val: setattr(obj, 'acquisition_date', str(val))},
     {'csv_field_name': 'COLLDATE', 'getter': lambda x: x.collection_date,
      'setter': lambda obj, val: setattr(obj, 'collection_date', str(val))},
     {'csv_field_name': 'BREDCODE', 'getter': lambda x: x.breeder_institute_code,

@@ -657,11 +657,11 @@ class Passport():
 
     @property
     def collection_date(self):
-        return self.data.get(COLLECTION_DATE, None)
+        return self._data.get(COLLECTION_DATE, None)
 
     @collection_date.setter
     def collection_date(self, date):
-        self.data[COLLECTION_DATE] = date
+        self._data[COLLECTION_DATE] = date
 
     @property
     def collection_source(self):
