@@ -165,8 +165,11 @@ def _check_three_letter_country_code(country):
 def check_date(date):
     assert isinstance(date, str), 'date has to be a string'
     assert len(date) == 8, 'date has to be a string of length 8'
-    assert 1800 < int(
-        date[:4]) <= NOW_YEAR, 'First four characters of a date should be a year ' + date[:4]
+    try:
+        year = int(date[:4])
+    except ValueError:
+        raise AssertionError('First four characters of a date should be a year ' + date[:4])
+    assert 1800 < year, 'First four characters of a date should be a year ' + date[:4]
 
 
 def check_bio_status(bio_status):
