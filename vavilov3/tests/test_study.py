@@ -49,7 +49,7 @@ class StudyViewTest(BaseTest):
         result = response.json()
         expected = {'data': {'name': 'study1', 'description': 'description1',
                              'start_date': '2017/01/17',
-                             'end_date': '2017/12/01', 'location': 'Valencia',
+                             'end_date': '2018/12/01', 'location': 'Valencia',
                              'contacts': 'Alguien'},
                     'metadata': {'group': 'admin', 'is_public': True}}
         self.assertEqual(result, expected)
@@ -57,7 +57,7 @@ class StudyViewTest(BaseTest):
         list_url = reverse('study-list')
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(response.json()), 5)
 
     def test_view_readonly_with_fields(self):
         self.add_admin_credentials()
@@ -248,31 +248,23 @@ class StudyViewTest(BaseTest):
 
         response = self.client.get(list_url, data={'name_contains': 'study'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(response.json()), 5)
 
-        response = self.client.get(list_url, data={'description_icontains': 'description'})
+        response = self.client.get(list_url, data={'description__icontains': 'description'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(response.json()), 5)
 
         response = self.client.get(list_url, data={'location_contains': 'Valencia'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 4)
 
-        response = self.client.get(list_url, data={'location_icontains': 'valencia'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
-
-        response = self.client.get(list_url, data={'start_date_contains': '2017/01/17'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
-
-        response = self.client.get(list_url, data={'end_date_contains': '2017/12/01'})
+        response = self.client.get(list_url, data={'location_contains': 'valencia'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 4)
 
         response = self.client.get(list_url, data={'is_active': True})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 3)
+        self.assertEqual(len(response.json()), 4)
 
         response = self.client.get(list_url, data={'is_active': False})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -280,7 +272,18 @@ class StudyViewTest(BaseTest):
 
         response = self.client.get(list_url, data={'is_public': False})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), 3)
+
+        response = self.client.get(list_url)
+
+        response = self.client.get(list_url, data={'year': 2017})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 4)
+
+        response = self.client.get(list_url, data={'year': 201})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        assert_error_is_equal(response.json(),
+                              ['Year must be a string of 4 digits'])
 
 
 class StudyPermissionsViewTest(BaseTest):
@@ -297,7 +300,7 @@ class StudyPermissionsViewTest(BaseTest):
         list_url = reverse('study-list')
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 3)
+        self.assertEqual(len(response.json()), 4)
 
     def test_not_mine_but_public(self):
         self.add_user_credentials()
@@ -469,8 +472,8 @@ class StudyCsvViewTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = response.content
         a = b'NAME,DESCRIPTION,START_DATE,END_DATE,LOCATION,CONTACT,PROJECT_NAME\r\n'
-        b = b'study1,description1,2017-01-17,2017-12-01,Valencia,Alguien,\r\n'
-        c = b'study3,description3,2017-01-17,2017-12-01,Valencia,Alguien,\r\n'
+        b = b'study1,description1,2017-01-17,2018-12-01,Valencia,Alguien,\r\n'
+        c = b'study3,description3,2019-01-17,2019-12-01,Valencia,Alguien,\r\n'
 
         for piece in (a, b, c):
             self.assertIn(piece, content)

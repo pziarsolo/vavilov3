@@ -454,6 +454,8 @@ class Study(models.Model):
     name = models.CharField(max_length=255, db_index=True, unique=True)
     description = models.CharField(max_length=255)
     project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
+    start_date = models.DateField(null=True, db_index=True)
+    end_date = models.DateField(null=True, db_index=True)
     data = JSONField()
 
     class Meta:

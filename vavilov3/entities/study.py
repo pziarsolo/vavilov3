@@ -211,9 +211,15 @@ class StudyStruct():
         if instance.is_active is not None and fields is not None and STUDY_ACTIVE in fields:
             self.is_active = instance.is_active
         if fields is None or START_DATE in fields:
-            self.start_date = instance.data.get(START_DATE, None)
+            if instance.start_date is not None:
+                self.start_date = instance.start_date.strftime('%Y/%m/%d')
+            else:
+                self.start_date = None
         if fields is None or END_DATE in fields:
-            self.end_date = instance.data.get(END_DATE, None)
+            if instance.end_date is not None:
+                self.end_date = instance.end_date.strftime('%Y/%m/%d')
+            else:
+                self.end_date = None
         if fields is None or LOCATION in fields:
             self.location = instance.data.get(LOCATION, None)
         if fields is None or CONTACT in fields:
@@ -309,6 +315,8 @@ def create_study_in_db(api_data, user, is_public=None):
                 project=project,
                 group=group,
                 is_public=is_public,
+                start_date=study_struct.start_date,
+                end_date=study_struct.end_date,
                 data=study_struct.data)
         except IntegrityError:
             msg = 'This study already exists in db: {}'.format(study_struct.name)
@@ -342,5 +350,7 @@ def update_study_in_db(validated_data, instance, user):
     instance.group = group
     instance.is_public = study_struct.metadata.is_public
     instance.data = study_struct.data
+    instance.start_date = study_struct.start_date
+    instance.end_date = study_struct.end_date
     instance.save()
     return instance

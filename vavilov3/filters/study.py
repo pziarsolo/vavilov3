@@ -21,6 +21,9 @@ from django_filters import rest_framework as filters
 
 from vavilov3.filters.shared import TermFilterMixin
 from vavilov3.models import Study
+from datetime import date
+from rest_framework.exceptions import ValidationError
+from vavilov3.views import format_error_message
 
 
 class StudyFilter(TermFilterMixin, filters.FilterSet):
@@ -57,6 +60,8 @@ class StudyFilter(TermFilterMixin, filters.FilterSet):
         field_name='observationunit__accession__passports__taxa__rank__name',
         lookup_expr='exact', distinct=True)
 
+    year = filters.CharFilter(label='Year', method='year_filter')
+
     class Meta:
         model = Study
         fields = {'description': ['icontains']}
@@ -64,3 +69,16 @@ class StudyFilter(TermFilterMixin, filters.FilterSet):
     def name_or_desc(self, queryset, _, value):
         return queryset.filter(Q(name__icontains=value) |
                                Q(description__icontains=value))
+
+    def year_filter(self, queryset, _, value):
+        try:
+            if len(value) != 4:
+                raise ValueError('Year must be a string of 4 digits')
+            year = int(value)
+        except ValueError as error:
+            raise ValidationError(format_error_message(error))
+        year_start = date(year=year, month=1, day=1)
+        year_end = date(year=year, month=12, day=31)
+        return queryset.filter(Q(start_date__gte=year_start, start_date__lte=year_end) |
+                               Q(end_date__gte=year_start, end_date__lte=year_end) |
+                               Q(start_date__lte=year_start, end_date__gte=year_end))
