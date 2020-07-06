@@ -24,13 +24,15 @@ from rest_framework.decorators import action
 
 from vavilov3.models import Taxon
 from vavilov3.views.shared import (MultipleFieldLookupMixin,
-                                   StandardResultsSetPagination)
+                                   StandardResultsSetPagination,
+                                   DynamicFieldsViewMixin)
 from vavilov3.serializers.taxon import TaxonSerializer
 from vavilov3.filters.taxon import TaxonFilter
 from vavilov3.raw_stat_sql_commands import get_taxa_stas_raw_sql
 
 
-class TaxonViewSet(MultipleFieldLookupMixin, viewsets.ReadOnlyModelViewSet):
+class TaxonViewSet(MultipleFieldLookupMixin, DynamicFieldsViewMixin,
+                   viewsets.ReadOnlyModelViewSet):
     queryset = Taxon.objects
     serializer_class = TaxonSerializer
     filter_class = TaxonFilter

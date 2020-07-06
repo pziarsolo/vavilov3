@@ -45,3 +45,17 @@ class TaxaStatsTest(BaseTest):
         response = self.client.get(stats_url)
         result = {'species': {'Solanum lycopersicum': {'num_accessions': 4, 'num_accessionsets': 2}}, 'variety': {'Solanum lycopersicum var. cerasiforme': {'num_accessions': 4, 'num_accessionsets': 2}}, 'genus': {'Solanum': {'num_accessions': 4, 'num_accessionsets': 2}}}
         assert result == response.json()
+
+    def test_view_readonly(self):
+        list_url = reverse('taxon-list')
+        response = self.client.get(list_url)
+        result = response.json()
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]['name'], 'Solanum')
+
+        list_url = reverse('taxon-list')
+        result = self.client.get(list_url, data={'fields': 'name'})
+        self.assertEqual(result.json(), [{'name': 'Solanum'},
+                                         {'name': 'Solanum lycopersicum'},
+                                         {'name': 'Solanum lycopersicum var. cerasiforme'}])
+

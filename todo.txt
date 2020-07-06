@@ -1,0 +1,9 @@
+seed_request api end point:
+    All requests should be made using this end point
+    GET send_request/ -> List of all requests made. Only for admins
+    POST send_request/ -> Make a seed request. Anyone can do it. Maybe we only should allow request from the angular app
+    GET send_request/id -> Request detail. Only for admins
+    DELET send_request/id -> Delete the request from records. Only for admins.
+    
+    When creating a request, we have to prepare as many mails as institutions are involved in the petition
+    
