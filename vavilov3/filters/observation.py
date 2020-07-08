@@ -76,6 +76,8 @@ class ObservationFilter(TermFilterMixin, filters.FilterSet):
     created = DateTimeFromToRangeFilter(field_name='creation_time')
     value_range_min = filters.CharFilter(method='value_range_min_filter')
     value_range_max = filters.CharFilter(method='value_range_max_filter')
+    taxon = filters.CharFilter(field_name='observation_unit__accession__passports__taxa__name',
+                               lookup_expr='iexact')
 
     class Meta:
         model = Observation
