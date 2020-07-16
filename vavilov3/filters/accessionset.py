@@ -42,6 +42,9 @@ class AccessionSetFilter(TermFilterMixin, filters.FilterSet):
     is_available = filters.BooleanFilter()
 
     # passport realted filters
+    crop_name = filters.CharFilter(
+        field_name='accessions__passports__crop_name', lookup_expr='iexact',
+        distinct=True)
     country = filters.CharFilter(
         field_name='accessions__passports__country__code', lookup_expr='iexact',
         distinct=True)

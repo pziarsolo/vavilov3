@@ -40,6 +40,9 @@ class AccessionFilter(TermFilterMixin, filters.FilterSet):
     in_nulear_collection = filters.BooleanFilter()
 
     # passport realted filters
+    crop_name = filters.CharFilter(
+        field_name='passports__crop_name', lookup_expr='iexact',
+        distinct=True)
     country = filters.CharFilter(
         field_name='passports__country__code', lookup_expr='iexact',
         distinct=True)
