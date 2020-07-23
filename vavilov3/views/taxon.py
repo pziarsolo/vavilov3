@@ -33,7 +33,7 @@ from vavilov3.raw_stat_sql_commands import get_taxa_stas_raw_sql
 
 class TaxonViewSet(MultipleFieldLookupMixin, DynamicFieldsViewMixin,
                    viewsets.ReadOnlyModelViewSet):
-    queryset = Taxon.objects
+    queryset = Taxon.objects.all().order_by('name')
     serializer_class = TaxonSerializer
     filter_class = TaxonFilter
     lookup_fields = ('rank', 'name')
