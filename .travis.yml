@@ -25,7 +25,7 @@ install:
   - pip install coveralls radon requests
 
 before_script:
-  - echo "DJANGO_SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2iXXXxxxe*'\nRECAPTCHA_SECRET = '6LfAwecUAAAAAGsq29QGD1XXXXXX2eOL5mtXX6DY'" > vavilov3_web/secret_keys.py
+  - echo "DJANGO_SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2iXXXxxxe*'\nRECAPTCHA_SECRET = '6LfAwecUAAAAAGsq29QGD1XXXXXX2eOL5mtXX6DY'" > vavilov3_web/vavilov3_web/secret_keys.py
   - psql -c "CREATE DATABASE travisdb;" -U postgres
   - python vavilov3_web/manage.py makemigrations
   - python vavilov3_web/manage.py migrate
