@@ -31,6 +31,7 @@ before_script:
   - python vavilov3_web/manage.py initialize_db -u vavilov3/tests/data/csvs/users.csv;
   - python vavilov3_web/manage.py runserver &
   - cd vavilov3_web
+  - echo "DJANGO_SECRET_KEY = 'i)^!7-o8zdtz1(kba*k(15pe6qwqsx*nl$+9)biux2iXXXxxxe*'\nRECAPTCHA_SECRET = '6LfAwecUAAAAAGsq29QGD1XXXXXX2eOL5mtXX6DY'" > secret_keys.py
   - celery worker -A vavilov3_web -l info &
   - cd ..
 
