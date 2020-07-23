@@ -30,7 +30,11 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 from datetime import timedelta
-from .secret_keys import DJANGO_SECRET_KEY, RECAPTCHA_SECRET
+from .secret_keys import DJANGO_SECRET_KEY
+try:
+    from .secret_keys import RECAPTCHA_SECRET
+except ImportError:
+    RECAPTCHA_SECRET = None
 
 cors_present = True
 try:
