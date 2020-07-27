@@ -46,10 +46,15 @@ from vavilov3.entities.tags import GERMPLASM_NUMBER, INSTITUTE_CODE
 class PaginatedObservationCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
-        yield OBSERVATION_CSV_FIELDS
+        if self.format != 'csv_no_header':
+            yield OBSERVATION_CSV_FIELDS
         for row in data:
             accession = ObservationStruct(row)
             yield accession.to_list_representation(OBSERVATION_CSV_FIELDS)
+
+
+class PaginatedObservationCSVRendererNoHeader(PaginatedObservationCSVRenderer):
+    format = 'csv_no_header'
 
 
 class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
@@ -61,7 +66,8 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
     permission_classes = (ObservationByStudyPermission,)
     pagination_class = StandardResultsSetPagination
     Struct = ObservationStruct
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedObservationCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + \
+        [PaginatedObservationCSVRenderer, PaginatedObservationCSVRendererNoHeader]
     ordering_fields = ('value', 'observation_variable__name',
                        'observation_unit__accession__germplasm_number',
                        'observation_unit__study__name', 'creation_time',

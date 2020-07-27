@@ -35,10 +35,15 @@ SEED_REQUEST_CSV_FIELDS = ['REQUEST UID', 'NAME', 'TYPE', 'INSTITUTION',
 class SeepRequestCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
-        yield SEED_REQUEST_CSV_FIELDS
+        if self.format != 'csv_no_header':
+            yield SEED_REQUEST_CSV_FIELDS
         for row in data:
             accessionset = SeedRequestStruct(row)
             yield accessionset.to_list_representation(SEED_REQUEST_CSV_FIELDS)
+
+
+class SeepRequestCSVRendererNoHeader(SeepRequestCSVRenderer):
+    format = 'csv_no_header'
 
 
 class SeedRequestViewSet(DynamicFieldsViewMixin, mixins.CreateModelMixin,

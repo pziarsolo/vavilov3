@@ -49,10 +49,15 @@ from vavilov3.filters.accession_observation_filter_backend import AccessionByObs
 class AccessionCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
-        yield ACCESSION_CSV_FIELDS
+        if self.format != 'csv_no_header':
+            yield ACCESSION_CSV_FIELDS
         for row in data:
             accession = AccessionStruct(row)
             yield accession.to_list_representation(ACCESSION_CSV_FIELDS)
+
+
+class AccessionCSVRendererNoHeader(AccessionCSVRenderer):
+    format = 'csv_no_header'
 
 
 class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
@@ -70,7 +75,8 @@ class AccessionViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     filter_backends = (AccessionByObservationFilterBackend, DjangoFilterBackend)
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [AccessionCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + \
+        [AccessionCSVRenderer, AccessionCSVRendererNoHeader]
     ordering_fields = ('code', 'institute_code')
     ordering = ('-germplasm_number',)
 

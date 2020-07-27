@@ -37,10 +37,15 @@ from vavilov3.filters.study import StudyFilter
 class PaginatedStudyCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
-        yield STUDY_CSV_FIELDS
+        if self.format != 'csv_no_header':
+            yield STUDY_CSV_FIELDS
         for row in data:
             study = StudyStruct(row)
             yield study.to_list_representation(STUDY_CSV_FIELDS)
+
+
+class PaginatedStudyCSVRenderernoHeader(PaginatedStudyCSVRenderer):
+    format = 'csv_no_header'
 
 
 class StudyViewSet(GroupObjectPublicPermMixin, DynamicFieldsViewMixin,
@@ -53,6 +58,7 @@ class StudyViewSet(GroupObjectPublicPermMixin, DynamicFieldsViewMixin,
     filter_class = StudyFilter
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [PaginatedStudyCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + \
+        [PaginatedStudyCSVRenderer, PaginatedStudyCSVRenderernoHeader]
     Struct = StudyStruct
     ordering = ('name',)

@@ -38,10 +38,15 @@ from vavilov3.entities.accessionset import AccessionSetStruct
 class AccessionSetCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
-        yield ACCESSIONSET_CSV_FIELDS
+        if self.format != 'csv_no_header':
+            yield ACCESSIONSET_CSV_FIELDS
         for row in data:
             accessionset = AccessionSetStruct(row)
             yield accessionset.to_list_representation(ACCESSIONSET_CSV_FIELDS)
+
+
+class AccessionSetCSVRendererNoHeader(AccessionSetCSVRenderer):
+    format = 'csv_no_header'
 
 
 class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
@@ -58,5 +63,6 @@ class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     filter_class = AccessionSetFilter
     permission_classes = (UserGroupObjectPublicPermission,)
     pagination_class = StandardResultsSetPagination
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [AccessionSetCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + \
+        [AccessionSetCSVRenderer, AccessionSetCSVRendererNoHeader]
     Struct = AccessionSetStruct
