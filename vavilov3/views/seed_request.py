@@ -22,7 +22,8 @@ from rest_framework_csv import renderers
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from vavilov3.views.shared import DynamicFieldsViewMixin
+from vavilov3.views.shared import DynamicFieldsViewMixin, \
+    StandardResultsSetPagination
 from vavilov3.permissions import SeedRequestPermission
 from vavilov3.models import SeedRequest
 from vavilov3.serializers.seed_request import SeedRequestSerializer
@@ -58,5 +59,6 @@ class SeedRequestViewSet(DynamicFieldsViewMixin, mixins.CreateModelMixin,
     serializer_class = SeedRequestSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = (SeedRequestPermission,)
+    pagination_class = StandardResultsSetPagination
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + \
         [SeedRequestCSVRenderer, SeedRequestCSVRendererNoHeader]
