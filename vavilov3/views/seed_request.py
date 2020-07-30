@@ -20,6 +20,8 @@ from rest_framework.settings import api_settings
 from rest_framework import viewsets, mixins
 from rest_framework_csv import renderers
 
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from vavilov3.views.shared import DynamicFieldsViewMixin
 from vavilov3.permissions import SeedRequestPermission
 from vavilov3.models import SeedRequest
@@ -32,7 +34,7 @@ SEED_REQUEST_CSV_FIELDS = ['REQUEST UID', 'NAME', 'TYPE', 'INSTITUTION',
                            'ACCESSIONS']
 
 
-class SeepRequestCSVRenderer(renderers.CSVStreamingRenderer):
+class SeedRequestCSVRenderer(renderers.CSVStreamingRenderer):
 
     def tablize(self, data, header=None, labels=None):
         if self.format != 'csv_no_header':
@@ -42,7 +44,7 @@ class SeepRequestCSVRenderer(renderers.CSVStreamingRenderer):
             yield accessionset.to_list_representation(SEED_REQUEST_CSV_FIELDS)
 
 
-class SeepRequestCSVRendererNoHeader(SeepRequestCSVRenderer):
+class SeedRequestCSVRendererNoHeader(SeedRequestCSVRenderer):
     format = 'csv_no_header'
 
 
@@ -54,5 +56,7 @@ class SeedRequestViewSet(DynamicFieldsViewMixin, mixins.CreateModelMixin,
     lookup_field = 'request_uid'
     queryset = SeedRequest.objects.all().order_by('-request_date')
     serializer_class = SeedRequestSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = (SeedRequestPermission,)
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + [SeepRequestCSVRenderer]
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES + \
+        [SeedRequestCSVRenderer, SeedRequestCSVRendererNoHeader]
