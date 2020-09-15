@@ -17,7 +17,7 @@
 #
 
 from django_filters import rest_framework as filters
-
+from django.db.models.aggregates import Count
 from vavilov3.models import Taxon
 
 
@@ -28,9 +28,12 @@ class TaxonFilter(filters.FilterSet):
 
     class Meta:
         model = Taxon
+        fields = ['name']
 
     def only_in_studies(self, queryset, _, value):
         return queryset.filter(passport__accession__observationunit__study__isnull=False).distinct().order_by('name')
 
     def name_without_family(self, queryset, _, value):
-        return queryset.filter(name__icontains=value).exclude(rank__name='family')
+        queryset = queryset.annotate(num_accessionss=Count("passport__taxa",
+                                                            distinct=True))
+        return queryset.filter(name__icontains=value).exclude(rank__name='family').filter(num_accessionss__gt=0)
