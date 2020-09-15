@@ -46,7 +46,7 @@ class PassportValidationError(Exception):
 
 VALID_PASSPORT_DATA = {'version': '1.0',
                        DATA_SOURCE: {'code': 'COMAV', 'kind': 'genebank',
-                                     RETRIEVAL_DATE: '20170102'},
+                                     RETRIEVAL_DATE: '2017-01-02'},
                        GERMPLASM_ID: {INSTITUTE_CODE: 'ESP004',
                                       GERMPLASM_NUMBER: 'NC019467',
                                       GERMPLASM_PUI: 'ESP004:NC019467',
@@ -84,7 +84,7 @@ VALID_PASSPORT_DATA = {'version': '1.0',
                        GERMPLASM_STORAGE_TYPE: 'aaa',
                        PEDIGREE: 'pedigree',
                        DONOR_INSTITUTE_DESC: 'desc',
-                       LOCATION_SAVE_DUPLICATES: 'asdasda'
+                       LOCATION_SAVE_DUPLICATES: ['asdasda']
                        }
 
 INVALID1 = {"version": "1.0",

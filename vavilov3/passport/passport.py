@@ -162,8 +162,11 @@ class Taxonomy(object):
                 if rank_trans:
                     taxas.extend([rank_trans, value])
                 else:
+
                     taxas.append(value)
                 yield rank, ' '.join(taxas)
+                if rank == 'family':
+                    taxas = []
 
 
 class AccessionId(object):
