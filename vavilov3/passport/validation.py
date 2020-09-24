@@ -278,9 +278,12 @@ def _validate_version_1(passport, raise_if_error):
             raise AssertionError(
                 'Unknown collectionSource: ' + passport['collectionSource'])
     if 'remarks' in passport:
-        unknown_fields = set(passport['remarks'].keys()).difference(ALLOWED_REMARKS_KEYS)
-        if unknown_fields:
-            raise AssertionError('Unknown remarks fields: ' + str(unknown_fields))
+        print(passport['remarks'])
+        if not isinstance(passport['remarks'], dict):
+            raise AssertionError("Remarks must be a dictionary of key, values")
+#         unknown_fields = set(passport['remarks'].keys()).difference(ALLOWED_REMARKS_KEYS)
+#         if unknown_fields:
+#             raise AssertionError('Unknown remarks fields: ' + str(unknown_fields))
     if MLSSTATUS in passport:
         if passport[MLSSTATUS] not in ('Y', 'N'):
             raise AssertionError('MLSStatus only can be Y for yes and N for No')

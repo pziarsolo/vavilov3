@@ -37,7 +37,7 @@ class ObservationVariableViewSet(DynamicFieldsViewMixin,
                                  BulkOperationsMixin):
     lookup_field = "name"
     serializer_class = ObservationVariableSerializer
-    queryset = ObservationVariable.objects.all()
+    queryset = ObservationVariable.objects.all().order_by('name')
     filter_class = ObservationVariableFilter
     permission_classes = (UserGroupObjectPermission,)
     pagination_class = StandardResultsSetPagination
