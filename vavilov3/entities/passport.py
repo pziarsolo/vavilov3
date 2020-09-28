@@ -186,12 +186,11 @@ def build_remarks(passport):
 
 def set_remarks(passport, val):
     remarks = {}
-    for descriptorsfields in val.split(';'):
-        try:
-            descriptor, value = descriptorsfields.split(':')
-        except ValueError:
-            raise ValueError('Remarks field in {} accession number is not well formated'.format(passport.germplasm_number))
-        remarks[descriptor] = value
+    try:
+        descriptor, value = val.split(':', 1)
+    except ValueError:
+        raise ValueError('Remarks field in {} accession number is not well formated'.format(passport.germplasm_number))
+    remarks[descriptor] = value
     if remarks:
         setattr(passport, 'remarks', remarks)
 
