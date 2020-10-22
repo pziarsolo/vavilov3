@@ -61,7 +61,7 @@ class ObservationViewSet(DynamicFieldsViewMixin, viewsets.ModelViewSet,
                          BulkOperationsMixin, OptionalStreamedListCsvMixin):
     lookup_field = 'observation_id'
     serializer_class = ObservationSerializer
-    queryset = Observation.objects.all()
+    queryset = Observation.objects.all().order_by('observation_id')
     filter_class = ObservationFilter
     permission_classes = (ObservationByStudyPermission,)
     pagination_class = StandardResultsSetPagination
