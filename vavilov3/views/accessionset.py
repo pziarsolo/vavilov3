@@ -58,7 +58,7 @@ class AccessionSetViewSet(MultipleFieldLookupMixin, GroupObjectPublicPermMixin,
     lookup_url_kwarg = 'institute_code>[^/]+):(?P<accessionset_number'
     lookup_value_regex = '[^/]+'
     filter_foreignkey_mapping = {'institute_code': 'institute__code'}
-    queryset = AccessionSet.objects.all()
+    queryset = AccessionSet.objects.all().order_by('accessionset_number')
     serializer_class = AccessionSetSerializer
     filter_class = AccessionSetFilter
     permission_classes = (UserGroupObjectPublicPermission,)
