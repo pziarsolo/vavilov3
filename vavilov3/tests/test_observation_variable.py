@@ -55,10 +55,10 @@ class ObservationVariableViewTest(BaseTest):
         result = response.json()
         self.assertEqual(len(result), 3)
 
-        expected = {'name': 'Plant size:cm',
-                    'trait': 'Plant size',
-                    'description': 'Measure of plant heigth in centimetres',
-                    'method': 'by tape', 'scale': 'centimeter'}
+        expected = {'name': 'Plant Growth type:categorical',
+                    'description': 'Measure of plant heigth',
+                    'trait': 'Plant Growth type', 'method': 'observer',
+                    'scale': 'grow type'}
         self.assertEqual(result[0]['data'], expected)
         self.assertEqual(result[0]['metadata'], {'group': 'admin'})
 
@@ -69,8 +69,10 @@ class ObservationVariableViewTest(BaseTest):
         self.assertEqual(response.json()['data'], {'name': 'Plant size:cm'})
 
         response = self.client.get(edit_url, data={'fields': 'name,description'})
-        self.assertEqual(response.json()['data'], {'name': 'Plant size:cm',
-                                                   'description': "Measure of plant heigth in centimetres"})
+
+        self.assertEqual(response.json()['data'],
+                         {'name': 'Plant size:cm',
+                          'description': 'Measure of plant heigth in centimetres'})
 
         response = self.client.get(edit_url, data={'fields': 'name,method'})
         self.assertEqual(response.json()['data'], {'name': 'Plant size:cm',
