@@ -35,6 +35,15 @@ def is_user_admin(user):
         return True
     return False
 
+class IsUserAdminGroup(permissions.BasePermission):
+    """
+    Allows access only to admin users.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user.is_authenticated and
+                    is_user_admin(request.user))
+
 
 class UserPermission(permissions.BasePermission):
 

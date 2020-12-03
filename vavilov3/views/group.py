@@ -16,17 +16,18 @@
 #
 #
 
+
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from vavilov3.models import Group
 from vavilov3.serializers.auth import GroupSerializer
 from vavilov3.views.shared import StandardResultsSetPagination
+from vavilov3.permissions import IsUserAdminGroup
 
 User = get_user_model()
 
@@ -35,7 +36,7 @@ class GroupViewSet(ModelViewSet):
     lookup_field = 'name'
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsUserAdminGroup,)
     pagination_class = StandardResultsSetPagination
 
     @action(methods=['post'], detail=True)
