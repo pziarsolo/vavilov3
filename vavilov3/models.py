@@ -526,7 +526,7 @@ class ObservationVariable(models.Model):
 
     class Meta:
         db_table = 'vavilov_observation_variable'
-        unique_together = ('trait', 'method', 'scale')
+        # unique_together = ('trait', 'method', 'scale')
 
 
 class ObservationUnit(models.Model):
